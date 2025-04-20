@@ -1,9 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const Vocabulary = require('./models/vocabulary');
 const dotenv = require('dotenv');
-const Vocabulary = require('./models/Vocabulary');
-
 dotenv.config();
+
 const app = express();
 
 // Middleware
@@ -22,20 +22,54 @@ mongoose.connect(process.env.MONGO_URI, {
     .catch((err) => console.log(err));
 
 // Routes
-app.get('/', async (req, res) => {
-    const vocabList = await Vocabulary.find();
-    res.render('index', { vocabList });
-});
 
-app.post('/add', async (req, res) => {
-    const { word, definition } = req.body;
+// GET route to render vocabulary list
+app.get('/', async (req, res) => {
     try {
-        const newVocab = new Vocabulary({ word, definition });
-        await newVocab.save();
-        res.redirect('/');
+        const vocabList = await Vocabulary.find();  // Fetch all vocabulary entries
+        res.render('index', { vocabList });
     } catch (error) {
         console.error(error);
-        res.send('Error saving vocabulary');
+        res.send('Error fetching data from database');
+    }
+});
+
+// POST route to add a new word
+app.post('/add', async (req, res) => {
+    const { word, definition, example } = req.body;
+
+    try {
+        // Create a new vocabulary entry
+        const newVocab = new Vocabulary({
+            word,
+            definition,
+            dateAdded: new Date()     // Automatically set the current date
+        });
+
+        // Save the new word to the database
+        await newVocab.save();
+        res.redirect('/');  // Redirect back to the main page to see the updated list
+    } catch (error) {
+        console.error(error);
+        res.send('Error adding word to database');
+    }
+});
+
+// POST route to delete selected words
+app.post('/delete', async (req, res) => {
+    const deleteIds = req.body.deleteIds;  // Array of IDs of selected words to delete
+
+    if (!deleteIds) {
+        return res.redirect('/');  // If no words are selected, redirect back to the home page
+    }
+
+    try {
+        // Delete the selected words from the database
+        await Vocabulary.deleteMany({ _id: { $in: deleteIds } });
+        res.redirect('/');  // Redirect back to the main page to see the updated list
+    } catch (error) {
+        console.error(error);
+        res.send('Error deleting words from database');
     }
 });
 
