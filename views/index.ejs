@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary App</title>
+</head>
+
+<body>
+    <h1>My English Vocabulary</h1>
+    <form action="/add" method="POST">
+        <label for="word">Word:</label>
+        <input type="text" id="word" name="word" required><br><br>
+        <label for="definition">Definition:</label>
+        <input type="text" id="definition" name="definition" required><br><br>
+        <button type="submit">Add Vocabulary</button>
+    </form>
+
+    <h2>Vocabulary List</h2>
+    <ul>
+        <% vocabList.forEach(vocab=> { %>
+            <li><strong>
+                    <%= vocab.word %>
+                </strong>: <%= vocab.definition %>
+            </li>
+            <% }); %>
+    </ul>
+</body>
+
+</html>
