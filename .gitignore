@@ -8,9 +8,6 @@ yarn-error.log*
 pnpm-debug.log*
 *.log
 
-# Environment variables
-.env
-
 # OS files
 .DS_Store
 Thumbs.db
