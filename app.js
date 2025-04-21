@@ -1,10 +1,15 @@
 const express = require('express');
+const cors = require('cors');
 const mongoose = require('mongoose');
 const Vocabulary = require('./models/vocabulary');
 const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
+
+app.use(cors({
+    origin: 'https://darwin-xu.github.io'
+}));
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
