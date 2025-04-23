@@ -1,0 +1,9 @@
+name = "vocab-app"
+type = "webpack"
+compatibility_date = "2024-04-23"
+main = "src/index.ts"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "vocab_db"
+database_id = "6a795831-1da2-4f95-9711-2fcd57c8b568"
