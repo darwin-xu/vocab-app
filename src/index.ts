@@ -1,29 +1,29 @@
 export default {
 	async fetch(request: Request, env: any): Promise<Response> {
-	  const url = new URL(request.url);
-  
-	  /* ---------- API ROUTES ---------- */
-	  if (request.method === "POST" && url.pathname === "/add") {
-		const { word, meaning } = await request.json();
-		const add_date = new Date().toISOString();
-		await env.DB.prepare(
-		  "INSERT INTO vocab (word, meaning, add_date) VALUES (?, ?, ?)"
-		).bind(word, meaning, add_date).run();
-		return new Response("OK");
-	  }
-  
-	  if (url.pathname === "/search") {
-		const q = url.searchParams.get("q") || "";
-		const { results } = await env.DB.prepare(
-		  "SELECT * FROM vocab WHERE word LIKE ? ORDER BY id DESC"
-		).bind(`%${q}%`).all();
-		return new Response(JSON.stringify(results), {
-		  headers: { "Content-Type": "application/json" },
-		});
-	  }
-  
-	  /* ---------- FRONTEND ---------- */
-	  const page = `<!DOCTYPE html>
+		const url = new URL(request.url);
+
+		/* ---------- API ROUTES ---------- */
+		if (request.method === "POST" && url.pathname === "/add") {
+			const { word, meaning } = await request.json();
+			const add_date = new Date().toISOString();
+			await env.DB.prepare(
+				"INSERT INTO vocab (word, meaning, add_date) VALUES (?, ?, ?)"
+			).bind(word, meaning, add_date).run();
+			return new Response("OK");
+		}
+
+		if (url.pathname === "/search") {
+			const q = url.searchParams.get("q") || "";
+			const { results } = await env.DB.prepare(
+				"SELECT * FROM vocab WHERE word LIKE ? ORDER BY id DESC"
+			).bind(`%${q}%`).all();
+			return new Response(JSON.stringify(results), {
+				headers: { "Content-Type": "application/json" },
+			});
+		}
+
+		/* ---------- FRONTEND ---------- */
+		const page = `<!DOCTYPE html>
   <html>
 	<head>
 	  <meta charset="UTF-8" />
@@ -89,8 +89,7 @@ export default {
 	  </script>
 	</body>
   </html>`;
-  
-	  return new Response(page, { headers: { 'Content-Type': 'text/html' } });
+
+		return new Response(page, { headers: { 'Content-Type': 'text/html' } });
 	}
-  };
-  
+};
