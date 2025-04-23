@@ -38,13 +38,10 @@ export default {
 	<body>
 	  <h1>Vocabulary</h1>
   
-	  <input id="word" placeholder="Word" /> <br />
+	  <input id="word" placeholder="Word (type to search)..." /> <br />
 	  <input id="meaning" placeholder="Meaning" /> <br />
 	  <button id="addBtn">Add Word</button>
   
-	  <hr />
-  
-	  <input id="search" placeholder="Search words…" />
 	  <table>
 		<thead>
 		  <tr><th>Word</th><th>Meaning</th><th>Added</th></tr>
@@ -55,7 +52,6 @@ export default {
 	  <script>
 		const wordEl = document.getElementById('word');
 		const meaningEl = document.getElementById('meaning');
-		const searchEl = document.getElementById('search');
 		const listEl = document.getElementById('list');
 		const addBtn = document.getElementById('addBtn');
   
@@ -68,13 +64,12 @@ export default {
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ word, meaning })
 		  });
-		  wordEl.value = '';
 		  meaningEl.value = '';
 		  searchWords();
 		}
   
 		async function searchWords() {
-		  const q = searchEl.value;
+		  const q = wordEl.value;
 		  const res = await fetch('/search?q=' + encodeURIComponent(q));
 		  const data = await res.json();
 		  listEl.innerHTML = data.map(r =>
@@ -84,7 +79,7 @@ export default {
 		}
   
 		addBtn.addEventListener('click', addWord);
-		searchEl.addEventListener('input', searchWords);
+		wordEl.addEventListener('input', searchWords);
 		document.addEventListener('DOMContentLoaded', searchWords);
 	  </script>
 	</body>
