@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vocabulary App</title>
+    <link rel="stylesheet" href="/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="container">
+        <h1>Vocabulary</h1>
+
+        <div class="field">
+            <input id="word" placeholder="Word (type to search)…" />
+        </div>
+        <div class="field">
+            <input id="meaning" placeholder="Meaning" />
+        </div>
+        <button id="addBtn">Add Word</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Word</th>
+                    <th>Meaning</th>
+                    <th class="added">Added</th>
+                </tr>
+            </thead>
+            <tbody id="list"></tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        const wordEl = document.getElementById('word');
+        const meaningEl = document.getElementById('meaning');
+        const listEl = document.getElementById('list');
+        const addBtn = document.getElementById('addBtn');
+
+        const rel = ts => {
+            const diff = Date.now() - Date.parse(ts);
+            const d = 86_400_000;
+            const days = diff / d;
+            if (days < 1) return 'Today';
+            if (days < 30) return Math.floor(days) + 'd';
+            if (days < 365) return Math.floor(days / 30) + 'mo';
+            return Math.floor(days / 365) + 'y';
+        };
+
+        async function addWord() {
+            const word = wordEl.value.trim();
+            const meaning = meaningEl.value.trim();
+            if (!word || !meaning) return;
+            await fetch('/add', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ word, meaning })
+            });
+            meaningEl.value = '';
+            search();
+        }
+
+        async function search() {
+            const q = wordEl.value;
+            const res = await fetch('/search?q=' + encodeURIComponent(q));
+            const data = await res.json();
+            listEl.innerHTML = data.map(r =>
+                `<tr><td>${r.word}</td><td>${r.meaning}</td><td>${rel(r.add_date)}</td></tr>`
+            ).join('');
+        }
+
+        addBtn.addEventListener('click', addWord);
+        wordEl.addEventListener('input', search);
+        document.addEventListener('DOMContentLoaded', search);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,117 @@
+:root {
+    --primary: #0066ff;
+    --bg: #f6f9fc;
+    --bg-alt: #fff;
+    --border: #e1e8f0;
+    --text: #111827;
+}
+
+* {
+    box-sizing: border-box
+}
+
+body {
+    margin: 0;
+    padding: 2rem 1rem;
+    font-family: Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center
+}
+
+.container {
+    width: 100%;
+    max-width: 960px;
+    background: var(--bg-alt);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(18, 38, 63, .08)
+}
+
+h1 {
+    margin-top: 0;
+    font-size: 1.75rem;
+    font-weight: 600;
+    text-align: center
+}
+
+.field {
+    width: 100%;
+    margin-bottom: .75rem
+}
+
+input {
+    width: 100%;
+    padding: .75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: .5rem;
+    font-size: 1rem;
+    transition: border .2s
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, .2)
+}
+
+button {
+    width: 100%;
+    padding: .75rem 1rem;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: .5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background .2s, transform .1s
+}
+
+button:hover {
+    background: #0054d6
+}
+
+button:active {
+    transform: translateY(1px)
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+    overflow: hidden;
+    border-radius: .75rem
+}
+
+thead {
+    background: var(--primary);
+    color: #fff;
+    text-transform: uppercase;
+    font-size: .85rem;
+    letter-spacing: .03em
+}
+
+th,
+td {
+    padding: .75rem 1rem;
+    text-align: left
+}
+
+.added {
+    width: 100px
+}
+
+tbody tr:nth-child(even) {
+    background: var(--bg)
+}
+
+tbody tr:hover {
+    background: #eaf1ff
+}
+
+@media(max-width:600px) {
+    .added {
+        display: none
+    }
+}

@@ -3,6 +3,10 @@ type = "webpack"
 compatibility_date = "2024-04-23"
 main = "src/index.ts"
 
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "vocab_db"
