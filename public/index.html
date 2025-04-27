@@ -22,12 +22,14 @@
         <table>
             <thead>
                 <tr>
+                    <th style="width:2em"></th>
                     <th>Word</th>
                     <th class="added">Added</th>
                 </tr>
             </thead>
             <tbody id="list"></tbody>
         </table>
+        <button id="removeBtn" style="display:none;margin-top:1.5em;width:100%;background:#c0392b;">Remove</button>
     </div>
 
     <script type="module">
@@ -64,9 +66,40 @@
             const res = await fetch('/search?q=' + encodeURIComponent(q));
             const data = await res.json();
             listEl.innerHTML = data.map(r =>
-                `<tr><td class="montserrat-unique">${r.word}</td><td>${rel(r.add_date)}</td></tr>`
+                `<tr>
+                    <td><input type="checkbox" class="row-check" data-word="${r.word}"></td>
+                    <td class="montserrat-unique">${r.word}</td>
+                    <td>${rel(r.add_date)}</td>
+                </tr>`
             ).join('');
+            updateRemoveBtn();
+            // Add event listeners for checkboxes
+            listEl.querySelectorAll('.row-check').forEach(cb => {
+                cb.addEventListener('change', updateRemoveBtn);
+            });
         }
+
+        function getSelectedWords() {
+            return Array.from(document.querySelectorAll('.row-check:checked')).map(cb => cb.getAttribute('data-word'));
+        }
+
+        function updateRemoveBtn() {
+            const selected = getSelectedWords();
+            const btn = document.getElementById('removeBtn');
+            btn.style.display = selected.length > 0 ? '' : 'none';
+        }
+
+        document.getElementById('removeBtn').addEventListener('click', async () => {
+            const selected = getSelectedWords();
+            if (!selected.length) return;
+            if (!confirm(`Are you sure you want to remove ${selected.length} word(s)?`)) return;
+            await fetch('/remove', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ words: selected })
+            });
+            search();
+        });
 
         addBtn.addEventListener('click', addWord);
         wordEl.addEventListener('input', search);

@@ -17,6 +17,16 @@ export default {
 			return new Response('OK');
 		}
 
+		if (request.method === 'POST' && url.pathname === '/remove') {
+			const body = await request.json() as { words: string[] };
+			const words = body.words;
+			if (!Array.isArray(words) || words.length === 0) return new Response('No words provided', { status: 400 });
+			for (const word of words) {
+				await env.DB.prepare('DELETE FROM vocab WHERE word = ?').bind(word).run();
+			}
+			return new Response('OK');
+		}
+
 		if (url.pathname === '/search') {
 			const q = url.searchParams.get('q') ?? '';
 			const { results } = await env.DB.prepare(

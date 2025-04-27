@@ -92,6 +92,14 @@ button:active {
     transform: translateY(1px)
 }
 
+#removeBtn {
+    width: 20%;
+    margin-left: auto;
+    margin-top: 1.5em;
+    background: #c0392b;
+    display: none;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
