@@ -134,6 +134,11 @@ tbody tr:hover {
     font-optical-sizing: auto;
     font-weight: 400;
     font-style: normal;
+    color: #fff;
+}
+
+.montserrat-unique.h1, h1.montserrat-unique {
+    font-size: 2.5rem;
 }
 
 @media(max-width:600px) {
