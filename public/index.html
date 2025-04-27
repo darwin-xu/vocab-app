@@ -25,6 +25,7 @@
                     <th style="width:2em"></th>
                     <th>Word</th>
                     <th style="width:2em"></th> <!-- New column for dictionary button -->
+                    <th style="width:2em"></th> <!-- Merriam-Webster button -->
                     <th class="added">Added</th>
                 </tr>
             </thead>
@@ -71,6 +72,7 @@
                     <td><input type="checkbox" class="row-check" data-word="${r.word}"></td>
                     <td class="montserrat-unique">${r.word}</td>
                     <td><button class="dict-btn" data-word="${r.word}" title="Open Cambridge Dictionary" style="padding:2px 6px;font-size:0.9em;background:none;border:none;cursor:pointer;"><img src="https://dictionary.cambridge.org/favicon.ico" alt="Cambridge Dictionary" style="width:16px;height:16px;vertical-align:middle;"></button></td>
+                    <td><button class="mw-btn" data-word="${r.word}" title="Open Merriam-Webster" style="padding:2px 6px;font-size:0.9em;background:none;border:none;cursor:pointer;"><img src="https://www.merriam-webster.com/favicon.ico" alt="Merriam-Webster" style="width:16px;height:16px;vertical-align:middle;"></button></td>
                     <td>${rel(r.add_date)}</td>
                 </tr>`
             ).join('');
@@ -84,6 +86,13 @@
                 btn.addEventListener('click', e => {
                     const word = btn.getAttribute('data-word');
                     window.open(`https://dictionary.cambridge.org/dictionary/english/${encodeURIComponent(word)}`, '_blank');
+                });
+            });
+            // Add event listeners for Merriam-Webster buttons
+            listEl.querySelectorAll('.mw-btn').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    const word = btn.getAttribute('data-word');
+                    window.open(`https://www.merriam-webster.com/dictionary/${encodeURIComponent(word)}`, '_blank');
                 });
             });
         }
