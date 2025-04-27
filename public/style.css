@@ -92,14 +92,6 @@ button:active {
     transform: translateY(1px)
 }
 
-#removeBtn {
-    width: 20%;
-    margin-left: auto;
-    margin-top: 1.5em;
-    background: #c0392b;
-    display: none;
-}
-
 table {
     width: 100%;
     border-collapse: collapse;
@@ -147,6 +139,17 @@ tbody tr:hover {
 
 .montserrat-unique.h1, h1.montserrat-unique {
     font-size: 2.5rem;
+}
+
+#removeBtn {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1.5em;
+    width: 20%;
+    background: #c0392b;
+    padding: 0.5rem 0.5rem;
+    font-size: 0.9rem;
 }
 
 @media(max-width:600px) {
