@@ -3,10 +3,15 @@ export default {
 		const url = new URL(request.url);
 
 		if (request.method === 'POST' && url.pathname === '/add') {
-			const { word, meaning } = await request.json();
+			const body = await request.json();
+			if (typeof body !== 'object' || body === null || !('word' in body)) {
+				return new Response('Missing word', { status: 400 });
+			}
+			const word = (body as { word: string }).word;
+			if (!word) return new Response('Missing word', { status: 400 });
 			await env.DB.prepare(
-				'INSERT INTO vocab (word, meaning, add_date) VALUES (?, ?, ?)'
-			).bind(word, meaning, new Date().toISOString()).run();
+				'INSERT INTO vocab (word, add_date) VALUES (?, ?)'
+			).bind(word, new Date().toISOString()).run();
 			return new Response('OK');
 		}
 

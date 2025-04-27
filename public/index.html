@@ -7,6 +7,7 @@
     <title>Vocabulary App</title>
     <link rel="stylesheet" href="style.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
 </head>
 
 <body>
@@ -59,7 +60,7 @@
             const res = await fetch('/search?q=' + encodeURIComponent(q));
             const data = await res.json();
             listEl.innerHTML = data.map(r =>
-                `<tr><td>${r.word}</td><td>${rel(r.add_date)}</td></tr>`
+                `<tr><td class="montserrat-unique">${r.word}</td><td>${rel(r.add_date)}</td></tr>`
             ).join('');
         }
 
