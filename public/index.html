@@ -48,6 +48,9 @@
         async function addWord() {
             const word = wordEl.value.trim();
             if (!word) return;
+            // Check if word already exists in the current list
+            const existing = Array.from(listEl.querySelectorAll('td.montserrat-unique')).some(td => td.textContent === word);
+            if (existing) return;
             await fetch('/add', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ word })

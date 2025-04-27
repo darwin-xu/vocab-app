@@ -9,6 +9,8 @@ export default {
 			}
 			const word = (body as { word: string }).word;
 			if (!word) return new Response('Missing word', { status: 400 });
+			const exists = await env.DB.prepare('SELECT 1 FROM vocab WHERE word = ?').bind(word).first();
+			if (exists) return new Response('Word already exists', { status: 409 });
 			await env.DB.prepare(
 				'INSERT INTO vocab (word, add_date) VALUES (?, ?)'
 			).bind(word, new Date().toISOString()).run();
