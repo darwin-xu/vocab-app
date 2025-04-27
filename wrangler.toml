@@ -1,5 +1,4 @@
 name = "vocab-app"
-type = "webpack"
 compatibility_date = "2024-04-23"
 main = "src/index.ts"
 
