@@ -24,6 +24,7 @@
                 <tr>
                     <th style="width:2em"></th>
                     <th>Word</th>
+                    <th style="width:2em"></th> <!-- New column for dictionary button -->
                     <th class="added">Added</th>
                 </tr>
             </thead>
@@ -69,6 +70,7 @@
                 `<tr>
                     <td><input type="checkbox" class="row-check" data-word="${r.word}"></td>
                     <td class="montserrat-unique">${r.word}</td>
+                    <td><button class="dict-btn" data-word="${r.word}" title="Open Cambridge Dictionary" style="padding:2px 6px;font-size:0.9em;background:none;border:none;cursor:pointer;"><img src="https://dictionary.cambridge.org/favicon.ico" alt="Cambridge Dictionary" style="width:16px;height:16px;vertical-align:middle;"></button></td>
                     <td>${rel(r.add_date)}</td>
                 </tr>`
             ).join('');
@@ -76,6 +78,13 @@
             // Add event listeners for checkboxes
             listEl.querySelectorAll('.row-check').forEach(cb => {
                 cb.addEventListener('change', updateRemoveBtn);
+            });
+            // Add event listeners for dictionary buttons
+            listEl.querySelectorAll('.dict-btn').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    const word = btn.getAttribute('data-word');
+                    window.open(`https://dictionary.cambridge.org/dictionary/english/${encodeURIComponent(word)}`, '_blank');
+                });
             });
         }
 
