@@ -27,7 +27,7 @@ export default {
 			return new Response('OK');
 		}
 
-		if (url.pathname === '/search') {
+		if (url.pathname === '/vocab') {
 			const q = url.searchParams.get('q') ?? '';
 			const { results } = await env.DB.prepare(
 				'SELECT * FROM vocab WHERE word LIKE ? ORDER BY id DESC'

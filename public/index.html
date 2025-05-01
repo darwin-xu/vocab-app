@@ -24,14 +24,14 @@
                 <tr>
                     <th style="width:2em"></th>
                     <th>Word</th>
-                    <th style="width:2em"></th> <!-- New column for dictionary button -->
-                    <th style="width:2em"></th> <!-- Merriam-Webster button -->
+                    <th class="col-icon"></th> <!-- New column for dictionary button -->
+                    <th class="col-icon"></th> <!-- Merriam-Webster button -->
                     <th class="added">Added</th>
                 </tr>
             </thead>
             <tbody id="list"></tbody>
         </table>
-        <button id="removeBtn" style="display:none;margin-top:1.5em;width:30%;background:#c0392b;">Remove</button>
+        <button id="removeBtn">Remove</button>
     </div>
 
     <script type="module">
@@ -60,19 +60,19 @@
                 body: JSON.stringify({ word })
             });
             wordEl.value = '';
-            search();
+            refreshVocabulary();
         }
 
-        async function search() {
+        async function refreshVocabulary() {
             const q = wordEl.value;
-            const res = await fetch('/search?q=' + encodeURIComponent(q));
+            const res = await fetch('/vocab?q=' + encodeURIComponent(q));
             const data = await res.json();
             listEl.innerHTML = data.map(r =>
                 `<tr>
                     <td><input type="checkbox" class="row-check" data-word="${r.word}"></td>
                     <td class="montserrat-unique">${r.word}</td>
-                    <td><button class="dict-btn" data-word="${r.word}" title="Open Cambridge Dictionary" style="padding:2px 6px;font-size:0.9em;background:none;border:none;cursor:pointer;"><img src="https://dictionary.cambridge.org/favicon.ico" alt="Cambridge Dictionary" style="width:16px;height:16px;vertical-align:middle;"></button></td>
-                    <td><button class="mw-btn" data-word="${r.word}" title="Open Merriam-Webster" style="padding:2px 6px;font-size:0.9em;background:none;border:none;cursor:pointer;"><img src="https://www.merriam-webster.com/favicon.ico" alt="Merriam-Webster" style="width:16px;height:16px;vertical-align:middle;"></button></td>
+                    <td><button class="dict-btn" data-word="${r.word}" title="Open Cambridge Dictionary"><img src="https://dictionary.cambridge.org/favicon.ico" alt="Cambridge Dictionary"></button></td>
+                    <td><button class="mw-btn" data-word="${r.word}" title="Open Merriam-Webster"><img src="https://www.merriam-webster.com/favicon.ico" alt="Merriam-Webster"></button></td>
                     <td>${rel(r.add_date)}</td>
                 </tr>`
             ).join('');
@@ -116,12 +116,12 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ words: selected })
             });
-            search();
+            refreshVocabulary();
         });
 
         addBtn.addEventListener('click', addWord);
-        wordEl.addEventListener('input', search);
-        document.addEventListener('DOMContentLoaded', search);
+        wordEl.addEventListener('input', refreshVocabulary);
+        document.addEventListener('DOMContentLoaded', refreshVocabulary);
     </script>
 </body>
 

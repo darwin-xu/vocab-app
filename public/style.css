@@ -14,7 +14,7 @@ body {
     margin: 0;
     padding: 2rem 1rem;
     font-family: Inter, system-ui, sans-serif;
-    background: #2d3e50; /* blueish gray */
+    background: #2d3e50;
     color: var(--text);
     display: flex;
     justify-content: center
@@ -23,7 +23,7 @@ body {
 .container {
     width: 100%;
     max-width: 960px;
-    background: #2d3e50; /* match body for seamless look */
+    background: #2d3e50;
     padding: 2rem;
     border-radius: 1rem;
     box-shadow: 0 4px 12px rgba(18, 38, 63, .08)
@@ -98,12 +98,12 @@ table {
     margin-top: 1.5rem;
     overflow: hidden;
     border-radius: .75rem;
-    border: 1px solid #000; /* thin black border */
+    border: 1px solid #000;
     color: #fff;
 }
 
 thead {
-    background: #1e5c2a; /* darker green for header */
+    background: #1e5c2a;
     color: #fff;
     text-transform: uppercase;
     font-size: .85rem;
@@ -122,15 +122,15 @@ td {
 }
 
 tbody tr:nth-child(even) {
-    background: #185021; /* dark green */
+    background: #185021;
 }
 
 tbody tr:nth-child(odd) {
-    background: #218c3a; /* green */
+    background: #218c3a;
 }
 
 tbody tr:hover {
-    background: #22662b; /* highlight row on hover */
+    background: #22662b;
 }
 
 .montserrat-unique {
@@ -141,7 +141,8 @@ tbody tr:hover {
     color: #fff;
 }
 
-.montserrat-unique.h1, h1.montserrat-unique {
+.montserrat-unique.h1,
+h1.montserrat-unique {
     font-size: 2.5rem;
 }
 
@@ -150,10 +151,30 @@ tbody tr:hover {
     margin-left: auto;
     margin-right: auto;
     margin-top: 1.5em;
-    width: 20%;
+    width: 30%;
     background: #c0392b;
     padding: 0.5rem 0.5rem;
     font-size: 0.9rem;
+}
+
+.dict-btn,
+.mw-btn {
+    padding: 2px 6px;
+    font-size: 0.9rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.dict-btn img,
+.mw-btn img {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+}
+
+th.col-icon {
+    width: 2em;
 }
 
 @media(max-width:600px) {
