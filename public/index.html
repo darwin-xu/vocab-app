@@ -124,8 +124,13 @@
             popupMenu.querySelectorAll('.popup-menu-item').forEach(btn => {
                 btn.addEventListener('click', (ev) => {
                     ev.stopPropagation();
-                    alert(`${btn.getAttribute('data-action')} for: ${word}`);
-                    closePopupMenu();
+                    if (btn.getAttribute('data-action') === 'define') {
+                        showDefinitionHover(btn, word);
+                        closePopupMenu();
+                    } else {
+                        alert(`${btn.getAttribute('data-action')} for: ${word}`);
+                        closePopupMenu();
+                    }
                 });
             });
         }
@@ -135,10 +140,33 @@
                 popupMenu = null;
             }
         }
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             // Only close if click is not on a word text
             if (!e.target.classList.contains('word-text')) {
                 closePopupMenu();
+            }
+        });
+
+        // Add a hover window element to the page if not already present
+        if (!document.getElementById('define-hover')) {
+            const hover = document.createElement('div');
+            hover.id = 'define-hover';
+            document.body.appendChild(hover);
+        }
+
+        function showDefinitionHover(btn, word) {
+            const hover = document.getElementById('define-hover');
+            hover.innerHTML = `<strong>${word}</strong><br><em>Placeholder definition for "${word}".</em>`;
+            const rect = btn.getBoundingClientRect();
+            hover.style.left = `${rect.right + window.scrollX + 8}px`;
+            hover.style.top = `${rect.top + window.scrollY}px`;
+            hover.style.display = 'block';
+        }
+
+        document.addEventListener('click', (e) => {
+            const hover = document.getElementById('define-hover');
+            if (hover && hover.style.display === 'block') {
+                hover.style.display = 'none';
             }
         });
 

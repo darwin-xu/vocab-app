@@ -177,10 +177,20 @@ th.col-icon {
     width: 2em;
 }
 
+#define-hover {
+    position: absolute;
+    display: none;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
 .popup-menu {
     background: #fff;
     border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border-radius: 6px;
     padding: 8px 0;
     min-width: 120px;
@@ -188,6 +198,7 @@ th.col-icon {
     font-family: 'Montserrat', 'Inter', sans-serif;
     color: #222;
 }
+
 .popup-menu-item {
     background: none;
     border: none;
@@ -200,6 +211,7 @@ th.col-icon {
     font-family: inherit;
     transition: background 0.15s;
 }
+
 .popup-menu-item:hover {
     background: #f0f4fa;
     color: #0d47a1;
@@ -209,28 +221,35 @@ th.col-icon {
     .container {
         padding: 0rem;
     }
+
     h1 {
         font-size: 1rem;
     }
+
     .field-row {
         flex-direction: column;
     }
+
     .field-row input#word {
         width: 100%;
         margin-right: 0;
         border-radius: 1rem 1rem 0 0;
     }
+
     .field-row button#addBtn {
         width: 100%;
         border-radius: 0 0 1rem 1rem;
     }
+
     #removeBtn {
         width: 50%;
     }
+
     table {
         border-radius: 1rem 1rem 0 0;
         overflow: hidden;
     }
+
     table thead th:nth-child(3),
     table thead th:nth-child(4),
     tbody td:nth-child(3),
