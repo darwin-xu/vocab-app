@@ -70,7 +70,7 @@
             listEl.innerHTML = data.map(r =>
                 `<tr>
                     <td><input type="checkbox" class="row-check" data-word="${r.word}"></td>
-                    <td class="montserrat-unique">${r.word}</td>
+                    <td class="montserrat-unique word-cell" data-word="${r.word}"><span class="word-text" data-word="${r.word}">${r.word}</span></td>
                     <td><button class="dict-btn" data-word="${r.word}" title="Open Cambridge Dictionary"><img src="https://dictionary.cambridge.org/favicon.ico" alt="Cambridge Dictionary"></button></td>
                     <td><button class="mw-btn" data-word="${r.word}" title="Open Merriam-Webster"><img src="https://www.merriam-webster.com/favicon.ico" alt="Merriam-Webster"></button></td>
                     <td>${rel(r.add_date)}</td>
@@ -95,7 +95,52 @@
                     window.open(`https://www.merriam-webster.com/dictionary/${encodeURIComponent(word)}`, '_blank');
                 });
             });
+            // Add event listeners for word text popup menu
+            listEl.querySelectorAll('.word-text').forEach(span => {
+                span.addEventListener('click', wordTextMenuHandler);
+            });
         }
+
+        // Popup menu logic
+        let popupMenu = null;
+        function wordTextMenuHandler(e) {
+            e.stopPropagation();
+            if (popupMenu) {
+                closePopupMenu();
+                return;
+            }
+            const word = this.getAttribute('data-word');
+            popupMenu = document.createElement('div');
+            popupMenu.className = 'popup-menu';
+            popupMenu.style.position = 'absolute';
+            popupMenu.style.left = e.pageX + 'px';
+            popupMenu.style.top = e.pageY + 'px';
+            popupMenu.innerHTML = `
+                <button class="popup-menu-item" data-action="define">Define</button><br>
+                <button class="popup-menu-item" data-action="example">Example</button><br>
+                <button class="popup-menu-item" data-action="synonyms">Synonyms</button>
+            `;
+            document.body.appendChild(popupMenu);
+            popupMenu.querySelectorAll('.popup-menu-item').forEach(btn => {
+                btn.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    alert(`${btn.getAttribute('data-action')} for: ${word}`);
+                    closePopupMenu();
+                });
+            });
+        }
+        function closePopupMenu() {
+            if (popupMenu) {
+                popupMenu.remove();
+                popupMenu = null;
+            }
+        }
+        document.addEventListener('click', function(e) {
+            // Only close if click is not on a word text
+            if (!e.target.classList.contains('word-text')) {
+                closePopupMenu();
+            }
+        });
 
         function getSelectedWords() {
             return Array.from(document.querySelectorAll('.row-check:checked')).map(cb => cb.getAttribute('data-word'));

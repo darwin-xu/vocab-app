@@ -177,6 +177,34 @@ th.col-icon {
     width: 2em;
 }
 
+.popup-menu {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border-radius: 6px;
+    padding: 8px 0;
+    min-width: 120px;
+    z-index: 1000;
+    font-family: 'Montserrat', 'Inter', sans-serif;
+    color: #222;
+}
+.popup-menu-item {
+    background: none;
+    border: none;
+    color: #1976d2;
+    font-size: 15px;
+    padding: 6px 18px;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+}
+.popup-menu-item:hover {
+    background: #f0f4fa;
+    color: #0d47a1;
+}
+
 @media(max-width:600px) {
     .container {
         padding: 0rem;
