@@ -198,7 +198,7 @@ th.col-icon {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     padding: 10px 16px;
     border-radius: 6px;
-    min-width: 180px;
+    min-width: 280px;
     z-index: 1100;
     display: none;
 }
@@ -211,7 +211,7 @@ th.col-icon {
     position: absolute;
     left: var(--popup-x, 0);
     top: var(--popup-y, 0);
-    background: #2ba84a; /* lighter green, similar to table but lighter */
+    background: #44c865;
     border: 1px solid #ccc;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 1000;

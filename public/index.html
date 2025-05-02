@@ -49,6 +49,10 @@
             return Math.floor(days / 365) + 'y';
         };
 
+        function isMobileDevice() {
+            return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+
         async function addWord() {
             const word = wordEl.value.trim();
             if (!word) return;
@@ -126,7 +130,9 @@
                 btn.addEventListener('click', (ev) => {
                     ev.stopPropagation();
                     if (btn.getAttribute('data-action') === 'define') {
-                        showDefinitionHover(btn, word);
+                        // Pass the word text element instead of the button
+                        const wordTextEl = document.querySelector(`.word-text[data-word="${word}"]`);
+                        showDefinitionHover(wordTextEl, word);
                         closePopupMenu();
                     } else {
                         alert(`${btn.getAttribute('data-action')} for: ${word}`);
@@ -155,13 +161,22 @@
             document.body.appendChild(hover);
         }
 
-        function showDefinitionHover(btn, word) {
+        function showDefinitionHover(wordEl, word) {
             const hover = document.getElementById('define-hover');
             hover.innerHTML = `<strong>${word}</strong><br><em>Placeholder definition for "${word}".</em>`;
-            const rect = btn.getBoundingClientRect();
+            const table = document.querySelector('table');
+            const tableRect = table.getBoundingClientRect();
+            const wordRect = wordEl.getBoundingClientRect();
+            if (isMobileDevice() && table) {
+                hover.style.width = tableRect.width + 'px';
+                hover.style.setProperty('--hover-x', (tableRect.left + window.scrollX) + 'px');
+                hover.style.setProperty('--hover-y', (wordRect.bottom + window.scrollY + 4) + 'px');
+            } else {
+                hover.style.width = '';
+                hover.style.setProperty('--hover-x', (wordRect.left + window.scrollX) + 'px');
+                hover.style.setProperty('--hover-y', (wordRect.bottom + window.scrollY + 4) + 'px');
+            }
             hover.classList.add('show');
-            hover.style.setProperty('--hover-x', (rect.right + window.scrollX + 8) + 'px');
-            hover.style.setProperty('--hover-y', (rect.top + window.scrollY) + 'px');
         }
 
         document.addEventListener('click', (e) => {
