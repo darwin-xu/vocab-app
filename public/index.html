@@ -22,7 +22,7 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width:2em"></th>
+                    <th class="col-checkbox"></th>
                     <th>Word</th>
                     <th class="col-icon"></th> <!-- New column for dictionary button -->
                     <th class="col-icon"></th> <!-- Merriam-Webster button -->
@@ -112,9 +112,10 @@
             const word = this.getAttribute('data-word');
             popupMenu = document.createElement('div');
             popupMenu.className = 'popup-menu';
-            popupMenu.style.position = 'absolute';
-            popupMenu.style.left = e.pageX + 'px';
-            popupMenu.style.top = e.pageY + 'px';
+            document.body.appendChild(popupMenu);
+            // Set CSS variables for position
+            popupMenu.style.setProperty('--popup-x', e.pageX + 'px');
+            popupMenu.style.setProperty('--popup-y', e.pageY + 'px');
             popupMenu.innerHTML = `
                 <button class="popup-menu-item" data-action="define">Define</button><br>
                 <button class="popup-menu-item" data-action="example">Example</button><br>
@@ -158,15 +159,15 @@
             const hover = document.getElementById('define-hover');
             hover.innerHTML = `<strong>${word}</strong><br><em>Placeholder definition for "${word}".</em>`;
             const rect = btn.getBoundingClientRect();
-            hover.style.left = `${rect.right + window.scrollX + 8}px`;
-            hover.style.top = `${rect.top + window.scrollY}px`;
-            hover.style.display = 'block';
+            hover.classList.add('show');
+            hover.style.setProperty('--hover-x', (rect.right + window.scrollX + 8) + 'px');
+            hover.style.setProperty('--hover-y', (rect.top + window.scrollY) + 'px');
         }
 
         document.addEventListener('click', (e) => {
             const hover = document.getElementById('define-hover');
-            if (hover && hover.style.display === 'block') {
-                hover.style.display = 'none';
+            if (hover && hover.classList.contains('show')) {
+                hover.classList.remove('show');
             }
         });
 
@@ -177,7 +178,7 @@
         function updateRemoveBtn() {
             const selected = getSelectedWords();
             const btn = document.getElementById('removeBtn');
-            btn.style.display = selected.length > 0 ? '' : 'none';
+            btn.style.display = selected.length > 0 ? 'block' : 'none';
         }
 
         document.getElementById('removeBtn').addEventListener('click', async () => {
