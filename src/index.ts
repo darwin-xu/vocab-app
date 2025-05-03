@@ -4,10 +4,25 @@ export default {
 
 		if (url.pathname === "/openai") {
 			const { searchParams } = new URL(request.url);
-			const word = searchParams.get("prompt") || "Say hi!";
-			const prompt = `Define the word '${word}' in 20 words.`;
+			const word = searchParams.get("word") || "Say hi!";
+			const func = searchParams.get("func") || "define";
 
-			console.log("/openai called with word:", word);
+			let prompt = "";
+			switch (func) {
+				case "define":
+					prompt = `Define the word '${word}' in 20 words.`;
+					break;
+				case "example":
+					prompt = `Give 1~3 example sentences using the word '${word}'.`;
+					break;
+				case "synonym":
+					prompt = `List 1~3 synonyms for the word '${word}'.`;
+					break;
+				default:
+					prompt = `Define the word '${word}' in 20 words.`;
+			}
+
+			console.log("/openai called with word:", word, "func:", func);
 			console.log("Prompt sent to OpenAI:", prompt);
 
 			const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -17,7 +32,7 @@ export default {
 					"Content-Type": "application/json"
 				},
 				body: JSON.stringify({
-					model: "gpt-3.5-turbo",
+					model: "gpt-4.1-nano",
 					messages: [{ role: "user", content: prompt }]
 				})
 			});

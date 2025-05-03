@@ -189,7 +189,7 @@ th.col-icon {
     width: 2em;
 }
 
-#define-hover {
+#hover-window {
     position: absolute;
     left: var(--hover-x, 0);
     top: var(--hover-y, 0);
@@ -203,7 +203,7 @@ th.col-icon {
     display: none;
 }
 
-#define-hover.show {
+#hover-window.show {
     display: block;
 }
 

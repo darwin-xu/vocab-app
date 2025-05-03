@@ -109,6 +109,11 @@
         let popupMenu = null;
         function wordTextMenuHandler(e) {
             e.stopPropagation();
+            // Hide hover-window if visible
+            const hover = document.getElementById('hover-window');
+            if (hover && hover.classList.contains('show')) {
+                hover.classList.remove('show');
+            }
             if (popupMenu) {
                 closePopupMenu();
                 return;
@@ -123,16 +128,19 @@
             popupMenu.innerHTML = `
                 <button class="popup-menu-item" data-action="define">Define</button><br>
                 <button class="popup-menu-item" data-action="example">Example</button><br>
-                <button class="popup-menu-item" data-action="synonyms">Synonyms</button>
+                <button class="popup-menu-item" data-action="synonym">Synonym</button>
             `;
             document.body.appendChild(popupMenu);
             popupMenu.querySelectorAll('.popup-menu-item').forEach(btn => {
                 btn.addEventListener('click', (ev) => {
                     ev.stopPropagation();
-                    if (btn.getAttribute('data-action') === 'define') {
+                    if (btn.getAttribute('data-action') === 'define' ||
+                        btn.getAttribute('data-action') === 'example' ||
+                        btn.getAttribute('data-action') === 'synonym') {
+                        // Show the definition hover window
                         // Pass the word text element instead of the button
                         const wordTextEl = document.querySelector(`.word-text[data-word="${word}"]`);
-                        showDefinitionHover(wordTextEl, word);
+                        showDefinitionHover(wordTextEl, word, btn.getAttribute('data-action'));
                         closePopupMenu();
                     } else {
                         alert(`${btn.getAttribute('data-action')} for: ${word}`);
@@ -155,15 +163,15 @@
         });
 
         // Add a hover window element to the page if not already present
-        if (!document.getElementById('define-hover')) {
+        if (!document.getElementById('hover-window')) {
             const hover = document.createElement('div');
-            hover.id = 'define-hover';
+            hover.id = 'hover-window';
             document.body.appendChild(hover);
         }
 
-        async function showDefinitionHover(wordEl, word) {
-            const hover = document.getElementById('define-hover');
-            hover.innerHTML = `<strong>${word}</strong><br>Loading definition…`;
+        async function showDefinitionHover(wordEl, word, func) {
+            const hover = document.getElementById('hover-window');
+            hover.innerHTML = `<strong>${word}</strong><br>Loading`;
             const table = document.querySelector('table');
             const tableRect = table.getBoundingClientRect();
             const wordRect = wordEl.getBoundingClientRect();
@@ -180,22 +188,25 @@
             }
             hover.classList.add('show');
             try {
-                const res = await fetch(`/openai?prompt=${encodeURIComponent(word)}`);
+                const res = await fetch(`/openai?word=${encodeURIComponent(word)}&func=${func}`);
                 if (res.ok) {
                     const definition = await res.text();
                     hover.innerHTML = `<strong>${word}</strong><br>${definition}`;
                 } else {
-                    hover.innerHTML = `<strong>${word}</strong><br>Could not fetch definition.`;
+                    hover.innerHTML = `<strong>${word}</strong><br>Could not fetch data.`;
                 }
             } catch (e) {
-                hover.innerHTML = `<strong>${word}</strong><br>Error fetching definition.`;
+                hover.innerHTML = `<strong>${word}</strong><br>Error fetching data.`;
             }
         }
 
         document.addEventListener('click', (e) => {
-            const hover = document.getElementById('define-hover');
+            const hover = document.getElementById('hover-window');
             if (hover && hover.classList.contains('show')) {
-                hover.classList.remove('show');
+                // Only hide if click is NOT inside the hover-window
+                if (!hover.contains(e.target)) {
+                    hover.classList.remove('show');
+                }
             }
         });
 
