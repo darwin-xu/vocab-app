@@ -167,6 +167,24 @@
             const hover = document.createElement('div');
             hover.id = 'hover-window';
             document.body.appendChild(hover);
+            // Add TTS on click (OpenAI TTS)
+            hover.addEventListener('click', async function () {
+                // Only use the text after </strong> for TTS
+                const html = hover.innerHTML;
+                const match = html.match(/<strong>.*?<\/strong><br>([\s\S]*)/i);
+                let ttsText = match ? match[1].replace(/<[^>]+>/g, '').trim() : '';
+                if (!ttsText) return;
+                try {
+                    const res = await fetch(`/tts?text=${encodeURIComponent(ttsText)}`);
+                    if (res.ok) {
+                        const { audio } = await res.json();
+                        const audioEl = new Audio('data:audio/mp3;base64,' + audio);
+                        audioEl.play();
+                    }
+                } catch (e) {
+                    // Optionally show error
+                }
+            });
         }
 
         async function showDefinitionHover(wordEl, word, func) {

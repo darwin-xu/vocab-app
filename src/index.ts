@@ -54,6 +54,38 @@ export default {
 			return new Response(message, { status: 200 });
 		}
 
+		if (url.pathname === '/tts') {
+			const text = url.searchParams.get('text') || '';
+			if (!text) return new Response(JSON.stringify({ error: 'No text provided' }), { status: 400 });
+			const ttsRes = await fetch('https://api.openai.com/v1/audio/speech', {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${env.OPENAI_TOKEN}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					model: 'tts-1',
+					input: text,
+					voice: 'alloy',
+					response_format: 'mp3'
+				})
+			});
+			if (!ttsRes.ok) {
+				const errorText = await ttsRes.text();
+				return new Response(JSON.stringify({ error: errorText }), { status: 500 });
+			}
+			const audioBuffer = await ttsRes.arrayBuffer();
+			const uint8Array = new Uint8Array(audioBuffer);
+			let binary = '';
+			for (let i = 0; i < uint8Array.length; i++) {
+				binary += String.fromCharCode(uint8Array[i]);
+			}
+			const audioBase64 = btoa(binary);
+			return new Response(JSON.stringify({ audio: audioBase64 }), {
+				headers: { 'Content-Type': 'application/json' }
+			});
+		}
+
 		if (request.method === 'POST' && url.pathname === '/add') {
 			const body = await request.json();
 			if (typeof body !== 'object' || body === null || !('word' in body)) {
