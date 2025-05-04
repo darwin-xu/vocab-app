@@ -64,7 +64,7 @@ export default {
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					model: 'tts-1',
+					model: 'gpt-4o-mini-tts',
 					input: text,
 					voice: 'alloy',
 					response_format: 'mp3'
