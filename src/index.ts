@@ -67,7 +67,7 @@ export default {
 					model: 'gpt-4o-mini-tts',
 					input: text,
 					voice: 'alloy',
-					response_format: 'mp3'
+					response_format: 'wav'
 				})
 			});
 			if (!ttsRes.ok) {

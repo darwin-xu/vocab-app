@@ -167,25 +167,46 @@
             const hover = document.createElement('div');
             hover.id = 'hover-window';
             document.body.appendChild(hover);
+            // Cache for /tts responses with 300s (5 min) expiration
+            const ttsCache = {};
+            const TTS_CACHE_TTL = 300 * 1000; // 300 seconds in ms
+
             // Add TTS on click (OpenAI TTS)
+            let currentAudio = null;
             hover.addEventListener('click', async function () {
                 // Only use the text after </strong> for TTS
                 const html = hover.innerHTML;
                 const match = html.match(/<strong>.*?<\/strong><br>([\s\S]*)/i);
                 let ttsText = match ? match[1].replace(/<[^>]+>/g, '').trim() : '';
                 if (!ttsText) return;
+                if (currentAudio && !currentAudio.paused && !currentAudio.ended) {
+                    // Audio is playing, do not start a new one
+                    return;
+                }
+                const cacheKey = ttsText;
+                const now = Date.now();
+                if (ttsCache[cacheKey] && (now - ttsCache[cacheKey].ts < TTS_CACHE_TTL)) {
+                    currentAudio = new Audio('data:audio/wav;base64,' + ttsCache[cacheKey].audio);
+                    currentAudio.play();
+                    return;
+                }
                 try {
                     const res = await fetch(`/tts?text=${encodeURIComponent(ttsText)}`);
                     if (res.ok) {
                         const { audio } = await res.json();
-                        const audioEl = new Audio('data:audio/mp3;base64,' + audio);
-                        audioEl.play();
+                        ttsCache[cacheKey] = { audio, ts: now };
+                        currentAudio = new Audio('data:audio/wav;base64,' + audio);
+                        currentAudio.play();
                     }
                 } catch (e) {
                     // Optionally show error
                 }
             });
         }
+
+        // Cache for /openai responses with 300s (5 min) expiration
+        const openaiCache = {};
+        const OPENAI_CACHE_TTL = 300 * 1000; // 300 seconds in ms
 
         async function showDefinitionHover(wordEl, word, func) {
             const hover = document.getElementById('hover-window');
@@ -199,16 +220,22 @@
                 hover.style.setProperty('--hover-x', (tableRect.left + window.scrollX) + 'px');
                 hover.style.setProperty('--hover-y', (wordRect.bottom + window.scrollY + 4) + 'px');
             } else {
-                // Cap hover width to table width (do not exceed)
                 hover.style.width = Math.min(maxWidth, 400) + 'px';
                 hover.style.setProperty('--hover-x', (wordRect.left + window.scrollX) + 'px');
                 hover.style.setProperty('--hover-y', (wordRect.bottom + window.scrollY + 4) + 'px');
             }
             hover.classList.add('show');
+            const cacheKey = `${word}::${func}`;
+            const now = Date.now();
+            if (openaiCache[cacheKey] && (now - openaiCache[cacheKey].ts < OPENAI_CACHE_TTL)) {
+                hover.innerHTML = `<strong>${word}</strong><br>${openaiCache[cacheKey].data}`;
+                return;
+            }
             try {
                 const res = await fetch(`/openai?word=${encodeURIComponent(word)}&func=${func}`);
                 if (res.ok) {
                     const definition = await res.text();
+                    openaiCache[cacheKey] = { data: definition, ts: now };
                     hover.innerHTML = `<strong>${word}</strong><br>${definition}`;
                 } else {
                     hover.innerHTML = `<strong>${word}</strong><br>Could not fetch data.`;
