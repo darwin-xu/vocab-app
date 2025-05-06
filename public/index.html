@@ -173,7 +173,9 @@
 
             // Add TTS on click (OpenAI TTS)
             let currentAudio = null;
+            let ttsLoading = false; // Prevent parallel TTS requests
             hover.addEventListener('click', async function () {
+                if (ttsLoading) return; // Prevent parallel requests
                 // Only use the text after </strong> for TTS
                 const html = hover.innerHTML;
                 const match = html.match(/<strong>.*?<\/strong><br>([\s\S]*)/i);
@@ -190,6 +192,7 @@
                     currentAudio.play();
                     return;
                 }
+                ttsLoading = true;
                 try {
                     const res = await fetch(`/tts?text=${encodeURIComponent(ttsText)}`);
                     if (res.ok) {
@@ -200,6 +203,8 @@
                     }
                 } catch (e) {
                     // Optionally show error
+                } finally {
+                    ttsLoading = false;
                 }
             });
         }
