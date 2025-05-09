@@ -209,6 +209,105 @@ th.col-icon {
     display: block;
 }
 
+/* Pagination bar styles */
+#pagination {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    gap: 0.5em;
+    padding: 1em 0;
+    background: rgba(34, 34, 34, 0.95);
+    align-items: center;
+    font-family: monospace;
+    color: #fff;
+}
+
+#pagination span {
+    margin: 0 0.2em;
+    padding: 0 0.2em;
+    font-size: 1.1em;
+    cursor: pointer;
+    font-weight: normal;
+    opacity: 1;
+    transition: background 0.2s, color 0.2s;
+    border-radius: 3px;
+}
+
+#pagination span.active {
+    font-weight: bold;
+    background: #fff;
+    color: #222;
+}
+
+#pagination .pagination-prev,
+#pagination .pagination-next {
+    font-size: 1.2em;
+    padding: 0 0.5em;
+}
+
+#pagination .pagination-prev[disabled],
+#pagination .pagination-next[disabled] {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* Popup menu styles */
+.popup-menu {
+    position: absolute;
+    background: #222;
+    color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    padding: 0.5em 1em;
+    z-index: 2000;
+    min-width: 120px;
+    font-family: inherit;
+    font-size: 1em;
+    user-select: none;
+}
+
+.popup-menu button {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    width: 100%;
+    text-align: left;
+    padding: 0.3em 0;
+    cursor: pointer;
+}
+
+.popup-menu button:hover {
+    background: #444;
+}
+
+/* Hover window styles */
+#hover-window {
+    position: absolute;
+    display: none;
+    background: #fff;
+    color: #222;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+    padding: 1em;
+    z-index: 3000;
+    max-width: 400px;
+    min-width: 180px;
+    font-size: 1em;
+    font-family: inherit;
+    word-break: break-word;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+#hover-window.show {
+    display: block;
+}
+
 .popup-menu {
     position: absolute;
     left: var(--popup-x, 0);
