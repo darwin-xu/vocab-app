@@ -201,6 +201,8 @@ th.col-icon {
     min-width: 280px;
     z-index: 1100;
     display: none;
+    width: 380px;
+    max-width: 480px;
 }
 
 #hover-window.show {

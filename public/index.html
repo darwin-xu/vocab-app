@@ -221,8 +221,8 @@
             const wordRect = wordEl.getBoundingClientRect();
             let maxWidth = tableRect.width;
             if (isMobileDevice() && table) {
-                hover.style.width = Math.min(tableRect.width, window.innerWidth) + 'px';
-                hover.style.setProperty('--hover-x', (tableRect.left + window.scrollX) + 'px');
+                hover.style.width = Math.min(tableRect.width - 20, window.innerWidth - 20) + 'px';
+                hover.style.setProperty('--hover-x', (tableRect.left + window.scrollX + 10) + 'px');
                 hover.style.setProperty('--hover-y', (wordRect.bottom + window.scrollY + 4) + 'px');
             } else {
                 hover.style.width = Math.min(maxWidth, 400) + 'px';
