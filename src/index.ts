@@ -113,10 +113,17 @@ export default {
 
 		if (url.pathname === '/vocab') {
 			const q = url.searchParams.get('q') ?? '';
+			const page = parseInt(url.searchParams.get('page') ?? '1', 10);
+			const pageSize = parseInt(url.searchParams.get('pageSize') ?? '20', 10);
+			const offset = (page - 1) * pageSize;
+			const totalRow = await env.DB.prepare(
+				'SELECT COUNT(*) as count FROM vocab WHERE word LIKE ?'
+			).bind(`%${q}%`).first();
+			const total = totalRow ? totalRow.count : 0;
 			const { results } = await env.DB.prepare(
-				'SELECT * FROM vocab WHERE word LIKE ? ORDER BY id DESC'
-			).bind(`%${q}%`).all();
-			return new Response(JSON.stringify(results), {
+				'SELECT * FROM vocab WHERE word LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?'
+			).bind(`%${q}%`, pageSize, offset).all();
+			return new Response(JSON.stringify({ results, total }), {
 				headers: { 'Content-Type': 'application/json' }
 			});
 		}

@@ -33,11 +33,17 @@
         </table>
         <button id="removeBtn">Remove</button>
     </div>
+    <div id="pagination" style="position:fixed;left:0;right:0;bottom:0;z-index:1000;display:flex;justify-content:center;gap:0.5em;padding:1em 0;background:rgba(34,34,34,0.95);"></div>
 
     <script type="module">
         const wordEl = document.getElementById('word');
         const listEl = document.getElementById('list');
         const addBtn = document.getElementById('addBtn');
+
+        let currentPage = 1;
+        const pageSize = 20;
+        let totalItems = 0;
+        let totalPages = 1;
 
         const rel = ts => {
             const diff = Date.now() - Date.parse(ts);
@@ -67,11 +73,75 @@
             refreshVocabulary();
         }
 
+        function renderPagination() {
+            const paginationEl = document.getElementById('pagination');
+            if (!paginationEl) return;
+            paginationEl.innerHTML = '';
+            if (totalPages <= 1) return;
+            // Show up to 5 page numbers, centered on currentPage, ascending order (oldest to newest)
+            let start = Math.max(1, currentPage - 2);
+            let end = Math.min(totalPages, start + 4);
+            if (end - start < 4) start = Math.max(1, end - 4);
+            // < for previous (older), > for next (newer)
+            const prev = document.createElement('span');
+            prev.textContent = '<';
+            prev.style.cursor = currentPage === 1 ? 'default' : 'pointer';
+            prev.style.opacity = currentPage === 1 ? '0.4' : '1';
+            prev.style.fontSize = '1.2em';
+            prev.style.padding = '0 0.5em';
+            if (currentPage > 1) {
+                prev.addEventListener('click', () => {
+                    currentPage--;
+                    refreshVocabulary();
+                });
+            }
+            paginationEl.appendChild(prev);
+            for (let i = start; i <= end; i++) {
+                const num = document.createElement('span');
+                num.textContent = i;
+                num.style.cursor = i === currentPage ? 'default' : 'pointer';
+                num.style.fontWeight = i === currentPage ? 'bold' : 'normal';
+                num.style.fontSize = '1.1em';
+                num.style.margin = '0 0.2em';
+                num.style.padding = '0 0.2em';
+                if (i !== currentPage) {
+                    num.addEventListener('click', () => {
+                        currentPage = i;
+                        refreshVocabulary();
+                    });
+                }
+                paginationEl.appendChild(num);
+            }
+            const next = document.createElement('span');
+            next.textContent = '>';
+            next.style.cursor = currentPage === totalPages ? 'default' : 'pointer';
+            next.style.opacity = currentPage === totalPages ? '0.4' : '1';
+            next.style.fontSize = '1.2em';
+            next.style.padding = '0 0.5em';
+            if (currentPage < totalPages) {
+                next.addEventListener('click', () => {
+                    currentPage++;
+                    refreshVocabulary();
+                });
+            }
+            paginationEl.appendChild(next);
+            paginationEl.style.display = 'flex';
+            paginationEl.style.justifyContent = 'center';
+            paginationEl.style.alignItems = 'center';
+            paginationEl.style.gap = '0.1em';
+            paginationEl.style.fontFamily = 'monospace';
+            paginationEl.style.background = 'rgba(34,34,34,0.95)';
+            paginationEl.style.padding = '0.5em 0';
+        }
+
         async function refreshVocabulary() {
             const q = wordEl.value;
-            const res = await fetch('/vocab?q=' + encodeURIComponent(q));
+            const res = await fetch(`/vocab?q=${encodeURIComponent(q)}&page=${currentPage}&pageSize=${pageSize}`);
             const data = await res.json();
-            listEl.innerHTML = data.map(r =>
+            const results = data.results || [];
+            totalItems = data.total || 0;
+            totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+            listEl.innerHTML = results.map(r =>
                 `<tr>
                     <td><input type="checkbox" class="row-check" data-word="${r.word}"></td>
                     <td class="montserrat-unique word-cell" data-word="${r.word}"><span class="word-text" data-word="${r.word}">${r.word}</span></td>
@@ -80,6 +150,7 @@
                     <td>${rel(r.add_date)}</td>
                 </tr>`
             ).join('');
+            renderPagination();
             updateRemoveBtn();
             // Add event listeners for checkboxes
             listEl.querySelectorAll('.row-check').forEach(cb => {
@@ -283,8 +354,12 @@
         });
 
         addBtn.addEventListener('click', addWord);
-        wordEl.addEventListener('input', refreshVocabulary);
-        document.addEventListener('DOMContentLoaded', refreshVocabulary);
+        wordEl.addEventListener('input', () => { currentPage = 1; refreshVocabulary(); });
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshVocabulary();
+            const table = document.querySelector('table');
+            if (table) table.style.marginBottom = '4em';
+        });
     </script>
 </body>
 
