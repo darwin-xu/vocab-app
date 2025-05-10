@@ -258,16 +258,18 @@ th.col-icon {
 /* Popup menu styles */
 .popup-menu {
     position: absolute;
-    background: #222;
-    color: #fff;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-    padding: 0.5em 1em;
-    z-index: 2000;
+    left: var(--popup-x, 0);
+    top: var(--popup-y, 0);
+    background: #44c865;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    padding: 8px 20px;
     min-width: 120px;
-    font-family: inherit;
-    font-size: 1em;
-    user-select: none;
+    border-radius: 6px;
+    display: block;
+    font-family: 'Montserrat', 'Inter', sans-serif;
+    color: #fff;
 }
 
 .popup-menu button {
@@ -316,7 +318,7 @@ th.col-icon {
     border: 1px solid #ccc;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 1000;
-    padding: 8px 0;
+    padding: 8px 20px;
     min-width: 120px;
     border-radius: 6px;
     display: block;
