@@ -219,12 +219,15 @@ th.col-icon {
     font-size: 1em;
     font-family: inherit;
     transition: background 0.15s;
+    padding: 0.3em 0.7em;
 }
 
 .popup-menu button:hover,
 .popup-menu-item:hover {
     background: #f0f0f0;
     color: #0d47a1;
+    /* Add padding for space between background and text */
+    padding: 0.3em 0.7em;
 }
 
 /* Hover window styles */
