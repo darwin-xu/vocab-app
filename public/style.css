@@ -242,10 +242,8 @@ th.col-icon {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
     padding: 1em 16px;
     z-index: 3000;
-    max-width: 400px;
-    min-width: 180px;
-    font-size: 1em;
-    font-family: inherit;
+    font-size: 1.1em;
+    font-family: 'Newsreader', serif;
     word-break: break-word;
     line-height: 1.5;
     cursor: pointer;

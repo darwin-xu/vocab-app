@@ -7,19 +7,21 @@ export default {
 			const word = searchParams.get("word") || "Say hi!";
 			const func = searchParams.get("func") || "define";
 
+			const defaultPrompt = `Define the word '${word}' in 20~40 words in this form: word classification and its definition, and etymology if necessary.`;
+
 			let prompt = "";
 			switch (func) {
 				case "define":
-					prompt = `Define the word '${word}' in 20 words.`;
+					prompt = defaultPrompt;
 					break;
 				case "example":
-					prompt = `Give 1~3 example sentences using the word '${word}'.`;
+					prompt = `Give 1~3 (more if necessary) example sentences using the word '${word}'. no extra words.`;
 					break;
 				case "synonym":
-					prompt = `List 1~3 synonyms for the word '${word}'.`;
+					prompt = `List 1~3 (more if necessary) synonyms for the word '${word}'. no extra words.`;
 					break;
 				default:
-					prompt = `Define the word '${word}' in 20 words.`;
+					prompt = defaultPrompt;
 			}
 
 			console.log("/openai called with word:", word, "func:", func);

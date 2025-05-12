@@ -242,7 +242,7 @@ async function showDefinitionHover(wordEl, word, func) {
         hover.style.left = (tableRect.left + window.scrollX + 10) + 'px';
         hover.style.top = (wordRect.bottom + window.scrollY + 4) + 'px';
     } else {
-        hover.style.width = Math.min(maxWidth, 400) + 'px';
+        hover.style.width = Math.min(maxWidth, 600) + 'px';
         hover.style.left = (wordRect.left + window.scrollX) + 'px';
         hover.style.top = (wordRect.bottom + window.scrollY + 4) + 'px';
     }
