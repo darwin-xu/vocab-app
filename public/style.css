@@ -300,6 +300,51 @@ th.col-icon {
     cursor: default;
 }
 
+#auth-container {
+    max-width: 320px;
+    margin: 60px auto 0 auto;
+    padding: 24px 20px 18px 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 16px 0 rgba(0,0,0,0.10);
+    display: block;
+}
+
+#auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#auth-form input {
+    padding: 8px 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#auth-form button {
+    padding: 8px 0;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    background: #3b82f6;
+    color: #fff;
+    cursor: pointer;
+    margin-bottom: 4px;
+}
+
+#auth-form button[type="button"] {
+    background: #64748b;
+}
+
+#auth-message {
+    margin-top: 8px;
+    min-height: 1.2em;
+    text-align: center;
+    font-size: 0.98em;
+}
+
 @media(max-width:600px) {
     .container {
         padding: 0rem;

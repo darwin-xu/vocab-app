@@ -10,6 +10,26 @@ const pageSize = 20;
 let totalItems = 0;
 let totalPages = 1;
 
+let sessionToken = localStorage.getItem('sessionToken') || '';
+
+function setSessionToken(token) {
+    sessionToken = token;
+    localStorage.setItem('sessionToken', token);
+}
+
+function clearSessionToken() {
+    sessionToken = '';
+    localStorage.removeItem('sessionToken');
+}
+
+async function authRequest(url, options = {}) {
+    options.headers = options.headers || {};
+    if (sessionToken) {
+        options.headers['Authorization'] = 'Bearer ' + sessionToken;
+    }
+    return fetch(url, options);
+}
+
 const rel = ts => {
     const diff = Date.now() - Date.parse(ts);
     const d = 86_400_000;
@@ -25,17 +45,28 @@ function isMobileDevice() {
 }
 
 async function addWord() {
+    console.log('addWord called');
     const word = wordEl.value.trim();
     if (!word) return;
-    // Check if word already exists in the current list
     const existing = Array.from(listEl.querySelectorAll('td.montserrat-unique')).some(td => td.textContent === word);
     if (existing) return;
-    await fetch('/add', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word })
-    });
-    wordEl.value = '';
-    refreshVocabulary();
+    try {
+        const res = await authRequest('/add', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ word })
+        });
+        console.log('addWord response status:', res.status);
+        const text = await res.text();
+        console.log('addWord response body:', text);
+        if (!res.ok) {
+            alert('Failed to add word: ' + text);
+            return;
+        }
+        wordEl.value = '';
+        refreshVocabulary();
+    } catch (e) {
+        alert('Error adding word: ' + (e && e.message ? e.message : e));
+    }
 }
 
 function renderPagination() {
@@ -84,7 +115,12 @@ function renderPagination() {
 
 async function refreshVocabulary() {
     const q = wordEl.value;
-    const res = await fetch(`/vocab?q=${encodeURIComponent(q)}&page=${currentPage}&pageSize=${pageSize}`);
+    const res = await authRequest(`/vocab?q=${encodeURIComponent(q)}&page=${currentPage}&pageSize=${pageSize}`);
+    if (res.status === 401) {
+        clearSessionToken();
+        showAuthUI(true);
+        return;
+    }
     const data = await res.json();
     const results = data.results || [];
     totalItems = data.total || 0;
@@ -292,7 +328,7 @@ document.getElementById('removeBtn').addEventListener('click', async () => {
     const selected = getSelectedWords();
     if (!selected.length) return;
     if (!confirm(`Are you sure you want to remove ${selected.length} word(s)?`)) return;
-    await fetch('/remove', {
+    await authRequest('/remove', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ words: selected })
@@ -301,6 +337,69 @@ document.getElementById('removeBtn').addEventListener('click', async () => {
 });
 
 addBtn.addEventListener('click', addWord);
+
+// Auth UI logic
+const authContainer = document.getElementById('auth-container');
+const authForm = document.getElementById('auth-form');
+const authMsg = document.getElementById('auth-message');
+const loginBtn = document.getElementById('loginBtn');
+const registerBtn = document.getElementById('registerBtn');
+
+function showAuthUI(show) {
+    authContainer.style.display = show ? 'block' : 'none';
+    document.querySelector('.container').style.display = show ? 'none' : 'block';
+    document.getElementById('pagination').style.display = show ? 'none' : 'block';
+}
+
+function showAuthMessage(msg, isError = false) {
+    authMsg.textContent = msg;
+    authMsg.style.color = isError ? 'red' : 'green';
+}
+
+async function handleLoginOrRegister(isRegister) {
+    const username = document.getElementById('auth-username').value.trim();
+    const password = document.getElementById('auth-password').value;
+    if (!username || !password) {
+        showAuthMessage('Username and password required', true);
+        return;
+    }
+    const endpoint = isRegister ? '/register' : '/login';
+    const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+    });
+    if (res.ok) {
+        if (isRegister) {
+            showAuthMessage('Registration successful. Please log in.');
+        } else {
+            const data = await res.json();
+            setSessionToken(data.token);
+            showAuthUI(false);
+            refreshVocabulary();
+        }
+    } else {
+        const msg = await res.text();
+        showAuthMessage(msg, true);
+    }
+}
+
+authForm.addEventListener('submit', e => {
+    e.preventDefault();
+    handleLoginOrRegister(false);
+});
+registerBtn.addEventListener('click', e => {
+    e.preventDefault();
+    handleLoginOrRegister(true);
+});
+
+// Show auth UI if not logged in
+if (!sessionToken) {
+    showAuthUI(true);
+} else {
+    showAuthUI(false);
+}
+
 wordEl.addEventListener('input', () => { currentPage = 1; refreshVocabulary(); });
 document.addEventListener('DOMContentLoaded', () => {
     refreshVocabulary();
