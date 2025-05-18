@@ -7,7 +7,12 @@ export default {
 			const word = searchParams.get("word") || "Say hi!";
 			const func = searchParams.get("func") || "define";
 
-			const defaultPrompt = `Define the word '${word}' in 20~40 words in this form: word classification and its definition, and etymology if necessary.`;
+			const defaultPrompt = `Define the word '${word}' in this way:` +
+				`[the word's classification]  \n` +
+				`**definition**  \n` +
+				`**next classification**  \n` +
+				`next definition  \n` +
+				`**etymology**`;
 
 			let prompt = "";
 			switch (func) {
@@ -15,10 +20,10 @@ export default {
 					prompt = defaultPrompt;
 					break;
 				case "example":
-					prompt = `Give 1~3 (more if necessary) example sentences using the word '${word}'. no extra words.`;
+					prompt = `Give 1~3 (more if necessary) example sentences using the word '${word}'. no extra words. Provide the sentences in markdown lists.`;
 					break;
 				case "synonym":
-					prompt = `List 1~3 (more if necessary) synonyms for the word '${word}'. no extra words.`;
+					prompt = `List 1~3 (more if necessary) synonyms for the word '${word}'. no extra words. Provide the sentences in markdown lists`;
 					break;
 				default:
 					prompt = defaultPrompt;

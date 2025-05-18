@@ -230,6 +230,7 @@ if (!document.getElementById('hover-window')) {
 const openaiCache = {};
 const OPENAI_CACHE_TTL = 300 * 1000; // 300 seconds in ms
 
+// Update hover window to support Markdown rendering
 async function showDefinitionHover(wordEl, word, func) {
     const hover = document.getElementById('hover-window');
     hover.innerHTML = `<strong>${word}</strong><br>Loading`;
@@ -242,7 +243,7 @@ async function showDefinitionHover(wordEl, word, func) {
         hover.style.left = (tableRect.left + window.scrollX + 10) + 'px';
         hover.style.top = (wordRect.bottom + window.scrollY + 4) + 'px';
     } else {
-        hover.style.width = Math.min(maxWidth, 600) + 'px';
+        hover.style.width = Math.min(maxWidth, 400) + 'px';
         hover.style.left = (wordRect.left + window.scrollX) + 'px';
         hover.style.top = (wordRect.bottom + window.scrollY + 4) + 'px';
     }
@@ -250,7 +251,7 @@ async function showDefinitionHover(wordEl, word, func) {
     const cacheKey = `${word}::${func}`;
     const now = Date.now();
     if (openaiCache[cacheKey] && (now - openaiCache[cacheKey].ts < OPENAI_CACHE_TTL)) {
-        hover.innerHTML = `<strong>${word}</strong><br>${openaiCache[cacheKey].data}`;
+        hover.innerHTML = `<strong>${word}</strong><br>${marked.parse(openaiCache[cacheKey].data)}`;
         return;
     }
     try {
@@ -258,7 +259,7 @@ async function showDefinitionHover(wordEl, word, func) {
         if (res.ok) {
             const definition = await res.text();
             openaiCache[cacheKey] = { data: definition, ts: now };
-            hover.innerHTML = `<strong>${word}</strong><br>${definition}`;
+            hover.innerHTML = `<strong>${word}</strong><br>${marked.parse(definition)}`;
         } else {
             hover.innerHTML = `<strong>${word}</strong><br>Could not fetch data.`;
         }
