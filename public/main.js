@@ -73,7 +73,26 @@ function renderPagination() {
     const paginationEl = document.getElementById('pagination');
     if (!paginationEl) return;
     paginationEl.innerHTML = '';
-    if (totalPages <= 1) return;
+    // Always show at least one page
+    if (totalPages <= 1) {
+        const prev = document.createElement('span');
+        prev.textContent = '<';
+        prev.className = 'pagination-prev';
+        prev.style.opacity = '0.4';
+        prev.style.cursor = 'default';
+        paginationEl.appendChild(prev);
+        const num = document.createElement('span');
+        num.textContent = '1';
+        num.className = 'pagination-num active';
+        paginationEl.appendChild(num);
+        const next = document.createElement('span');
+        next.textContent = '>';
+        next.className = 'pagination-next';
+        next.style.opacity = '0.4';
+        next.style.cursor = 'default';
+        paginationEl.appendChild(next);
+        return;
+    }
     // Show up to 5 page numbers, centered on currentPage, ascending order (oldest to newest)
     let start = Math.max(1, currentPage - 2);
     let end = Math.min(totalPages, start + 4);
