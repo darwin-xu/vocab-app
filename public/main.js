@@ -356,6 +356,96 @@ function showAuthMessage(msg, isError = false) {
     authMsg.style.color = isError ? 'red' : 'green';
 }
 
+// Add login status to the top right of the .container
+function renderLoginStatus() {
+    let username = localStorage.getItem('username') || '';
+    const container = document.querySelector('.container');
+    let statusEl = document.getElementById('login-status-inline');
+    if (!statusEl) {
+        statusEl = document.createElement('div');
+        statusEl.id = 'login-status-inline';
+        statusEl.style.position = 'fixed'; // Use fixed positioning for viewport
+        statusEl.style.top = window.innerWidth <= 600 ? '6px' : '18px';
+        statusEl.style.right = window.innerWidth <= 600 ? '10px' : '24px';
+        statusEl.style.zIndex = '2000';
+        statusEl.style.display = 'none';
+        document.body.appendChild(statusEl);
+    } else {
+        // Update position on resize
+        statusEl.style.top = window.innerWidth <= 600 ? '6px' : '18px';
+        statusEl.style.right = window.innerWidth <= 600 ? '10px' : '24px';
+    }
+    if (!sessionToken) {
+        statusEl.style.display = 'none';
+        return;
+    }
+    if (!username) username = 'U';
+    const initial = username.charAt(0).toUpperCase();
+    statusEl.innerHTML = `<span id="login-status-avatar" style="display:inline-flex;top:2px;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:#3b82f6;color:#fff;font-weight:700;font-size:1.18em;box-shadow:0 2px 8px rgba(0,0,0,0.10);cursor:pointer;user-select:none;">${initial}</span>`;
+    statusEl.style.display = 'block';
+
+    // Dropdown menu
+    let dropdown = document.getElementById('login-status-dropdown');
+    if (!dropdown) {
+        dropdown = document.createElement('div');
+        dropdown.id = 'login-status-dropdown';
+        dropdown.style.position = 'absolute';
+        dropdown.style.top = '46px';
+        dropdown.style.right = '0';
+        dropdown.style.background = '#fff';
+        dropdown.style.border = '1px solid #ccc';
+        dropdown.style.borderRadius = '7px';
+        dropdown.style.boxShadow = '0 2px 12px rgba(0,0,0,0.13)';
+        dropdown.style.minWidth = '120px';
+        dropdown.style.display = 'none';
+        dropdown.style.fontSize = '1em';
+        dropdown.style.fontFamily = 'Inter,sans-serif';
+        dropdown.innerHTML = `<button id="logoutBtn" style="width:100%;background:none;border:none;padding:10px 0 10px 0;font-size:1em;cursor:pointer;">Logout</button>`;
+        statusEl.appendChild(dropdown);
+    }
+    // Toggle dropdown on avatar click
+    const avatar = document.getElementById('login-status-avatar');
+    avatar.onclick = (e) => {
+        e.stopPropagation();
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    };
+    // Hide dropdown on outside click
+    document.addEventListener('click', function hideDropdown(e) {
+        if (dropdown.style.display === 'block' && !statusEl.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+    // Logout handler
+    document.getElementById('logoutBtn').onclick = () => {
+        clearSessionToken();
+        localStorage.removeItem('username');
+        showAuthUI(true);
+        renderLoginStatus();
+    };
+}
+
+// Update login status display
+function updateLoginStatus() {
+    const statusEl = document.getElementById('login-status');
+    let username = localStorage.getItem('username') || '';
+    if (!sessionToken) {
+        statusEl.textContent = '';
+        return;
+    }
+    if (!username) {
+        // Try to get username from token (not secure, but for demo)
+        username = 'Logged in';
+    }
+    statusEl.innerHTML = `👤 <span style="font-weight:600">${username}</span> <button id="logoutBtn" style="margin-left:8px;font-size:0.95em;padding:2px 10px;background:#64748b;">Logout</button>`;
+    document.getElementById('logoutBtn').onclick = () => {
+        clearSessionToken();
+        localStorage.removeItem('username');
+        showAuthUI(true);
+        updateLoginStatus();
+    };
+}
+
+// Update username in localStorage on login
 async function handleLoginOrRegister(isRegister) {
     const username = document.getElementById('auth-username').value.trim();
     const password = document.getElementById('auth-password').value;
@@ -375,8 +465,10 @@ async function handleLoginOrRegister(isRegister) {
         } else {
             const data = await res.json();
             setSessionToken(data.token);
+            localStorage.setItem('username', username);
             showAuthUI(false);
             refreshVocabulary();
+            renderLoginStatus();
         }
     } else {
         const msg = await res.text();
@@ -393,11 +485,13 @@ registerBtn.addEventListener('click', e => {
     handleLoginOrRegister(true);
 });
 
-// Show auth UI if not logged in
+// Call renderLoginStatus on login/logout/page load
 if (!sessionToken) {
     showAuthUI(true);
+    renderLoginStatus();
 } else {
     showAuthUI(false);
+    renderLoginStatus();
 }
 
 wordEl.addEventListener('input', () => { currentPage = 1; refreshVocabulary(); });
@@ -406,3 +500,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const table = document.querySelector('table');
     if (table) table.style.marginBottom = '4em';
 });
+window.addEventListener('resize', renderLoginStatus);
