@@ -259,8 +259,8 @@ th.col-icon {
 /* Pagination bar styles */
 #pagination {
     position: fixed;
-    left: 0;
-    right: 0;
+    left: 50%;
+    transform: translateX(-50%);
     bottom: 0;
     z-index: 1000;
     display: flex;
