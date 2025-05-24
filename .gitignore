@@ -172,3 +172,8 @@ dist
 .wrangler/
 
 .DS_Store
+
+# Wrangler generated types
+worker-configuration.d.ts
+
+temp

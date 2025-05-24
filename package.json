@@ -3,11 +3,13 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
-		"deploy": "wrangler deploy",
+		"build": "npm run build:client && wrangler build",
+		"deploy": "npm run build:client && wrangler deploy",
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
 		"test": "vitest",
-		"cf-typegen": "wrangler types"
+		"cf-typegen": "wrangler types",
+		"build:client": "cd client && npm install && npm run build"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.7.5",

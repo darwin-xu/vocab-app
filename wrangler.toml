@@ -3,7 +3,7 @@ compatibility_date = "2024-04-23"
 main = "src/index.ts"
 
 [assets]
-directory = "./public"
+directory = "./client/dist"
 binding = "ASSETS"
 
 [[d1_databases]]
