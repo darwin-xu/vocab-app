@@ -1,24 +1,24 @@
 {
-	"name": "vocab-app",
-	"version": "0.0.0",
-	"private": true,
-	"scripts": {
-		"build": "npm run build:client && wrangler build",
-		"deploy": "npm run build:client && wrangler deploy",
-		"dev": "wrangler dev",
-		"start": "wrangler dev",
-		"test": "vitest",
-		"cf-typegen": "wrangler types",
-		"build:client": "cd client && npm install && npm run build"
-	},
-	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "^0.8.32",
-		"@cloudflare/workers-types": "^4.20250423.0",
-		"typescript": "^5.5.2",
-		"vitest": "~3.0.7",
-		"wrangler": "^4.13.0"
-	},
-	"dependencies": {
-		"better-sqlite3": "^11.10.0"
-	}
+    "name": "vocab-app",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "build": "npm run build:client && wrangler build",
+        "deploy": "npm run build:client && wrangler deploy",
+        "dev": "wrangler dev",
+        "start": "wrangler dev",
+        "test": "vitest",
+        "cf-typegen": "wrangler types",
+        "build:client": "cd client && npm install && npm run build"
+    },
+    "devDependencies": {
+        "@cloudflare/vitest-pool-workers": "^0.8.32",
+        "@cloudflare/workers-types": "^4.20250423.0",
+        "typescript": "^5.5.2",
+        "vitest": "~3.0.7",
+        "wrangler": "^4.13.0"
+    },
+    "dependencies": {
+        "better-sqlite3": "^11.10.0"
+    }
 }

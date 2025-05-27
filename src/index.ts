@@ -3,12 +3,12 @@ function randomId() {
 }
 
 // Environment-aware API endpoints
-function getApiEndpoints() {
-    // Detect if we're in development (local) vs production (Cloudflare)
-    const isLocal = typeof (globalThis as any).navigator?.userAgent?.includes === 'function' &&
-        (globalThis as any).navigator?.userAgent?.includes('Miniflare');
+function getApiEndpoints(env: any) {
+    const isLocal = env.ENVIRONMENT === 'development';
 
-    if (true) {
+    console.log('isLocal:', isLocal);
+
+    if (isLocal) {
         console.log('Using development API endpoints');
         return 'http://35.234.22.51:8080';
     } else {
@@ -84,7 +84,7 @@ export default {
             console.log("/openai called with word:", word, "func:", func);
             console.log("Prompt sent to OpenAI:", prompt);
 
-            const openaiRes = await fetch(getApiEndpoints() + '/v1/chat/completions', {
+            const openaiRes = await fetch(getApiEndpoints(env) + '/v1/chat/completions', {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${env.OPENAI_TOKEN}`,
@@ -116,7 +116,7 @@ export default {
         if (url.pathname === '/tts') {
             const text = url.searchParams.get('text') || '';
             if (!text) return new Response(JSON.stringify({ error: 'No text provided' }), { status: 400 });
-            const ttsRes = await fetch(getApiEndpoints() + '/v1/audio/speech', {
+            const ttsRes = await fetch(getApiEndpoints(env) + '/v1/audio/speech', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${env.OPENAI_TOKEN}`,
