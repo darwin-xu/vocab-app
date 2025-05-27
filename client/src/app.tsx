@@ -21,6 +21,7 @@ function App() {
     const [selected, setSelected] = useState<Set<string>>(new Set())
     const [popup, setPopup] = useState<{ word: string; x: number; y: number; func?: string } | null>(null)
     const [hover, setHover] = useState<{ show: boolean; x: number; y: number; content: string }>({ show: false, x: 0, y: 0, content: '' })
+    const [isLoading, setIsLoading] = useState(false)
 
     // check login on mount
     useEffect(() => {
@@ -45,12 +46,21 @@ function App() {
     }, [view, loadVocab])
 
     async function handleAuth(isRegister = false) {
+        setIsLoading(true)
         try {
             if (isRegister) await register(username, password)
             else await login(username, password)
             setView('vocab'); setAuthMsg('')
         } catch (e) {
             setAuthMsg((e as Error).message)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    function handleKeyPress(e: React.KeyboardEvent) {
+        if (e.key === 'Enter' && username && password && !isLoading) {
+            handleAuth(false) // Default to login on Enter
         }
     }
 
@@ -83,14 +93,66 @@ function App() {
     function closeHover() { setHover(h => ({ ...h, show: false })) }
 
     return view === 'auth' ? (
-        <div className="container">
-            <h1>Login / Register</h1>
-            <div id="auth-container">
-                <input placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
-                <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} />
-                <button onClick={() => handleAuth(false)}>Login</button>
-                <button onClick={() => handleAuth(true)}>Register</button>
-                <div id="auth-message">{authMsg}</div>
+        <div className="auth-page">
+            <div className="auth-container">
+                <div className="auth-header">
+                    <div className="logo">
+                        <div className="logo-icon">📚</div>
+                        <h1>VocabBuilder</h1>
+                    </div>
+                    <p className="auth-subtitle">Build your vocabulary, one word at a time</p>
+                </div>
+                
+                <div className="auth-form">
+                    <div className="form-group">
+                        <label htmlFor="username">Username</label>
+                        <input 
+                            id="username"
+                            type="text"
+                            placeholder="Enter your username" 
+                            value={username} 
+                            onChange={e => setUsername(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                            autoComplete="username"
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label htmlFor="password">Password</label>
+                        <input 
+                            id="password"
+                            type="password" 
+                            placeholder="Enter your password" 
+                            value={password} 
+                            onChange={e => setPassword(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                            autoComplete="current-password"
+                        />
+                    </div>
+                    
+                    <div className="auth-buttons">
+                        <button 
+                            className={`btn btn-primary ${isLoading ? 'loading' : ''}`}
+                            onClick={() => handleAuth(false)}
+                            disabled={!username || !password || isLoading}
+                        >
+                            {isLoading ? 'Signing In...' : 'Sign In'}
+                        </button>
+                        <button 
+                            className={`btn btn-secondary ${isLoading ? 'loading' : ''}`}
+                            onClick={() => handleAuth(true)}
+                            disabled={!username || !password || isLoading}
+                        >
+                            {isLoading ? 'Creating Account...' : 'Create Account'}
+                        </button>
+                    </div>
+                    
+                    {authMsg && (
+                        <div className={`auth-message ${authMsg.includes('already exists') || authMsg.includes('Invalid') ? 'error' : 'success'}`}>
+                            {authMsg}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     ) : (

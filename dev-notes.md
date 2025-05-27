@@ -22,3 +22,18 @@ or
 npm run dev -- --env development
 
 wrangler dev --var OPENAI_TOKEN:"<OPENAI_TOKEN>" --var ENVIRONMENT:"development"
+
+# Frontend development (new login page)
+cd /Users/darwin/Projects/experiment/vocab-app/client
+npm run dev
+# Use: http://localhost:5173/
+
+
+
+# Build the client first to get the new login page
+cd /Users/darwin/Projects/experiment/vocab-app
+npm run build:client
+
+# Then run the full stack
+npm run dev
+# Use: http://localhost:8787/ (or whatever port Wrangler uses)
