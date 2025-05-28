@@ -102,43 +102,43 @@ function App() {
                     </div>
                     <p className="auth-subtitle">Build your vocabulary, one word at a time</p>
                 </div>
-                
+
                 <div className="auth-form">
                     <div className="form-group">
                         <label htmlFor="username">Username</label>
-                        <input 
+                        <input
                             id="username"
                             type="text"
-                            placeholder="Enter your username" 
-                            value={username} 
+                            placeholder="Enter your username"
+                            value={username}
                             onChange={e => setUsername(e.target.value)}
                             onKeyPress={handleKeyPress}
                             autoComplete="username"
                         />
                     </div>
-                    
+
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
-                        <input 
+                        <input
                             id="password"
-                            type="password" 
-                            placeholder="Enter your password" 
-                            value={password} 
+                            type="password"
+                            placeholder="Enter your password"
+                            value={password}
                             onChange={e => setPassword(e.target.value)}
                             onKeyPress={handleKeyPress}
                             autoComplete="current-password"
                         />
                     </div>
-                    
+
                     <div className="auth-buttons">
-                        <button 
+                        <button
                             className={`btn btn-primary ${isLoading ? 'loading' : ''}`}
                             onClick={() => handleAuth(false)}
                             disabled={!username || !password || isLoading}
                         >
                             {isLoading ? 'Signing In...' : 'Sign In'}
                         </button>
-                        <button 
+                        <button
                             className={`btn btn-secondary ${isLoading ? 'loading' : ''}`}
                             onClick={() => handleAuth(true)}
                             disabled={!username || !password || isLoading}
@@ -146,7 +146,7 @@ function App() {
                             {isLoading ? 'Creating Account...' : 'Create Account'}
                         </button>
                     </div>
-                    
+
                     {authMsg && (
                         <div className={`auth-message ${authMsg.includes('already exists') || authMsg.includes('Invalid') ? 'error' : 'success'}`}>
                             {authMsg}
