@@ -128,6 +128,8 @@ th.col-icon { width: 2em; }
     bottom: 0;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="30" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
     animation: float 20s ease-in-out infinite;
+    z-index: -1;
+    pointer-events: none;
 }
 
 @keyframes float {
@@ -355,7 +357,166 @@ th.col-icon { width: 2em; }
     opacity: 0.8;
 }
 
-/* Responsive design */
+/* Responsive design - Auto-adaptable for desktop and mobile */
+
+/* Mobile-first base styles are already defined above */
+
+/* Small tablets and large phones */
+@media (min-width: 481px) and (max-width: 768px) {
+    .auth-container {
+        max-width: 480px;
+        padding: 3.5rem 3rem;
+    }
+    
+    .auth-header h1 {
+        font-size: 2.25rem;
+    }
+    
+    .logo-icon {
+        font-size: 3.5rem;
+    }
+}
+
+/* Tablets and small desktops - Making it wider */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .auth-container {
+        max-width: 520px;
+        padding: 4rem 3.5rem;
+        border-radius: 28px;
+    }
+    
+    .auth-header {
+        margin-bottom: 3rem;
+    }
+    
+    .auth-header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .logo-icon {
+        font-size: 4rem;
+    }
+    
+    .form-group input {
+        padding: 1.125rem 1.5rem;
+        font-size: 1.1rem;
+        border-radius: 14px;
+    }
+    
+    .btn {
+        padding: 1.125rem 2rem;
+        font-size: 1.1rem;
+        border-radius: 14px;
+    }
+}
+
+/* Large desktops - Much wider for desktop experience */
+@media (min-width: 1025px) {
+    .auth-page {
+        padding: 2rem 2rem;
+    }
+    
+    .auth-container {
+        max-width: none;
+        width: 100%;
+        padding: 4.5rem 5rem;
+        border-radius: 32px;
+    }
+    
+    .auth-header {
+        margin-bottom: 3.5rem;
+    }
+    
+    .auth-header h1 {
+        font-size: 2.75rem;
+        letter-spacing: -0.05em;
+    }
+    
+    .logo-icon {
+        font-size: 4.5rem;
+    }
+    
+    .auth-subtitle {
+        font-size: 1.1rem;
+        max-width: 280px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+    
+    .form-group input {
+        padding: 1.25rem 1.75rem;
+        font-size: 1.125rem;
+        border-radius: 16px;
+    }
+    
+    .btn {
+        padding: 1.25rem 2.25rem;
+        font-size: 1.125rem;
+        border-radius: 16px;
+    }
+    
+    .auth-form {
+        gap: 2.25rem;
+    }
+    
+    .form-group {
+        gap: 0.875rem;
+    }
+}
+
+/* Extra large desktops - Even wider */
+@media (min-width: 1440px) {
+    .auth-page {
+        padding: 2rem 2rem;
+    }
+    
+    .auth-container {
+        max-width: none;
+        width: 100%;
+        padding: 5rem 5.5rem;
+    }
+    
+    .auth-header h1 {
+        font-size: 3rem;
+    }
+    
+    .logo-icon {
+        font-size: 5rem;
+    }
+    
+    .auth-subtitle {
+        font-size: 1.2rem;
+        max-width: 320px;
+    }
+}
+
+/* Ultra-wide screens - Maximum width */
+@media (min-width: 1920px) {
+    .auth-page {
+        padding: 2rem 2rem;
+    }
+    
+    .auth-container {
+        max-width: none;
+        width: 100%;
+        padding: 6rem 5rem;
+        border-radius: 40px;
+    }
+    
+    .auth-header h1 {
+        font-size: 3.5rem;
+    }
+    
+    .logo-icon {
+        font-size: 6rem;
+    }
+    
+    .auth-form {
+        gap: 2.5rem;
+    }
+}
+
+/* Small mobile devices */
 @media (max-width: 480px) {
     .auth-page {
         padding: 1rem;
