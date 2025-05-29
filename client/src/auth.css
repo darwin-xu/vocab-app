@@ -55,16 +55,23 @@
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 /* Modern Auth Page Styles */
 .auth-page {
-    min-height: 100vh;
+    height: 100vh;
+    box-sizing: border-box;
+    padding: 0 1rem;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--gradient-primary);
-    padding: 2rem 1rem;
     position: relative;
-    overflow: hidden;
 }
 
 .auth-page::before {
