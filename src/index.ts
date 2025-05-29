@@ -157,8 +157,8 @@ export default {
             const exists = await env.DB.prepare('SELECT 1 FROM vocab WHERE user_id = ? AND word = ?').bind(userId, word).first();
             if (exists) return new Response('Word already exists', { status: 409 });
             await env.DB.prepare(
-                'INSERT INTO vocab (user_id, word, meaning, add_date) VALUES (?, ?, ?, ?)'
-            ).bind(userId, word, '', new Date().toISOString()).run();
+                'INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)'
+            ).bind(userId, word, new Date().toISOString()).run();
             return new Response('OK');
         }
 
