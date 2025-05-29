@@ -355,8 +355,6 @@ body {
 @media (min-width: 1441px) {
     .auth-container {
         max-width: 600px;
-        width: 100%;
-        padding: 5rem 5.5rem;
         border-radius: var(--radius-4xl);
     }
 
@@ -392,7 +390,6 @@ body {
 @media (max-width: 1440px) {
     .auth-container {
         max-width: 600px;
-        padding: 4.5rem 4rem;
     }
 
     .logo-icon {
@@ -435,7 +432,6 @@ body {
 @media (max-width: 1024px) {
     .auth-container {
         max-width: 520px;
-        padding: 4rem 3.5rem;
         border-radius: var(--radius-3xl);
     }
 
