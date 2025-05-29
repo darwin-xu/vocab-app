@@ -163,7 +163,7 @@ function App() {
                 👤 {localStorage.getItem('username')} <button onClick={logout}>Logout</button>
             </div>
             <div className="container">
-                <h1>Vocabulary</h1>
+                <h1>Vocabulary Builder</h1>
                 <div className="field-row">
                     <input id="word" placeholder="Word (type to search)…" value={q}
                         onChange={e => setQ(e.target.value)} />

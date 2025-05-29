@@ -114,15 +114,27 @@ body::before {
 /* Header section */
 h1 {
     margin: 0 0 var(--space-2xl);
-    font-size: var(--font-3xl);
-    font-weight: 700;
+    font-size: var(--font-4xl);
+    font-weight: 800;
     text-align: center;
+    color: white;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(102, 126, 234, 0.6);
+    letter-spacing: -0.02em;
+    position: relative;
+    padding: var(--space-md) 0;
+}
+
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 4px;
     background: var(--gradient-primary);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -0.025em;
-    text-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 /* Search and action section */
@@ -206,8 +218,9 @@ thead {
     color: white;
     text-transform: uppercase;
     font-size: var(--font-sm);
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 th, td {
@@ -219,8 +232,10 @@ th, td {
 
 th {
     color: white;
-    font-weight: 600;
+    font-weight: 700;
     background: var(--gradient-secondary);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.05em;
 }
 
 td {
@@ -262,6 +277,9 @@ th:nth-child(4), td:nth-child(4) { /* Dictionary buttons */
 th:nth-child(5), td:nth-child(5) { /* Date */
     width: 120px;
     font-size: var(--font-sm);
+}
+
+td:nth-child(5) { /* Date data cells only */
     color: var(--auth-text-medium);
 }
 
