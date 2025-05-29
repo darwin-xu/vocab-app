@@ -503,7 +503,17 @@ body {
     font-weight: 500;
     text-align: center;
     margin-top: 0.5rem;
+    min-height: 2.5rem; /* Fixed height to prevent layout shift */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     animation: slideDown 0.3s ease-out;
+}
+
+.auth-message.hidden {
+    opacity: 0;
+    background: transparent;
+    border: 1px solid transparent;
 }
 
 @keyframes slideDown {
@@ -528,6 +538,47 @@ body {
     background: #f0fdf4;
     color: #16a34a;
     border: 1px solid #bbf7d0;
+}
+
+/* Auth message responsive styles */
+@media (min-width: 1441px) {
+    .auth-message {
+        min-height: 3rem;
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 1440px) {
+    .auth-message {
+        min-height: 2.75rem;
+        padding: 0.875rem 1.125rem;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .auth-message {
+        min-height: 2.5rem;
+        padding: 0.75rem 1rem;
+        font-size: var(--font-sm);
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-message {
+        min-height: 2.25rem;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-message {
+        min-height: 2rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+    }
 }
 
 /* Loading spinner animation */

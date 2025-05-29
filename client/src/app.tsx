@@ -148,11 +148,9 @@ function App() {
                         </button>
                     </div>
 
-                    {authMsg && (
-                        <div className={`auth-message ${authMsg.includes('already exists') || authMsg.includes('Invalid') ? 'error' : 'success'}`}>
-                            {authMsg}
-                        </div>
-                    )}
+                    <div className={`auth-message ${authMsg ? (authMsg.includes('already exists') || authMsg.includes('Invalid') ? 'error' : 'success') : 'hidden'}`}>
+                        {authMsg || '\u00A0'}
+                    </div>
                 </div>
             </div>
         </div>
