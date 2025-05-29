@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { marked } from 'marked'
 import './app.css'
+import './auth.css'
 import {
     login, register, fetchVocab, addWord, removeWords,
     openaiCall, ttsCall, logout
