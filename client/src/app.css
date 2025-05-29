@@ -224,10 +224,11 @@ thead {
 }
 
 th, td {
-    padding: 1rem 1.5rem;
+    padding: 0.5rem 1rem;
     text-align: left;
     border-bottom: 1px solid var(--vocab-border-light);
     transition: all 0.2s ease;
+    font-size: var(--font-sm);
 }
 
 th {
@@ -236,11 +237,13 @@ th {
     background: var(--gradient-secondary);
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     letter-spacing: 0.05em;
+    padding: 0.75rem 1rem;
 }
 
 td {
     color: var(--auth-text-dark);
     font-weight: 500;
+    line-height: 1.4;
 }
 
 tbody tr {
@@ -260,23 +263,23 @@ tbody tr:hover {
 
 /* Table column sizing and alignment */
 th:nth-child(1), td:nth-child(1) { /* Checkbox */
-    width: 50px;
+    width: 40px;
     text-align: center;
 }
 
 th:nth-child(2), td:nth-child(2) { /* Word */
-    min-width: 200px;
+    min-width: 150px;
 }
 
 th:nth-child(3), td:nth-child(3), 
 th:nth-child(4), td:nth-child(4) { /* Dictionary buttons */
-    width: 60px;
+    width: 50px;
     text-align: center;
 }
 
 th:nth-child(5), td:nth-child(5) { /* Date */
-    width: 120px;
-    font-size: var(--font-sm);
+    width: 100px;
+    font-size: var(--font-xs);
 }
 
 td:nth-child(5) { /* Date data cells only */
@@ -297,10 +300,12 @@ td:nth-child(5) { /* Date data cells only */
     font-weight: 600;
     color: var(--auth-text-dark);
     cursor: pointer;
-    padding: 0.5rem 0.75rem;
+    padding: 0.25rem 0.5rem;
     border-radius: var(--radius-sm);
     transition: all 0.2s ease;
     display: inline-block;
+    font-size: var(--font-sm);
+    line-height: 1.3;
 }
 
 .montserrat-unique:hover {
@@ -352,8 +357,8 @@ td:nth-child(5) { /* Date data cells only */
 /* Checkbox styling */
 input[type="checkbox"] {
     appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border: 2px solid var(--vocab-border);
     border-radius: var(--radius-xs);
     background: rgba(255, 255, 255, 0.9);
@@ -381,14 +386,14 @@ input[type="checkbox"]:checked::after {
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: bold;
 }
 
 /* Dictionary buttons modernization */
 .dict-btn,
 .mw-btn {
-    padding: 0.5rem;
+    padding: 0.25rem;
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid var(--vocab-border);
     border-radius: var(--radius-sm);
@@ -410,8 +415,8 @@ input[type="checkbox"]:checked::after {
 
 .dict-btn img,
 .mw-btn img {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     vertical-align: middle;
 }
 
