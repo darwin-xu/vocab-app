@@ -9,6 +9,28 @@ import {
 
 const PAGE_SIZE = 20;
 
+// Utility function to format relative time
+function formatRelativeTime(dateString: string): string {
+    const now = new Date();
+    const addedDate = new Date(dateString);
+    const diffMs = now.getTime() - addedDate.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+        return 'today';
+    } else if (diffDays === 1) {
+        return '1 day';
+    } else if (diffDays < 30) {
+        return `${diffDays} days`;
+    } else if (diffDays < 365) {
+        const months = Math.floor(diffDays / 30);
+        return months === 1 ? '1 month' : `${months} months`;
+    } else {
+        const years = Math.floor(diffDays / 365);
+        return years === 1 ? '1 year' : `${years} years`;
+    }
+}
+
 interface VocabItem { word: string; add_date: string }
 function App() {
     const [view, setView] = useState<'auth' | 'vocab'>('auth')
@@ -180,7 +202,7 @@ function App() {
                                 <td><span className="montserrat-unique" onClick={e => openMenu(e, r.word)}>{r.word}</span></td>
                                 <td><button className="dict-btn" onClick={() => window.open(`https://dictionary.cambridge.org/dictionary/english/${r.word}`)}><img src="https://dictionary.cambridge.org/favicon.ico" alt="Cambridge" /></button></td>
                                 <td><button className="mw-btn" onClick={() => window.open(`https://www.merriam-webster.com/dictionary/${r.word}`)}><img src="https://www.merriam-webster.com/favicon.ico" alt="MW" /></button></td>
-                                <td>{r.add_date}</td>
+                                <td>{formatRelativeTime(r.add_date)}</td>
                             </tr>
                         ))}
                     </tbody>
