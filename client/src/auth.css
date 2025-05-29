@@ -291,7 +291,8 @@
 @media (min-width: 1441px) {
     .auth-subtitle {
         font-size: 1.2rem;
-        max-width: 320px;
+        max-width: 100%;
+        width: max-content;
         margin: 0 auto;
         line-height: 1.6;
     }
@@ -300,7 +301,6 @@
 @media (max-width: 1440px) {
     .auth-subtitle {
         font-size: 1.1rem;
-        max-width: 280px;
         margin: 0 auto;
     }
 }
@@ -308,7 +308,6 @@
 @media (max-width: 1024px) {
     .auth-subtitle {
         font-size: var(--font-base);
-        max-width: none;
         margin: 0;
         line-height: 1.5;
     }
