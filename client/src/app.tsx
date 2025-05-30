@@ -121,7 +121,7 @@ function App() {
                 <div className="auth-header">
                     <div className="logo">
                         <div className="logo-icon">📚</div>
-                        <h1>VocabBuilder</h1>
+                        <h1>Vocabulary Builder</h1>
                     </div>
                     <p className="auth-subtitle">Build your vocabulary, one word at a time</p>
                 </div>
