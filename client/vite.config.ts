@@ -6,8 +6,30 @@ export default defineConfig({
     plugins: [react()],
     server: {
         proxy: {
-            '/api': {
-                target: 'http://192.168.2.201:7788'
+            // Proxy all API endpoints to the Wrangler backend
+            '/login': {
+                target: 'http://localhost:8787',
+                changeOrigin: true
+            },
+            '/register': {
+                target: 'http://localhost:8787',
+                changeOrigin: true
+            },
+            '/vocab': {
+                target: 'http://localhost:8787',
+                changeOrigin: true
+            },
+            '/word': {
+                target: 'http://localhost:8787',
+                changeOrigin: true
+            },
+            '/openai': {
+                target: 'http://localhost:8787',
+                changeOrigin: true
+            },
+            '/tts': {
+                target: 'http://localhost:8787',
+                changeOrigin: true
             }
         }
     },
