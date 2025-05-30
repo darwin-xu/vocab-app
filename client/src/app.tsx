@@ -270,7 +270,14 @@ function App() {
                 <div className="field-row">
                     <input id="word" placeholder="Word (type to search)…" value={q}
                         onChange={e => setQ(e.target.value)} />
-                    <button id="addBtn" onClick={handleAdd}>Add Word</button>
+                    <button 
+                        id="addBtn" 
+                        className={selected.size > 0 ? 'remove-mode' : ''}
+                        onClick={selected.size > 0 ? handleRemove : handleAdd}
+                        disabled={selected.size > 0 ? selected.size === 0 : !q}
+                    >
+                        {selected.size > 0 ? `Remove (${selected.size})` : 'Add Word'}
+                    </button>
                 </div>
                 <table>
                     <thead>
@@ -288,7 +295,6 @@ function App() {
                         ))}
                     </tbody>
                 </table>
-                <button id="removeBtn" disabled={!selected.size} onClick={handleRemove}>Remove</button>
             </div>
             <div id="pagination">
                 <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>&lt;</button>

@@ -200,6 +200,16 @@ h1::after {
     transform: translateY(0);
 }
 
+.field-row button#addBtn.remove-mode {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.field-row button#addBtn.remove-mode:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
 /* Modern table design */
 table {
     width: 100%;
@@ -313,45 +323,6 @@ td:nth-child(5) { /* Date data cells only */
     color: white;
     transform: translateY(-1px);
     box-shadow: var(--shadow-sm);
-}
-
-/* Action buttons */
-#removeBtn {
-    display: block;
-    margin: var(--space-lg) auto 0;
-    width: auto;
-    min-width: 200px;
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    color: white;
-    padding: 1rem 2rem;
-    font-size: var(--font-base);
-    font-weight: 600;
-    border: none;
-    border-radius: var(--radius-lg);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: var(--shadow-lg);
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(10px);
-}
-
-#removeBtn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-}
-
-#removeBtn:disabled {
-    opacity: 0.3 !important;
-    cursor: not-allowed;
-    transform: translateY(10px) !important;
-    pointer-events: none;
-}
-
-#removeBtn:not(:disabled) {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
 }
 
 /* Checkbox styling */
@@ -671,13 +642,6 @@ input[type="checkbox"]:checked::after {
         border-radius: var(--radius-lg);
         padding: 0.875rem 1.25rem;
         font-size: var(--font-base);
-    }
-
-    #removeBtn {
-        width: auto;
-        min-width: 150px;
-        margin: var(--space-md) auto 0;
-        padding: 0.875rem 1.5rem;
     }
 
     table {
