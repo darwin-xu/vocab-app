@@ -149,11 +149,26 @@ function App() {
     }
 
     async function handleAdd() {
-        if (q) { await addWord(q); setQ(''); loadVocab() }
+        if (q.trim()) { 
+            try {
+                await addWord(q.trim()); 
+                setQ(''); 
+                loadVocab();
+            } catch (error) {
+                console.error('Error adding word:', error);
+            }
+        }
     }
 
     async function handleRemove() {
-        await removeWords(Array.from(selected)); loadVocab()
+        if (selected.size > 0) {
+            try {
+                await removeWords(Array.from(selected)); 
+                loadVocab();
+            } catch (error) {
+                console.error('Error removing words:', error);
+            }
+        }
     }
 
     function toggleSelect(word: string) {
@@ -274,7 +289,7 @@ function App() {
                         id="addBtn" 
                         className={selected.size > 0 ? 'remove-mode' : ''}
                         onClick={selected.size > 0 ? handleRemove : handleAdd}
-                        disabled={selected.size > 0 ? selected.size === 0 : !q}
+                        disabled={selected.size > 0 ? false : !q.trim()}
                     >
                         {selected.size > 0 ? `Remove (${selected.size})` : 'Add Word'}
                     </button>

@@ -19,6 +19,14 @@ export default defineConfig({
                 target: 'http://localhost:8787',
                 changeOrigin: true
             },
+            '/add': {
+                target: 'http://localhost:8787',
+                changeOrigin: true
+            },
+            '/remove': {
+                target: 'http://localhost:8787',
+                changeOrigin: true
+            },
             '/word': {
                 target: 'http://localhost:8787',
                 changeOrigin: true
