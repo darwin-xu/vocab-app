@@ -569,7 +569,7 @@ input[type="checkbox"]:checked::after {
     box-shadow: var(--shadow-sm);
 }
 
-/* Pagination modernization */
+/* Pagination info and modernization */
 #pagination {
     position: fixed;
     left: 50%;
@@ -623,6 +623,9 @@ input[type="checkbox"]:checked::after {
     font-weight: 500;
     min-width: 2rem;
     text-align: center;
+    pointer-events: auto;
+    position: relative;
+    z-index: 10;
 }
 
 #pagination span:hover {
@@ -705,17 +708,23 @@ input[type="checkbox"]:checked::after {
         bottom: var(--space-sm);
         padding: var(--space-sm) var(--space-md);
         gap: var(--space-xs);
+        max-width: calc(100vw - 2rem);
+        left: var(--space-md);
+        right: var(--space-md);
+        transform: none;
     }
 
     #pagination span {
         padding: var(--space-xs);
         min-width: 1.5rem;
         font-size: var(--font-sm);
+        margin: 0 2px;
     }
 
     #pagination button {
         padding: var(--space-xs);
         font-size: var(--font-base);
+        min-width: 2rem;
     }
 
     .popup-menu {
@@ -755,6 +764,23 @@ input[type="checkbox"]:checked::after {
 
     #pagination {
         flex-wrap: wrap;
-        max-width: calc(100vw - 2rem);
+        max-width: calc(100vw - 1rem);
+        left: 0.5rem;
+        right: 0.5rem;
+        padding: var(--space-xs) var(--space-sm);
+        gap: 2px;
+    }
+
+    #pagination button {
+        min-width: 1.8rem;
+        padding: var(--space-xs);
+        font-size: var(--font-sm);
+    }
+
+    #pagination span {
+        min-width: 1.5rem;
+        padding: var(--space-xs);
+        font-size: var(--font-sm);
+        margin: 0 1px;
     }
 }

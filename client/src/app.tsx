@@ -7,7 +7,58 @@ import {
     openaiCall, ttsCall, logout
 } from './api'
 
-const PAGE_SIZE = 20;
+// Custom hook to track window size
+function useWindowSize() {
+    const [windowSize, setWindowSize] = useState({
+        width: typeof window !== 'undefined' ? window.innerWidth : 1200,
+        height: typeof window !== 'undefined' ? window.innerHeight : 800,
+    })
+
+    useEffect(() => {
+        let timeoutId: number | null = null
+
+        function handleResize() {
+            // Debounce resize events to improve performance
+            if (timeoutId) {
+                clearTimeout(timeoutId)
+            }
+            
+            timeoutId = setTimeout(() => {
+                setWindowSize({
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                })
+            }, 150) // 150ms debounce delay
+        }
+
+        window.addEventListener('resize', handleResize)
+        handleResize() // Call handler right away so state gets updated with initial window size
+
+        return () => {
+            window.removeEventListener('resize', handleResize)
+            if (timeoutId) {
+                clearTimeout(timeoutId)
+            }
+        }
+    }, [])
+
+    return windowSize
+}
+
+// Function to calculate dynamic page size based on window height
+function calculatePageSize(windowHeight: number): number {
+    // Estimate available height for table content
+    // Account for header (~120px), input area (~120px), pagination (~80px), margins (~100px)
+    const overhead = 420
+    const availableHeight = Math.max(300, windowHeight - overhead)
+    
+    // Assume each table row is approximately 50px
+    const rowHeight = 50
+    const estimatedRows = Math.floor(availableHeight / rowHeight)
+    
+    // Clamp between reasonable bounds
+    return Math.max(5, Math.min(50, estimatedRows))
+}
 
 // Utility function to format relative time
 function formatRelativeTime(dateString: string): string {
@@ -33,6 +84,9 @@ function formatRelativeTime(dateString: string): string {
 
 interface VocabItem { word: string; add_date: string }
 function App() {
+    const { width: windowWidth, height: windowHeight } = useWindowSize()
+    const pageSize = calculatePageSize(windowHeight)
+    
     const [view, setView] = useState<'auth' | 'vocab'>('auth')
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
@@ -51,17 +105,24 @@ function App() {
         if (localStorage.getItem('sessionToken')) setView('vocab')
     }, [])
 
+    // Reset to page 1 when page size changes due to window resize
+    useEffect(() => {
+        if (view === 'vocab' && page > 1) {
+            setPage(1)
+        }
+    }, [pageSize, view]) // eslint-disable-line react-hooks/exhaustive-deps
+
     // memoized loader
     const loadVocab = useCallback(async () => {
         try {
-            const data = await fetchVocab(q, page, PAGE_SIZE)
+            const data = await fetchVocab(q, page, pageSize)
             setVocab(data.results)
-            setTotalPages(Math.max(1, Math.ceil(data.total / PAGE_SIZE)))
+            setTotalPages(Math.max(1, Math.ceil(data.total / pageSize)))
             setSelected(new Set())
         } catch {
             logout()
         }
-    }, [q, page])
+    }, [q, page, pageSize])
 
     // trigger load when view becomes 'vocab'
     useEffect(() => {
@@ -114,6 +175,26 @@ function App() {
     }
 
     function closeHover() { setHover(h => ({ ...h, show: false })) }
+
+    // Smart pagination function that determines which page numbers to show
+    function getVisiblePageNumbers() {
+        const maxVisiblePages = windowWidth < 768 ? 5 : windowWidth < 1024 ? 7 : 9
+        
+        if (totalPages <= maxVisiblePages) {
+            return Array.from({ length: totalPages }, (_, i) => i + 1)
+        }
+        
+        const halfVisible = Math.floor(maxVisiblePages / 2)
+        let start = Math.max(1, page - halfVisible)
+        const end = Math.min(totalPages, start + maxVisiblePages - 1)
+        
+        // Adjust start if we're near the end
+        if (end - start < maxVisiblePages - 1) {
+            start = Math.max(1, end - maxVisiblePages + 1)
+        }
+        
+        return Array.from({ length: end - start + 1 }, (_, i) => start + i)
+    }
 
     return view === 'auth' ? (
         <div className="auth-page">
@@ -211,7 +292,15 @@ function App() {
             </div>
             <div id="pagination">
                 <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>&lt;</button>
-                {[...Array(totalPages)].map((_, i) => <span key={i} className={page === i + 1 ? 'active' : ''} onClick={() => setPage(i + 1)}>{i + 1}</span>)}
+                {getVisiblePageNumbers().map(pageNum => (
+                    <span 
+                        key={pageNum} 
+                        className={page === pageNum ? 'active' : ''} 
+                        onClick={() => setPage(pageNum)}
+                    >
+                        {pageNum}
+                    </span>
+                ))}
                 <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>&gt;</button>
             </div>
             {popup && (
