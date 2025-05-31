@@ -75,35 +75,34 @@ export default {
                 customInstructions = user?.custom_instructions;
             }
 
-            const defaultPrompt = customInstructions ||
-                (`Define the word '${word}' in this way:` +
-                    `[the word's classification]  \n` +
-                    `**definition**  \n` +
-                    `**next classification**  \n` +
-                    `next definition  \n` +
-                    `**etymology**`);
+            const defaultPrompt = `Define the word '${word}'`;
 
             let prompt = "";
             switch (func) {
                 case "define":
-                    prompt = customInstructions ?
-                        customInstructions.replace('{word}', word) :
-                        defaultPrompt;
+                    prompt = defaultPrompt;
                     break;
                 case "example":
-                    prompt = `Give 1~3 (more if necessary) example sentences using the word '${word}'. no extra words. Provide the sentences in markdown lists.`;
+                    prompt = `Make 1~3 (more if necessary) sentences using the word '${word}'. no extra words. Provide the sentences in markdown lists.`;
                     break;
                 case "synonym":
                     prompt = `List 1~3 (more if necessary) synonyms for the word '${word}'. no extra words. Provide the sentences in markdown lists`;
                     break;
                 default:
-                    prompt = customInstructions ?
-                        customInstructions.replace('{word}', word) :
-                        defaultPrompt;
+                    prompt = defaultPrompt;
             }
 
-            console.log("/openai called with word:", word, "func:", func);
-            console.log("Prompt sent to OpenAI:", prompt);
+            // Prepare messages array with custom instructions for developer role
+            const messages = [];
+            
+            // Add custom instructions as developer/system message if available
+            if (customInstructions) {
+                messages.push({ role: "developer", content: customInstructions });
+            }
+            
+            // Add the main prompt as user message
+            messages.push({ role: "user", content: prompt });
+            console.log("Messages sent to OpenAI:", messages);
 
             const openaiRes = await fetch(getApiEndpoints(env) + '/v1/chat/completions', {
                 method: "POST",
@@ -113,7 +112,7 @@ export default {
                 },
                 body: JSON.stringify({
                     model: "gpt-4.1-nano",
-                    messages: [{ role: "user", content: prompt }]
+                    messages: messages
                 })
             });
 
