@@ -6,7 +6,7 @@
         "build": "npm run build:client && wrangler build",
         "deploy": "npm run build:client && wrangler deploy",
         "dev": "concurrently \"npm run dev:backend\" \"npm run dev:client\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
-        "dev:backend": "wrangler dev",
+        "dev:backend": "wrangler dev --var OPENAI_TOKEN:$OPENAI_TOKEN --var ENVIRONMENT:development",
         "dev:client": "cd client && npm run dev",
         "start": "npm run dev",
         "test": "vitest",
