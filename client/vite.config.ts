@@ -38,6 +38,11 @@ export default defineConfig({
             '/tts': {
                 target: 'http://localhost:8787',
                 changeOrigin: true
+            },
+            // Admin endpoints
+            '/admin': {
+                target: 'http://localhost:8787',
+                changeOrigin: true
             }
         }
     },
