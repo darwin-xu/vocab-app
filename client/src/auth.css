@@ -347,6 +347,29 @@ body {
     opacity: 0.8;
 }
 
+/* User Settings Textarea Styling */
+textarea {
+    appearance: none;
+    background: #fafafa;
+    color: #1f2937;
+    transition: all 0.2s ease;
+    line-height: 1.6;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--auth-primary);
+    box-shadow:
+        0 0 0 3px rgba(102, 126, 234, 0.1),
+        var(--shadow-md);
+    background: #fff;
+    transform: translateY(-1px);
+}
+
+textarea::placeholder {
+    color: var(--auth-text-light);
+}
+
 /* ================================================================ */
 /* RESPONSIVE BREAKPOINTS */
 /* ================================================================ */

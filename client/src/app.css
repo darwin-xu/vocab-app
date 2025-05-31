@@ -613,6 +613,54 @@ input[type="checkbox"]:checked::after {
     box-shadow: var(--shadow-sm);
 }
 
+/* Admin Interface Styling */
+.admin-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.admin-header h1 {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 800;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(102, 126, 234, 0.6);
+    letter-spacing: -0.02em;
+    margin-bottom: var(--space-lg);
+}
+
+.settings-btn {
+    padding: 0.5rem;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-xs);
+    font-size: 14px;
+    min-width: 36px;
+}
+
+.settings-btn:hover {
+    background: var(--gradient-secondary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* User Settings Page Styles */
+.user-settings-container {
+    max-width: 700px !important;
+}
+
+.user-settings-container textarea {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: var(--font-sm);
+    line-height: 1.5;
+}
+
 /* Mobile responsive design */
 @media (max-width: 768px) {
     .container {

@@ -33,6 +33,7 @@ export async function login(username: string, password: string) {
     const data = await res.json();
     setToken(data.token);
     localStorage.setItem(USERNAME_KEY, username);
+    localStorage.setItem('isAdmin', data.is_admin ? 'true' : 'false');
 }
 
 export async function register(username: string, password: string) {
@@ -81,7 +82,33 @@ export async function ttsCall(text: string) {
     return data.audio as string;
 }
 
+export async function fetchUsers() {
+    const res = await authFetch('/admin/users');
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+}
+
+export async function fetchUserDetails(userId: string) {
+    const res = await authFetch(`/admin/users/${userId}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+}
+
+export async function updateUserInstructions(userId: string, customInstructions: string) {
+    const res = await authFetch(`/admin/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ custom_instructions: customInstructions })
+    });
+    if (!res.ok) throw new Error(await res.text());
+}
+
+export function isAdmin() {
+    return localStorage.getItem('isAdmin') === 'true';
+}
+
 export function logout() {
     clearToken();
+    localStorage.removeItem('isAdmin');
     window.location.reload();
 }

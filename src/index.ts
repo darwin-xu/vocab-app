@@ -27,6 +27,13 @@ async function getUserIdFromRequest(request: Request, env: any): Promise<number 
     return session.user_id;
 }
 
+async function getSessionFromRequest(request: Request): Promise<{ user_id: number; is_admin: boolean } | null> {
+    const auth = request.headers.get('Authorization');
+    if (!auth) return null;
+    const session = SESSIONS.get(auth.replace('Bearer ', ''));
+    return session || null;
+}
+
 export default {
     async fetch(request: Request, env: any): Promise<Response> {
         const url = new URL(request.url);
@@ -38,7 +45,7 @@ export default {
             if (!username || !password) return new Response('Missing username or password', { status: 400 });
             const exists = await env.DB.prepare('SELECT 1 FROM users WHERE username = ?').bind(username).first();
             if (exists) return new Response('Username already exists', { status: 409 });
-            await env.DB.prepare('INSERT INTO users (username, password) VALUES (?, ?)').bind(username, password).run();
+            await env.DB.prepare('INSERT INTO users (username, password, created_at) VALUES (?, ?, datetime(\'now\'))').bind(username, password).run();
             return new Response('OK');
         }
 
@@ -47,11 +54,11 @@ export default {
             const username = (body as any).username;
             const password = (body as any).password;
             if (!username || !password) return new Response('Missing username or password', { status: 400 });
-            const user = await env.DB.prepare('SELECT id, password FROM users WHERE username = ?').bind(username).first();
+            const user = await env.DB.prepare('SELECT id, password, is_admin FROM users WHERE username = ?').bind(username).first();
             if (!user || user.password !== password) return new Response('Invalid credentials', { status: 401 });
             const token = randomId();
-            SESSIONS.set(token, { user_id: user.id });
-            return new Response(JSON.stringify({ token }), { headers: { 'Content-Type': 'application/json' } });
+            SESSIONS.set(token, { user_id: user.id, is_admin: user.is_admin });
+            return new Response(JSON.stringify({ token, is_admin: user.is_admin }), { headers: { 'Content-Type': 'application/json' } });
         }
 
         if (url.pathname === "/openai") {
@@ -59,17 +66,29 @@ export default {
             const word = searchParams.get("word") || "Say hi!";
             const func = searchParams.get("func") || "define";
 
-            const defaultPrompt = `Define the word '${word}' in this way:` +
+            // Get user ID from request to fetch custom instructions
+            const userId = await getUserIdFromRequest(request, env);
+            let customInstructions = null;
+            
+            if (userId) {
+                const user = await env.DB.prepare('SELECT custom_instructions FROM users WHERE id = ?').bind(userId).first();
+                customInstructions = user?.custom_instructions;
+            }
+
+            const defaultPrompt = customInstructions || 
+                (`Define the word '${word}' in this way:` +
                 `[the word's classification]  \n` +
                 `**definition**  \n` +
                 `**next classification**  \n` +
                 `next definition  \n` +
-                `**etymology**`;
+                `**etymology**`);
 
             let prompt = "";
             switch (func) {
                 case "define":
-                    prompt = defaultPrompt;
+                    prompt = customInstructions ? 
+                        customInstructions.replace('{word}', word) : 
+                        defaultPrompt;
                     break;
                 case "example":
                     prompt = `Give 1~3 (more if necessary) example sentences using the word '${word}'. no extra words. Provide the sentences in markdown lists.`;
@@ -78,7 +97,9 @@ export default {
                     prompt = `List 1~3 (more if necessary) synonyms for the word '${word}'. no extra words. Provide the sentences in markdown lists`;
                     break;
                 default:
-                    prompt = defaultPrompt;
+                    prompt = customInstructions ? 
+                        customInstructions.replace('{word}', word) : 
+                        defaultPrompt;
             }
 
             console.log("/openai called with word:", word, "func:", func);
@@ -189,6 +210,56 @@ export default {
                 'SELECT * FROM vocab WHERE user_id = ? AND word LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?'
             ).bind(userId, `%${q}%`, pageSize, offset).all();
             return new Response(JSON.stringify({ results, total }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // Admin-only endpoints
+        if (url.pathname === '/admin/users') {
+            const session = await getSessionFromRequest(request);
+            if (!session || !session.is_admin) return new Response('Unauthorized', { status: 401 });
+            
+            const { results } = await env.DB.prepare(
+                'SELECT id, username, created_at FROM users WHERE is_admin = 0 ORDER BY created_at DESC'
+            ).all();
+            return new Response(JSON.stringify({ users: results }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        if (url.pathname.startsWith('/admin/users/') && request.method === 'GET') {
+            const session = await getSessionFromRequest(request);
+            if (!session || !session.is_admin) return new Response('Unauthorized', { status: 401 });
+            
+            const userId = url.pathname.split('/').pop();
+            if (!userId) return new Response('Invalid user ID', { status: 400 });
+            
+            const user = await env.DB.prepare(
+                'SELECT id, username, custom_instructions FROM users WHERE id = ? AND is_admin = 0'
+            ).bind(userId).first();
+            
+            if (!user) return new Response('User not found', { status: 404 });
+            
+            return new Response(JSON.stringify({ user }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        if (url.pathname.startsWith('/admin/users/') && request.method === 'PUT') {
+            const session = await getSessionFromRequest(request);
+            if (!session || !session.is_admin) return new Response('Unauthorized', { status: 401 });
+            
+            const userId = url.pathname.split('/').pop();
+            if (!userId) return new Response('Invalid user ID', { status: 400 });
+            
+            const body = await request.json();
+            const customInstructions = (body as any).custom_instructions;
+            
+            await env.DB.prepare(
+                'UPDATE users SET custom_instructions = ? WHERE id = ? AND is_admin = 0'
+            ).bind(customInstructions, userId).run();
+            
+            return new Response(JSON.stringify({ success: true }), {
                 headers: { 'Content-Type': 'application/json' }
             });
         }

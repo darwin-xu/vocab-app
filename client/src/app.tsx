@@ -4,7 +4,8 @@ import './app.css'
 import './auth.css'
 import {
     login, register, fetchVocab, addWord, removeWords,
-    openaiCall, ttsCall, logout
+    openaiCall, ttsCall, logout, isAdmin, fetchUsers, 
+    fetchUserDetails, updateUserInstructions
 } from './api'
 
 // Custom hook to track window size
@@ -83,11 +84,14 @@ function formatRelativeTime(dateString: string): string {
 }
 
 interface VocabItem { word: string; add_date: string }
+interface User { id: number; username: string; created_at: string }
+interface UserDetails { id: number; username: string; custom_instructions: string }
+
 function App() {
     const { width: windowWidth, height: windowHeight } = useWindowSize()
     const pageSize = calculatePageSize(windowHeight)
     
-    const [view, setView] = useState<'auth' | 'vocab'>('auth')
+    const [view, setView] = useState<'auth' | 'vocab' | 'admin' | 'user-settings'>('auth')
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [authMsg, setAuthMsg] = useState('')
@@ -99,10 +103,21 @@ function App() {
     const [popup, setPopup] = useState<{ word: string; x: number; y: number; func?: string } | null>(null)
     const [hover, setHover] = useState<{ show: boolean; x: number; y: number; content: string }>({ show: false, x: 0, y: 0, content: '' })
     const [isLoading, setIsLoading] = useState(false)
+    
+    // Admin-related state
+    const [users, setUsers] = useState<User[]>([])
+    const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null)
+    const [customInstructions, setCustomInstructions] = useState('')
 
     // check login on mount
     useEffect(() => {
-        if (localStorage.getItem('sessionToken')) setView('vocab')
+        if (localStorage.getItem('sessionToken')) {
+            if (isAdmin()) {
+                setView('admin')
+            } else {
+                setView('vocab')
+            }
+        }
     }, [])
 
     // Reset to page 1 when page size changes due to window resize
@@ -124,17 +139,60 @@ function App() {
         }
     }, [q, page, pageSize])
 
+    // Load users for admin
+    const loadUsers = useCallback(async () => {
+        try {
+            const data = await fetchUsers()
+            setUsers(data.users)
+        } catch (error) {
+            console.error('Error loading users:', error)
+        }
+    }, [])
+
     // trigger load when view becomes 'vocab'
     useEffect(() => {
         if (view === 'vocab') loadVocab()
-    }, [view, loadVocab])
+        if (view === 'admin') loadUsers()
+    }, [view, loadVocab, loadUsers])
+
+    // Load user details for settings
+    async function loadUserDetails(userId: string) {
+        try {
+            const data = await fetchUserDetails(userId)
+            setSelectedUser(data.user)
+            setCustomInstructions(data.user.custom_instructions || '')
+            setView('user-settings')
+        } catch (error) {
+            console.error('Error loading user details:', error)
+        }
+    }
+
+    // Save user instructions
+    async function saveUserInstructions() {
+        if (!selectedUser) return
+        try {
+            await updateUserInstructions(selectedUser.id.toString(), customInstructions)
+            setView('admin')
+            setSelectedUser(null)
+            setCustomInstructions('')
+        } catch (error) {
+            console.error('Error saving user instructions:', error)
+        }
+    }
 
     async function handleAuth(isRegister = false) {
         setIsLoading(true)
         try {
             if (isRegister) await register(username, password)
             else await login(username, password)
-            setView('vocab'); setAuthMsg('')
+            
+            // Redirect based on admin status
+            if (isAdmin()) {
+                setView('admin')
+            } else {
+                setView('vocab')
+            }
+            setAuthMsg('')
         } catch (e) {
             setAuthMsg((e as Error).message)
         } finally {
@@ -272,7 +330,94 @@ function App() {
                 </div>
             </div>
         </div>
+    ) : view === 'admin' ? (
+        // Admin user management interface
+        <div onClick={() => {
+            if (popup) setPopup(null)
+            closeHover()
+        }}>
+            <div id="login-status">
+                👤 {localStorage.getItem('username')} (Admin) <button onClick={logout}>Logout</button>
+            </div>
+            <div className="container">
+                <h1>User Management</h1>
+                <table>
+                    <thead>
+                        <tr><th>Username</th><th>Created</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        {users.map(user => (
+                            <tr key={user.id}>
+                                <td><span className="montserrat-unique">{user.username}</span></td>
+                                <td>{formatRelativeTime(user.created_at)}</td>
+                                <td>
+                                    <button 
+                                        className="settings-btn"
+                                        onClick={() => loadUserDetails(user.id.toString())}
+                                        title="User Settings"
+                                    >
+                                        Settings
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    ) : view === 'user-settings' ? (
+        // User settings page
+        <div className="auth-page">
+            <div className="auth-container user-settings-container">
+                <div className="auth-header">
+                    <h1>User Settings</h1>
+                    <p className="auth-subtitle">Configure custom instructions for {selectedUser?.username}</p>
+                </div>
+                <div className="auth-form">
+                    <div className="form-group">
+                        <label htmlFor="instructions">Custom Word Definition Instructions</label>
+                        <textarea
+                            id="instructions"
+                            placeholder="Enter custom instructions for how words should be defined for this user. Use {word} as placeholder for the word to be defined.
+
+Example:
+Define the word '{word}' in a simple way:
+**Meaning:** [simple definition]
+**Example:** [example sentence]"
+                            value={customInstructions}
+                            onChange={e => setCustomInstructions(e.target.value)}
+                            rows={10}
+                            style={{
+                                width: '100%',
+                                padding: '1.25rem',
+                                border: '2px solid #e5e7eb',
+                                borderRadius: 'var(--radius-lg)',
+                                fontSize: 'var(--font-sm)',
+                                fontFamily: 'Monaco, Menlo, Ubuntu Mono, monospace',
+                                resize: 'vertical',
+                                minHeight: '250px'
+                            }}
+                        />
+                    </div>
+                    <div className="auth-buttons">
+                        <button
+                            className="btn btn-primary"
+                            onClick={saveUserInstructions}
+                        >
+                            Save Instructions
+                        </button>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => setView('admin')}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     ) : (
+        // Regular vocabulary interface
         <div onClick={() => {
             if (popup) setPopup(null)
             closeHover()
