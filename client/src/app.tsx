@@ -4,7 +4,7 @@ import './app.css'
 import './auth.css'
 import {
     login, register, fetchVocab, addWord, removeWords,
-    openaiCall, ttsCall, logout, isAdmin, fetchUsers, 
+    openaiCall, ttsCall, logout, isAdmin, fetchUsers,
     fetchUserDetails, updateUserInstructions
 } from './api'
 
@@ -23,7 +23,7 @@ function useWindowSize() {
             if (timeoutId) {
                 clearTimeout(timeoutId)
             }
-            
+
             timeoutId = setTimeout(() => {
                 setWindowSize({
                     width: window.innerWidth,
@@ -52,11 +52,11 @@ function calculatePageSize(windowHeight: number): number {
     // Account for header (~120px), input area (~120px), pagination (~80px), margins (~100px)
     const overhead = 420
     const availableHeight = Math.max(300, windowHeight - overhead)
-    
+
     // Assume each table row is approximately 50px
     const rowHeight = 50
     const estimatedRows = Math.floor(availableHeight / rowHeight)
-    
+
     // Clamp between reasonable bounds
     return Math.max(5, Math.min(50, estimatedRows))
 }
@@ -67,7 +67,7 @@ function formatRelativeTime(dateString: string): string {
     const addedDate = new Date(dateString);
     const diffMs = now.getTime() - addedDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) {
         return 'today';
     } else if (diffDays === 1) {
@@ -90,7 +90,7 @@ interface UserDetails { id: number; username: string; custom_instructions: strin
 function App() {
     const { width: windowWidth, height: windowHeight } = useWindowSize()
     const pageSize = calculatePageSize(windowHeight)
-    
+
     const [view, setView] = useState<'auth' | 'vocab' | 'admin' | 'user-settings'>('auth')
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
@@ -103,7 +103,7 @@ function App() {
     const [popup, setPopup] = useState<{ word: string; x: number; y: number; func?: string } | null>(null)
     const [hover, setHover] = useState<{ show: boolean; x: number; y: number; content: string }>({ show: false, x: 0, y: 0, content: '' })
     const [isLoading, setIsLoading] = useState(false)
-    
+
     // Admin-related state
     const [users, setUsers] = useState<User[]>([])
     const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null)
@@ -185,7 +185,7 @@ function App() {
         try {
             if (isRegister) await register(username, password)
             else await login(username, password)
-            
+
             // Redirect based on admin status
             if (isAdmin()) {
                 setView('admin')
@@ -207,10 +207,10 @@ function App() {
     }
 
     async function handleAdd() {
-        if (q.trim()) { 
+        if (q.trim()) {
             try {
-                await addWord(q.trim()); 
-                setQ(''); 
+                await addWord(q.trim());
+                setQ('');
                 loadVocab();
             } catch (error) {
                 console.error('Error adding word:', error);
@@ -221,7 +221,7 @@ function App() {
     async function handleRemove() {
         if (selected.size > 0) {
             try {
-                await removeWords(Array.from(selected)); 
+                await removeWords(Array.from(selected));
                 loadVocab();
             } catch (error) {
                 console.error('Error removing words:', error);
@@ -252,20 +252,20 @@ function App() {
     // Smart pagination function that determines which page numbers to show
     function getVisiblePageNumbers() {
         const maxVisiblePages = windowWidth < 768 ? 5 : windowWidth < 1024 ? 7 : 9
-        
+
         if (totalPages <= maxVisiblePages) {
             return Array.from({ length: totalPages }, (_, i) => i + 1)
         }
-        
+
         const halfVisible = Math.floor(maxVisiblePages / 2)
         let start = Math.max(1, page - halfVisible)
         const end = Math.min(totalPages, start + maxVisiblePages - 1)
-        
+
         // Adjust start if we're near the end
         if (end - start < maxVisiblePages - 1) {
             start = Math.max(1, end - maxVisiblePages + 1)
         }
-        
+
         return Array.from({ length: end - start + 1 }, (_, i) => start + i)
     }
 
@@ -351,7 +351,7 @@ function App() {
                                 <td><span className="montserrat-unique">{user.username}</span></td>
                                 <td>{formatRelativeTime(user.created_at)}</td>
                                 <td>
-                                    <button 
+                                    <button
                                         className="settings-btn"
                                         onClick={() => loadUserDetails(user.id.toString())}
                                         title="User Settings"
@@ -430,8 +430,8 @@ Define the word '{word}' in a simple way:
                 <div className="field-row">
                     <input id="word" placeholder="Word (type to search)…" value={q}
                         onChange={e => setQ(e.target.value)} />
-                    <button 
-                        id="addBtn" 
+                    <button
+                        id="addBtn"
                         className={selected.size > 0 ? 'remove-mode' : ''}
                         onClick={selected.size > 0 ? handleRemove : handleAdd}
                         disabled={selected.size > 0 ? false : !q.trim()}
@@ -459,9 +459,9 @@ Define the word '{word}' in a simple way:
             <div id="pagination">
                 <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>&lt;</button>
                 {getVisiblePageNumbers().map(pageNum => (
-                    <span 
-                        key={pageNum} 
-                        className={page === pageNum ? 'active' : ''} 
+                    <span
+                        key={pageNum}
+                        className={page === pageNum ? 'active' : ''}
                         onClick={() => setPage(pageNum)}
                     >
                         {pageNum}

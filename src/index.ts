@@ -69,25 +69,25 @@ export default {
             // Get user ID from request to fetch custom instructions
             const userId = await getUserIdFromRequest(request, env);
             let customInstructions = null;
-            
+
             if (userId) {
                 const user = await env.DB.prepare('SELECT custom_instructions FROM users WHERE id = ?').bind(userId).first();
                 customInstructions = user?.custom_instructions;
             }
 
-            const defaultPrompt = customInstructions || 
+            const defaultPrompt = customInstructions ||
                 (`Define the word '${word}' in this way:` +
-                `[the word's classification]  \n` +
-                `**definition**  \n` +
-                `**next classification**  \n` +
-                `next definition  \n` +
-                `**etymology**`);
+                    `[the word's classification]  \n` +
+                    `**definition**  \n` +
+                    `**next classification**  \n` +
+                    `next definition  \n` +
+                    `**etymology**`);
 
             let prompt = "";
             switch (func) {
                 case "define":
-                    prompt = customInstructions ? 
-                        customInstructions.replace('{word}', word) : 
+                    prompt = customInstructions ?
+                        customInstructions.replace('{word}', word) :
                         defaultPrompt;
                     break;
                 case "example":
@@ -97,8 +97,8 @@ export default {
                     prompt = `List 1~3 (more if necessary) synonyms for the word '${word}'. no extra words. Provide the sentences in markdown lists`;
                     break;
                 default:
-                    prompt = customInstructions ? 
-                        customInstructions.replace('{word}', word) : 
+                    prompt = customInstructions ?
+                        customInstructions.replace('{word}', word) :
                         defaultPrompt;
             }
 
@@ -218,7 +218,7 @@ export default {
         if (url.pathname === '/admin/users') {
             const session = await getSessionFromRequest(request);
             if (!session || !session.is_admin) return new Response('Unauthorized', { status: 401 });
-            
+
             const { results } = await env.DB.prepare(
                 'SELECT id, username, created_at FROM users WHERE is_admin = 0 ORDER BY created_at DESC'
             ).all();
@@ -230,16 +230,16 @@ export default {
         if (url.pathname.startsWith('/admin/users/') && request.method === 'GET') {
             const session = await getSessionFromRequest(request);
             if (!session || !session.is_admin) return new Response('Unauthorized', { status: 401 });
-            
+
             const userId = url.pathname.split('/').pop();
             if (!userId) return new Response('Invalid user ID', { status: 400 });
-            
+
             const user = await env.DB.prepare(
                 'SELECT id, username, custom_instructions FROM users WHERE id = ? AND is_admin = 0'
             ).bind(userId).first();
-            
+
             if (!user) return new Response('User not found', { status: 404 });
-            
+
             return new Response(JSON.stringify({ user }), {
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -248,17 +248,17 @@ export default {
         if (url.pathname.startsWith('/admin/users/') && request.method === 'PUT') {
             const session = await getSessionFromRequest(request);
             if (!session || !session.is_admin) return new Response('Unauthorized', { status: 401 });
-            
+
             const userId = url.pathname.split('/').pop();
             if (!userId) return new Response('Invalid user ID', { status: 400 });
-            
+
             const body = await request.json();
             const customInstructions = (body as any).custom_instructions;
-            
+
             await env.DB.prepare(
                 'UPDATE users SET custom_instructions = ? WHERE id = ? AND is_admin = 0'
             ).bind(customInstructions, userId).run();
-            
+
             return new Response(JSON.stringify({ success: true }), {
                 headers: { 'Content-Type': 'application/json' }
             });
