@@ -43,6 +43,11 @@ export default defineConfig({
             '/admin': {
                 target: 'http://localhost:8787',
                 changeOrigin: true
+            },
+            // Profile endpoints
+            '/profile': {
+                target: 'http://localhost:8787',
+                changeOrigin: true
             }
         }
     },

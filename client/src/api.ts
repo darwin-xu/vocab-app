@@ -103,6 +103,21 @@ export async function updateUserInstructions(userId: string, customInstructions:
     if (!res.ok) throw new Error(await res.text());
 }
 
+export async function fetchOwnProfile() {
+    const res = await authFetch('/profile');
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+}
+
+export async function updateOwnProfile(customInstructions: string) {
+    const res = await authFetch('/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ custom_instructions: customInstructions })
+    });
+    if (!res.ok) throw new Error(await res.text());
+}
+
 export function isAdmin() {
     return localStorage.getItem('isAdmin') === 'true';
 }

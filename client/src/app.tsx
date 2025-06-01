@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { marked } from 'marked'
 import './app.css'
 import './auth.css'
 import {
     login, register, fetchVocab, addWord, removeWords,
     openaiCall, ttsCall, logout, isAdmin, fetchUsers,
-    fetchUserDetails, updateUserInstructions
+    fetchUserDetails, updateUserInstructions, fetchOwnProfile, updateOwnProfile
 } from './api'
 
 // Custom hook to track window size
@@ -109,6 +109,10 @@ function App() {
     const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null)
     const [customInstructions, setCustomInstructions] = useState('')
 
+    // Avatar dropdown state
+    const [dropdownOpen, setDropdownOpen] = useState(false)
+    const dropdownRef = useRef<HTMLDivElement>(null)
+
     // check login on mount
     useEffect(() => {
         if (localStorage.getItem('sessionToken')) {
@@ -171,8 +175,19 @@ function App() {
     async function saveUserInstructions() {
         if (!selectedUser) return
         try {
-            await updateUserInstructions(selectedUser.id.toString(), customInstructions)
-            setView('admin')
+            // Check if user is editing their own profile
+            const currentUserId = localStorage.getItem('userId')
+            const isOwnProfile = currentUserId && selectedUser.id.toString() === currentUserId
+            
+            if (isOwnProfile) {
+                // Use own profile API
+                await updateOwnProfile(customInstructions)
+            } else {
+                // Use admin API for managing other users
+                await updateUserInstructions(selectedUser.id.toString(), customInstructions)
+            }
+            
+            setView(isAdmin() ? 'admin' : 'vocab')
             setSelectedUser(null)
             setCustomInstructions('')
         } catch (error) {
@@ -180,11 +195,57 @@ function App() {
         }
     }
 
+    // Load own profile
+    async function loadOwnProfile() {
+        try {
+            console.log('Loading own profile...');
+            const data = await fetchOwnProfile()
+            console.log('Own profile data:', data);
+            
+            // Store user ID for comparison
+            localStorage.setItem('userId', data.user.id.toString())
+            
+            // Reuse the existing user-settings view by setting selectedUser to current user's data
+            setSelectedUser({
+                id: data.user.id,
+                username: data.user.username,
+                custom_instructions: data.user.custom_instructions || ''
+            })
+            setCustomInstructions(data.user.custom_instructions || '')
+            setView('user-settings')
+        } catch (error) {
+            console.error('Error loading own profile:', error)
+        }
+    }
+
+    // Get user initials for avatar
+    function getUserInitials() {
+        const name = localStorage.getItem('username') || 'User'
+        return name.substring(0, 2).toUpperCase()
+    }
+
+    // Handle click outside dropdown
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setDropdownOpen(false)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [])
+
     async function handleAuth(isRegister = false) {
         setIsLoading(true)
         try {
             if (isRegister) await register(username, password)
             else await login(username, password)
+
+            // Store username in localStorage (already done in login function)
+            // We'll get the user ID when needed from the profile API
 
             // Redirect based on admin status
             if (isAdmin()) {
@@ -336,8 +397,34 @@ function App() {
             if (popup) setPopup(null)
             closeHover()
         }}>
-            <div id="login-status">
-                👤 {localStorage.getItem('username')} (Admin) <button onClick={logout}>Logout</button>
+            <div className="user-avatar" ref={dropdownRef}>
+                <div 
+                    className={`avatar-button ${dropdownOpen ? 'open' : ''}`}
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                >
+                    {getUserInitials()}
+                </div>
+                <div className={`user-dropdown ${dropdownOpen ? 'open' : ''}`}>
+                    <div className="dropdown-header">
+                        {localStorage.getItem('username')} (Admin)
+                    </div>
+                    <button className="dropdown-item" onClick={() => { 
+                        console.log('Admin Settings clicked!'); 
+                        loadOwnProfile(); 
+                        setDropdownOpen(false); 
+                    }}>
+                        <span className="icon">⚙️</span>
+                        Settings
+                    </button>
+                    <button className="dropdown-item" onClick={() => { 
+                        console.log('Admin Logout clicked!'); 
+                        logout(); 
+                        setDropdownOpen(false); 
+                    }}>
+                        <span className="icon">🚪</span>
+                        Logout
+                    </button>
+                </div>
             </div>
             <div className="container">
                 <h1>User Management</h1>
@@ -366,12 +453,17 @@ function App() {
             </div>
         </div>
     ) : view === 'user-settings' ? (
-        // User settings page
+        // User settings page (works for both admin managing others and users managing themselves)
         <div className="auth-page">
             <div className="auth-container user-settings-container">
                 <div className="auth-header">
-                    <h1>User Settings</h1>
-                    <p className="auth-subtitle">Configure custom instructions for {selectedUser?.username}</p>
+                    <h1>{selectedUser?.id.toString() === localStorage.getItem('userId') ? 'My Settings' : 'User Settings'}</h1>
+                    <p className="auth-subtitle">
+                        {selectedUser?.id.toString() === localStorage.getItem('userId') 
+                            ? 'Configure your custom word definition instructions'
+                            : `Configure custom instructions for ${selectedUser?.username}`
+                        }
+                    </p>
                 </div>
                 <div className="auth-form">
                     <div className="form-group">
@@ -408,7 +500,7 @@ Define the word '{word}' in a simple way:
                         </button>
                         <button
                             className="btn btn-secondary"
-                            onClick={() => setView('admin')}
+                            onClick={() => setView(isAdmin() ? 'admin' : 'vocab')}
                         >
                             Cancel
                         </button>
@@ -422,8 +514,44 @@ Define the word '{word}' in a simple way:
             if (popup) setPopup(null)
             closeHover()
         }}>
-            <div id="login-status">
-                👤 {localStorage.getItem('username')} <button onClick={logout}>Logout</button>
+            <div className="user-avatar" ref={dropdownRef}>
+                <div 
+                    className={`avatar-button ${dropdownOpen ? 'open' : ''}`}
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                >
+                    {getUserInitials()}
+                </div>
+                <div className={`user-dropdown ${dropdownOpen ? 'open' : ''}`}>
+                    <div className="dropdown-header">
+                        {localStorage.getItem('username')}
+                    </div>
+                    <button className="dropdown-item" onClick={() => { 
+                        console.log('User Settings clicked!'); 
+                        loadOwnProfile(); 
+                        setDropdownOpen(false); 
+                    }}>
+                        <span className="icon">⚙️</span>
+                        Settings
+                    </button>
+                    {isAdmin() && (
+                        <button className="dropdown-item" onClick={() => { 
+                            console.log('Admin Panel clicked!'); 
+                            setView('admin'); 
+                            setDropdownOpen(false); 
+                        }}>
+                            <span className="icon">👤</span>
+                            Admin Panel
+                        </button>
+                    )}
+                    <button className="dropdown-item" onClick={() => { 
+                        console.log('User Logout clicked!'); 
+                        logout(); 
+                        setDropdownOpen(false); 
+                    }}>
+                        <span className="icon">🚪</span>
+                        Logout
+                    </button>
+                </div>
             </div>
             <div className="container">
                 <h1>Vocabulary Builder</h1>

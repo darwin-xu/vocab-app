@@ -102,7 +102,6 @@ export default {
             
             // Add the main prompt as user message
             messages.push({ role: "user", content: prompt });
-            console.log("Messages sent to OpenAI:", messages);
 
             const openaiRes = await fetch(getApiEndpoints(env) + '/v1/chat/completions', {
                 method: "POST",
@@ -115,7 +114,8 @@ export default {
                     messages: messages
                 })
             });
-
+            console.log("Token", env.OPENAI_TOKEN);
+            console.log("Request sent to OpenAI:", messages);
             console.log("OpenAI API response status:", openaiRes.status);
 
             if (!openaiRes.ok) {
@@ -258,6 +258,49 @@ export default {
                 'UPDATE users SET custom_instructions = ? WHERE id = ? AND is_admin = 0'
             ).bind(customInstructions, userId).run();
 
+            return new Response(JSON.stringify({ success: true }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        // User profile endpoints
+        if (url.pathname === '/profile' && request.method === 'GET') {
+            const userId = await getUserIdFromRequest(request, env);
+            console.log('GET /profile - userId:', userId);
+            if (!userId) return new Response('Unauthorized', { status: 401 });
+
+            const user = await env.DB.prepare(
+                'SELECT id, username, custom_instructions FROM users WHERE id = ?'
+            ).bind(userId).first();
+
+            console.log('GET /profile - user data:', user);
+            if (!user) return new Response('User not found', { status: 404 });
+
+            return new Response(JSON.stringify({ 
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    custom_instructions: user.custom_instructions
+                }
+            }), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        if (url.pathname === '/profile' && request.method === 'PUT') {
+            const userId = await getUserIdFromRequest(request, env);
+            console.log('PUT /profile - userId:', userId);
+            if (!userId) return new Response('Unauthorized', { status: 401 });
+
+            const body = await request.json();
+            const customInstructions = (body as any).custom_instructions;
+            console.log('PUT /profile - customInstructions:', customInstructions);
+
+            await env.DB.prepare(
+                'UPDATE users SET custom_instructions = ? WHERE id = ?'
+            ).bind(customInstructions, userId).run();
+
+            console.log('PUT /profile - update completed');
             return new Response(JSON.stringify({ success: true }), {
                 headers: { 'Content-Type': 'application/json' }
             });

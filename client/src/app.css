@@ -544,42 +544,109 @@ input[type="checkbox"]:checked::after {
     font-weight: 600;
 }
 
-/* Login status modernization */
-#login-status {
+/* User Avatar and Dropdown */
+.user-avatar {
     position: fixed;
     top: var(--space-lg);
     right: var(--space-xl);
     z-index: 2000;
-    font-size: var(--font-base);
     font-family: 'Inter', sans-serif;
+}
+
+.avatar-button {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.2s ease;
+    backdrop-filter: blur(20px);
+    position: relative;
+}
+
+.avatar-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.avatar-button.open {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.user-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 0;
     background: var(--vocab-surface);
     backdrop-filter: blur(20px);
-    padding: var(--space-sm) var(--space-lg);
-    border-radius: var(--radius-xl);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: var(--shadow-lg);
-    color: var(--auth-text-dark);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transition: all 0.2s ease;
+    z-index: 3000;
+}
+
+.user-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.dropdown-header {
+    padding: var(--space-sm) var(--space-md);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    color: var(--auth-text-medium);
+    font-size: var(--font-sm);
     font-weight: 500;
+}
+
+.dropdown-item {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-}
-
-#login-status button {
-    background: var(--gradient-primary);
-    color: white;
-    border: none;
-    padding: var(--space-xs) var(--space-md);
-    border-radius: var(--radius-sm);
+    padding: var(--space-sm) var(--space-md);
+    color: var(--auth-text-dark);
     font-size: var(--font-sm);
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    border-radius: 0;
 }
 
-#login-status button:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+.dropdown-item:first-of-type {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.dropdown-item:last-of-type {
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.dropdown-item:hover {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.dropdown-item .icon {
+    font-size: 16px;
+    opacity: 0.8;
 }
 
 /* Pagination info and modernization */
@@ -765,11 +832,20 @@ input[type="checkbox"]:checked::after {
         display: none;
     }
 
-    #login-status {
+    .user-avatar {
         top: var(--space-sm);
         right: var(--space-sm);
-        font-size: var(--font-sm);
-        padding: var(--space-xs) var(--space-sm);
+    }
+
+    .avatar-button {
+        width: 42px;
+        height: 42px;
+        font-size: 16px;
+    }
+
+    .user-dropdown {
+        top: 54px;
+        min-width: 160px;
     }
 
     #pagination {
