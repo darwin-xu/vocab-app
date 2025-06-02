@@ -1,0 +1,15 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" rx="24" fill="#F4F9FF"/>
+  <!-- Speech bubble (bigger, centered) -->
+  <rect x="34" y="24" width="60" height="30" rx="8" fill="#6DB5F7"/>
+  <polygon points="64,54 70,64 58,58" fill="#6DB5F7"/>
+  <!-- Letters inside bubble -->
+  <text x="64" y="46" text-anchor="middle" font-size="16" font-weight="bold" fill="#2468CE" font-family="Arial, sans-serif">A B C</text>
+  <!-- Book (moved down) -->
+  <rect x="28" y="68" width="72" height="36" rx="8" fill="#2468CE"/>
+  <rect x="36" y="76" width="56" height="24" rx="4" fill="#6DB5F7"/>
+  <!-- Book lines -->
+  <line x1="44" y1="84" x2="84" y2="84" stroke="#B3D8FF" stroke-width="2"/>
+  <line x1="44" y1="90" x2="84" y2="90" stroke="#B3D8FF" stroke-width="2"/>
+  <line x1="44" y1="96" x2="74" y2="96" stroke="#B3D8FF" stroke-width="2"/>
+</svg>
