@@ -104,12 +104,12 @@ export default {
 
             // Prepare messages array with custom instructions for developer role
             const messages = [];
-            
+
             // Add custom instructions as developer/system message if available
             if (customInstructions) {
                 messages.push({ role: "developer", content: customInstructions });
             }
-            
+
             // Add the main prompt as user message
             messages.push({ role: "user", content: prompt });
 
@@ -178,7 +178,7 @@ export default {
         if (url.pathname === '/vocab') {
             const userId = await getUserIdFromRequest(request, env);
             if (!userId) return new Response('Unauthorized', { status: 401 });
-            
+
             if (request.method === 'GET') {
                 const q = url.searchParams.get('q') ?? '';
                 const page = parseInt(url.searchParams.get('page') ?? '1', 10);
@@ -191,17 +191,17 @@ export default {
                 const { results } = await env.DB.prepare(
                     'SELECT * FROM vocab WHERE user_id = ? AND word LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?'
                 ).bind(userId, `%${q}%`, pageSize, offset).all();
-                
+
                 const totalPages = Math.ceil(total / pageSize);
-                return new Response(JSON.stringify({ 
-                    items: results, 
+                return new Response(JSON.stringify({
+                    items: results,
                     currentPage: page,
-                    totalPages 
+                    totalPages
                 }), {
                     headers: { 'Content-Type': 'application/json' }
                 });
             }
-            
+
             if (request.method === 'POST') {
                 let body;
                 try {
@@ -214,16 +214,16 @@ export default {
                 }
                 const word = (body as { word: string }).word;
                 if (!word) return new Response('Missing word', { status: 400 });
-                
+
                 const exists = await env.DB.prepare('SELECT 1 FROM vocab WHERE user_id = ? AND word = ?').bind(userId, word).first();
                 if (exists) return new Response('Word already exists', { status: 409 });
-                
+
                 await env.DB.prepare(
                     'INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)'
                 ).bind(userId, word, new Date().toISOString()).run();
                 return new Response('OK');
             }
-            
+
             if (request.method === 'DELETE') {
                 let body;
                 try {
@@ -233,7 +233,7 @@ export default {
                 }
                 const words = body.words;
                 if (!Array.isArray(words) || words.length === 0) return new Response('No words provided', { status: 400 });
-                
+
                 for (const word of words) {
                     await env.DB.prepare('DELETE FROM vocab WHERE user_id = ? AND word = ?').bind(userId, word).run();
                 }
@@ -295,9 +295,9 @@ export default {
             } catch (error) {
                 return new Response('Invalid JSON', { status: 400 });
             }
-            
+
             const customInstructions = body.custom_instructions;
-            
+
             // Check if custom_instructions is missing (not just undefined)
             if (!('custom_instructions' in body)) {
                 return new Response('Missing custom_instructions', { status: 400 });
@@ -348,10 +348,10 @@ export default {
             } catch (error) {
                 return new Response('Invalid JSON', { status: 400 });
             }
-            
+
             const customInstructions = body.custom_instructions;
             console.log('PUT /profile - customInstructions:', customInstructions);
-            
+
             // Check if custom_instructions is missing (not just undefined)
             if (!('custom_instructions' in body)) {
                 return new Response('Missing custom_instructions', { status: 400 });

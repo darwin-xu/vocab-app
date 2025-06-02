@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS vocab (
 
 // Global test setup function
 export async function setupDatabase(env: any) {
-  // Execute each table creation separately
-  try {
-    await env.DB.prepare(`
+    // Execute each table creation separately
+    try {
+        await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
@@ -37,7 +37,7 @@ export async function setupDatabase(env: any) {
       )
     `).run();
 
-    await env.DB.prepare(`
+        await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS vocab (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -46,12 +46,12 @@ export async function setupDatabase(env: any) {
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `).run();
-  } catch (error: any) {
-    console.warn('Error setting up database:', error.message);
-  }
+    } catch (error: any) {
+        console.warn('Error setting up database:', error.message);
+    }
 }
 
 // Setup function to be called in each test file
 export async function setupTestEnvironment(env: any) {
-  await setupDatabase(env);
+    await setupDatabase(env);
 }
