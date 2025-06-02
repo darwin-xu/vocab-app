@@ -14,7 +14,7 @@
         "build:client": "cd client && npm install && npm run build"
     },
     "devDependencies": {
-        "@cloudflare/vitest-pool-workers": "^0.8.32",
+        "@cloudflare/vitest-pool-workers": "^0.8.34",
         "@cloudflare/workers-types": "^4.20250423.0",
         "concurrently": "^9.1.2",
         "typescript": "^5.5.2",
