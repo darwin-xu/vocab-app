@@ -64,7 +64,7 @@ export default {
         if (url.pathname === "/openai") {
             const { searchParams } = new URL(request.url);
             const word = searchParams.get("word") || "Say hi!";
-            const func = searchParams.get("func") || "define";
+            const action = searchParams.get("action") || "define";
 
             // Get user ID from request to fetch custom instructions
             const userId = await getUserIdFromRequest(request, env);
@@ -78,7 +78,7 @@ export default {
             const defaultPrompt = `Define the word '${word}'`;
 
             let prompt = "";
-            switch (func) {
+            switch (action) {
                 case "define":
                     prompt = defaultPrompt;
                     break;
