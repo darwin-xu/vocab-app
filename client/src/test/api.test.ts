@@ -5,20 +5,17 @@ import * as api from '../api'
 const mockFetch = vi.fn()
 globalThis.fetch = mockFetch
 
-// Mock localStorage
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
+// Get localStorage mock from setup
+const localStorageMock = globalThis.localStorage as unknown as {
+  getItem: ReturnType<typeof vi.fn>
+  setItem: ReturnType<typeof vi.fn>
+  removeItem: ReturnType<typeof vi.fn>
+  clear: ReturnType<typeof vi.fn>
 }
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock
-})
 
 // Mock window.location.reload
 const mockReload = vi.fn()
-Object.defineProperty(window, 'location', {
+Object.defineProperty(globalThis, 'location', {
   value: {
     reload: mockReload
   },
@@ -120,7 +117,7 @@ describe('API functions', () => {
       }
       mockFetch.mockResolvedValue(mockResponse)
 
-      await expect(fetchVocab()).rejects.toThrow('Unauthorized')
+      await expect(api.fetchVocab()).rejects.toThrow('Unauthorized')
     })
   })
 

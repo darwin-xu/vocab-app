@@ -7,6 +7,11 @@ export default defineWorkersConfig({
 				wrangler: { configPath: './wrangler.toml' },
 			},
 		},
+		restoreMocks: true,
+		clearMocks: true,
+		unstubEnvs: true,
+		unstubGlobals: true,
+		forceRerunTriggers: [],
 		coverage: {
 			provider: 'v8',
 			reporter: ['text', 'json', 'html'],
