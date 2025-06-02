@@ -39,7 +39,12 @@ export default {
         const url = new URL(request.url);
 
         if (url.pathname === '/register' && request.method === 'POST') {
-            const body = await request.json();
+            let body;
+            try {
+                body = await request.json();
+            } catch (error) {
+                return new Response('Invalid JSON', { status: 400 });
+            }
             const username = (body as any).username;
             const password = (body as any).password;
             if (!username || !password) return new Response('Missing username or password', { status: 400 });
@@ -50,7 +55,12 @@ export default {
         }
 
         if (url.pathname === '/login' && request.method === 'POST') {
-            const body = await request.json();
+            let body;
+            try {
+                body = await request.json();
+            } catch (error) {
+                return new Response('Invalid JSON', { status: 400 });
+            }
             const username = (body as any).username;
             const password = (body as any).password;
             if (!username || !password) return new Response('Missing username or password', { status: 400 });
@@ -165,101 +175,143 @@ export default {
             });
         }
 
-        if (request.method === 'POST' && url.pathname === '/add') {
-            const userId = await getUserIdFromRequest(request, env);
-            if (!userId) return new Response('Unauthorized', { status: 401 });
-            const body = await request.json();
-            if (typeof body !== 'object' || body === null || !('word' in body)) {
-                return new Response('Missing word', { status: 400 });
-            }
-            const word = (body as { word: string }).word;
-            if (!word) return new Response('Missing word', { status: 400 });
-            const exists = await env.DB.prepare('SELECT 1 FROM vocab WHERE user_id = ? AND word = ?').bind(userId, word).first();
-            if (exists) return new Response('Word already exists', { status: 409 });
-            await env.DB.prepare(
-                'INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)'
-            ).bind(userId, word, new Date().toISOString()).run();
-            return new Response('OK');
-        }
-
-        if (request.method === 'POST' && url.pathname === '/remove') {
-            const userId = await getUserIdFromRequest(request, env);
-            if (!userId) return new Response('Unauthorized', { status: 401 });
-            const body = await request.json() as { words: string[] };
-            const words = body.words;
-            if (!Array.isArray(words) || words.length === 0) return new Response('No words provided', { status: 400 });
-            for (const word of words) {
-                await env.DB.prepare('DELETE FROM vocab WHERE user_id = ? AND word = ?').bind(userId, word).run();
-            }
-            return new Response('OK');
-        }
-
         if (url.pathname === '/vocab') {
             const userId = await getUserIdFromRequest(request, env);
             if (!userId) return new Response('Unauthorized', { status: 401 });
-            const q = url.searchParams.get('q') ?? '';
-            const page = parseInt(url.searchParams.get('page') ?? '1', 10);
-            const pageSize = parseInt(url.searchParams.get('pageSize') ?? '20', 10);
-            const offset = (page - 1) * pageSize;
-            const totalRow = await env.DB.prepare(
-                'SELECT COUNT(*) as count FROM vocab WHERE user_id = ? AND word LIKE ?'
-            ).bind(userId, `%${q}%`).first();
-            const total = totalRow ? totalRow.count : 0;
-            const { results } = await env.DB.prepare(
-                'SELECT * FROM vocab WHERE user_id = ? AND word LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?'
-            ).bind(userId, `%${q}%`, pageSize, offset).all();
-            return new Response(JSON.stringify({ results, total }), {
-                headers: { 'Content-Type': 'application/json' }
-            });
+            
+            if (request.method === 'GET') {
+                const q = url.searchParams.get('q') ?? '';
+                const page = parseInt(url.searchParams.get('page') ?? '1', 10);
+                const pageSize = parseInt(url.searchParams.get('pageSize') ?? '20', 10);
+                const offset = (page - 1) * pageSize;
+                const totalRow = await env.DB.prepare(
+                    'SELECT COUNT(*) as count FROM vocab WHERE user_id = ? AND word LIKE ?'
+                ).bind(userId, `%${q}%`).first();
+                const total = totalRow ? totalRow.count : 0;
+                const { results } = await env.DB.prepare(
+                    'SELECT * FROM vocab WHERE user_id = ? AND word LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?'
+                ).bind(userId, `%${q}%`, pageSize, offset).all();
+                
+                const totalPages = Math.ceil(total / pageSize);
+                return new Response(JSON.stringify({ 
+                    items: results, 
+                    currentPage: page,
+                    totalPages 
+                }), {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+            
+            if (request.method === 'POST') {
+                let body;
+                try {
+                    body = await request.json();
+                } catch (error) {
+                    return new Response('Invalid JSON', { status: 400 });
+                }
+                if (typeof body !== 'object' || body === null || !('word' in body)) {
+                    return new Response('Missing word', { status: 400 });
+                }
+                const word = (body as { word: string }).word;
+                if (!word) return new Response('Missing word', { status: 400 });
+                
+                const exists = await env.DB.prepare('SELECT 1 FROM vocab WHERE user_id = ? AND word = ?').bind(userId, word).first();
+                if (exists) return new Response('Word already exists', { status: 409 });
+                
+                await env.DB.prepare(
+                    'INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)'
+                ).bind(userId, word, new Date().toISOString()).run();
+                return new Response('OK');
+            }
+            
+            if (request.method === 'DELETE') {
+                let body;
+                try {
+                    body = await request.json() as { words: string[] };
+                } catch (error) {
+                    return new Response('Invalid JSON', { status: 400 });
+                }
+                const words = body.words;
+                if (!Array.isArray(words) || words.length === 0) return new Response('No words provided', { status: 400 });
+                
+                for (const word of words) {
+                    await env.DB.prepare('DELETE FROM vocab WHERE user_id = ? AND word = ?').bind(userId, word).run();
+                }
+                return new Response('OK');
+            }
         }
 
         // Admin-only endpoints
         if (url.pathname === '/admin/users') {
             const session = await getSessionFromRequest(request);
-            if (!session || !session.is_admin) return new Response('Unauthorized', { status: 401 });
+            if (!session) return new Response('Unauthorized', { status: 401 });
+            if (!session.is_admin) return new Response('Admin access required', { status: 403 });
 
             const { results } = await env.DB.prepare(
-                'SELECT id, username, created_at FROM users WHERE is_admin = 0 ORDER BY created_at DESC'
+                'SELECT id, username, created_at FROM users ORDER BY created_at DESC'
             ).all();
-            return new Response(JSON.stringify({ users: results }), {
+            return new Response(JSON.stringify(results), {
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
         if (url.pathname.startsWith('/admin/users/') && request.method === 'GET') {
             const session = await getSessionFromRequest(request);
-            if (!session || !session.is_admin) return new Response('Unauthorized', { status: 401 });
+            if (!session) return new Response('Unauthorized', { status: 401 });
+            if (!session.is_admin) return new Response('Admin access required', { status: 403 });
 
             const userId = url.pathname.split('/').pop();
             if (!userId) return new Response('Invalid user ID', { status: 400 });
 
             const user = await env.DB.prepare(
-                'SELECT id, username, custom_instructions FROM users WHERE id = ? AND is_admin = 0'
+                'SELECT id, username, custom_instructions FROM users WHERE id = ?'
             ).bind(userId).first();
 
             if (!user) return new Response('User not found', { status: 404 });
 
-            return new Response(JSON.stringify({ user }), {
+            return new Response(JSON.stringify(user), {
                 headers: { 'Content-Type': 'application/json' }
             });
         }
 
         if (url.pathname.startsWith('/admin/users/') && request.method === 'PUT') {
             const session = await getSessionFromRequest(request);
-            if (!session || !session.is_admin) return new Response('Unauthorized', { status: 401 });
+            if (!session) return new Response('Unauthorized', { status: 401 });
+            if (!session.is_admin) return new Response('Admin access required', { status: 403 });
 
             const userId = url.pathname.split('/').pop();
             if (!userId) return new Response('Invalid user ID', { status: 400 });
 
-            const body = await request.json();
-            const customInstructions = (body as any).custom_instructions;
+            // Check if user exists first
+            const userExists = await env.DB.prepare(
+                'SELECT id FROM users WHERE id = ?'
+            ).bind(userId).first();
+
+            if (!userExists) return new Response('User not found', { status: 404 });
+
+            let body: any;
+            try {
+                body = await request.json();
+            } catch (error) {
+                return new Response('Invalid JSON', { status: 400 });
+            }
+            
+            const customInstructions = body.custom_instructions;
+            
+            // Check if custom_instructions is missing (not just undefined)
+            if (!('custom_instructions' in body)) {
+                return new Response('Missing custom_instructions', { status: 400 });
+            }
+
+            // Handle undefined custom_instructions by setting to null
+            const instructionsValue = customInstructions === undefined ? null : customInstructions;
 
             await env.DB.prepare(
-                'UPDATE users SET custom_instructions = ? WHERE id = ? AND is_admin = 0'
-            ).bind(customInstructions, userId).run();
+                'UPDATE users SET custom_instructions = ? WHERE id = ?'
+            ).bind(instructionsValue, userId).run();
 
-            return new Response(JSON.stringify({ success: true }), {
-                headers: { 'Content-Type': 'application/json' }
+            return new Response('OK', {
+                headers: { 'Content-Type': 'text/plain' }
             });
         }
 
@@ -276,12 +328,10 @@ export default {
             console.log('GET /profile - user data:', user);
             if (!user) return new Response('User not found', { status: 404 });
 
-            return new Response(JSON.stringify({ 
-                user: {
-                    id: user.id,
-                    username: user.username,
-                    custom_instructions: user.custom_instructions
-                }
+            return new Response(JSON.stringify({
+                id: user.id,
+                username: user.username,
+                custom_instructions: user.custom_instructions
             }), {
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -292,17 +342,31 @@ export default {
             console.log('PUT /profile - userId:', userId);
             if (!userId) return new Response('Unauthorized', { status: 401 });
 
-            const body = await request.json();
-            const customInstructions = (body as any).custom_instructions;
+            let body: any;
+            try {
+                body = await request.json();
+            } catch (error) {
+                return new Response('Invalid JSON', { status: 400 });
+            }
+            
+            const customInstructions = body.custom_instructions;
             console.log('PUT /profile - customInstructions:', customInstructions);
+            
+            // Check if custom_instructions is missing (not just undefined)
+            if (!('custom_instructions' in body)) {
+                return new Response('Missing custom_instructions', { status: 400 });
+            }
+
+            // Handle undefined custom_instructions by setting to null
+            const instructionsValue = customInstructions === undefined ? null : customInstructions;
 
             await env.DB.prepare(
                 'UPDATE users SET custom_instructions = ? WHERE id = ?'
-            ).bind(customInstructions, userId).run();
+            ).bind(instructionsValue, userId).run();
 
             console.log('PUT /profile - update completed');
-            return new Response(JSON.stringify({ success: true }), {
-                headers: { 'Content-Type': 'application/json' }
+            return new Response('OK', {
+                headers: { 'Content-Type': 'text/plain' }
             });
         }
 

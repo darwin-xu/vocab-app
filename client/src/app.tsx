@@ -135,7 +135,7 @@ function App() {
     const loadVocab = useCallback(async () => {
         try {
             const data = await fetchVocab(q, page, pageSize)
-            setVocab(data.results)
+            setVocab(data.results || [])
             setTotalPages(Math.max(1, Math.ceil(data.total / pageSize)))
             setSelected(new Set())
         } catch {
@@ -572,7 +572,7 @@ Define the word '{word}' in a simple way:
                         <tr><th></th><th>Word</th><th></th><th></th><th>Added</th></tr>
                     </thead>
                     <tbody>
-                        {vocab.map(r => (
+                        {(vocab || []).map(r => (
                             <tr key={r.word}>
                                 <td><input type="checkbox" checked={selected.has(r.word)} onChange={() => toggleSelect(r.word)} /></td>
                                 <td><span className="montserrat-unique" onClick={e => openMenu(e, r.word)}>{r.word}</span></td>
