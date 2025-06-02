@@ -5,8 +5,8 @@
     "scripts": {
         "build": "npm run build:client && wrangler build",
         "deploy": "npm run build:client && wrangler deploy",
-        "dev": "concurrently \"npm run dev:backend\" \"npm run dev:client\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
-        "dev:backend": "wrangler dev --var OPENAI_TOKEN:$OPENAI_TOKEN --var ENVIRONMENT:development",
+        "dev": "[ -z \"$OPENAI_TOKEN\" ] && echo \"Error: OPENAI_TOKEN environment variable is not set. Please set it before running the development environment.\" && exit 1 || concurrently \"npm run dev:backend\" \"npm run dev:client\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
+        "dev:backend": "[ -z \"$OPENAI_TOKEN\" ] && echo \"Error: OPENAI_TOKEN environment variable is not set. Please set it before running the backend.\" && exit 1 || wrangler dev --var OPENAI_TOKEN:$OPENAI_TOKEN --var ENVIRONMENT:development",
         "dev:client": "cd client && npm run dev",
         "start": "npm run dev",
         "test": "vitest",
