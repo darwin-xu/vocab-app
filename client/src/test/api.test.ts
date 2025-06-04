@@ -5,8 +5,7 @@ import * as api from '../api'
 const mockFetch = vi.fn()
 globalThis.fetch = mockFetch
 
-// Get localStorage mock from setup
-const localStorageMock = globalThis.localStorage as unknown as {
+let localStorageMock: {
   getItem: ReturnType<typeof vi.fn>
   setItem: ReturnType<typeof vi.fn>
   removeItem: ReturnType<typeof vi.fn>
@@ -25,6 +24,8 @@ Object.defineProperty(globalThis, 'location', {
 describe('API functions', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // grab the mock provided in setup file
+    localStorageMock = globalThis.localStorage as LocalStorageMock
     localStorageMock.getItem.mockReturnValue(null)
   })
 

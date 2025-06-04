@@ -62,8 +62,17 @@ install_dependencies() {
     cd client
     npm install --silent
     cd ..
-    
+
     print_success "Dependencies installed"
+}
+
+# Build frontend assets (for backend tests requiring assets directory)
+build_client() {
+    print_status "Building frontend..."
+    cd client
+    npm run build --silent
+    cd ..
+    print_success "Frontend built"
 }
 
 # Run backend tests
@@ -148,6 +157,7 @@ main() {
     # Install dependencies if requested
     if [[ "$1" == "--install" ]] || [[ "$2" == "--install" ]]; then
         install_dependencies
+        build_client
         echo
     fi
     
@@ -157,6 +167,11 @@ main() {
         echo
     fi
     
+    # Build frontend assets before running backend tests
+    if [ ! -d "client/dist" ]; then
+        build_client
+    fi
+
     # Run backend tests
     run_backend_tests || backend_failed=1
     echo
