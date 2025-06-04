@@ -15,7 +15,6 @@
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui",
         "test:frontend": "cd client && npm run test",
-        "test:frontend:run": "cd client && npm run test -- run",
         "test:all": "npm run test:run && npm run test:frontend:run",
         "cf-typegen": "wrangler types",
         "build:client": "cd client && npm install && npm run build"
@@ -24,6 +23,7 @@
         "@cloudflare/vitest-pool-workers": "^0.8.32",
         "@cloudflare/workers-types": "^4.20250423.0",
         "@vitest/coverage-v8": "^3.0.7",
+        "@vitest/ui": "^3.0.7",
         "concurrently": "^9.1.2",
         "typescript": "^5.5.2",
         "vitest": "~3.0.7",
