@@ -25,7 +25,7 @@ describe('API functions', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // grab the mock provided in setup file
-    localStorageMock = globalThis.localStorage as any
+    localStorageMock = globalThis.localStorage as LocalStorageMock
     localStorageMock.getItem.mockReturnValue(null)
   })
 
