@@ -175,5 +175,3 @@ dist
 
 # Wrangler generated types
 worker-configuration.d.ts
-
-temp
