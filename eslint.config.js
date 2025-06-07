@@ -11,6 +11,7 @@ export default tseslint.config(
             '**/dist/**', // Ignore all dist folders
             '**/node_modules/**', // Ignore all node_modules folders
             '.wrangler/**', // Ignore wrangler output
+            'vitest.config.mts', // Ignore Vitest config
             // Add other generated/output folders if any, e.g., coverage reports
             // '**/coverage/**',
         ]
@@ -32,8 +33,8 @@ export default tseslint.config(
                 ...globals.browser, // Standard browser globals
             },
             parserOptions: {
-                project: true, // Auto-detect tsconfig.json (e.g., client/tsconfig.json or client/tsconfig.app.json)
-                tsconfigRootDir: 'client', // Specifies the root for the client's tsconfig path resolution
+                project: ['./client/tsconfig.json', './client/tsconfig.app.json', './client/tsconfig.node.json'],
+                tsconfigRootDir: import.meta.dirname,
             }
         },
         plugins: {
@@ -68,8 +69,12 @@ export default tseslint.config(
                 // Example: 'MY_KV_NAMESPACE': 'readonly', 'MY_VARIABLE': 'readonly',
             },
             parserOptions: {
-                project: true, // Auto-detect the root tsconfig.json
-                tsconfigRootDir: '.', // Specifies the root for the main project's tsconfig path resolution
+                project: [
+                    './tsconfig.json',
+                    './test/tsconfig.json',
+                    './vitest.config.mts'
+                ],
+                tsconfigRootDir: import.meta.dirname,
             }
         },
         rules: {

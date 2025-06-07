@@ -260,9 +260,9 @@ describe('Integration Tests', () => {
             expect(invalidJsonResponse.status).toBeGreaterThanOrEqual(400);
 
             // 3. Test duplicate username registration
-            const user = await createTestUser('testuser', 'testpass');
+            await createTestUser('testuser', 'testpass');
 
-            const duplicateRequest = new IncomingRequest('http://example.com/register', {
+            const duplicateRequest = new Request('http://example.com/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username: 'testuser', password: 'newpass' })

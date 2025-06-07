@@ -2,6 +2,7 @@
     "name": "vocab-app",
     "version": "0.0.0",
     "private": true,
+    "type": "module",
     "scripts": {
         "build": "npm run build:client && wrangler build",
         "deploy": "npm run build:client && wrangler deploy",
