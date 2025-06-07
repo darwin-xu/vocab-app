@@ -35,7 +35,6 @@ async function createUserAndGetToken(username: string, password: string, isAdmin
 describe('Admin endpoints', () => {
     let adminToken: string;
     let userToken: string;
-    let adminUserId: number;
     let regularUserId: number;
 
     beforeAll(async () => {
@@ -53,7 +52,6 @@ describe('Admin endpoints', () => {
 
         adminToken = admin.token;
         userToken = user.token;
-        adminUserId = admin.userId;
         regularUserId = user.userId;
     });
 
