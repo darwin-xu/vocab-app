@@ -25,15 +25,15 @@ export default tseslint.config(
 
     // Configuration for client-side React code (files in client/src)
     {
-        files: ['client/src/**/*.{ts,tsx}'],
+        files: ['client/src/**/*.{ts,tsx}', 'client/src/test/**/*.ts', 'client/vite.config.ts'],
         languageOptions: {
             // ecmaVersion is usually handled by js.configs.recommended or tseslint.configs.recommended
             globals: {
                 ...globals.browser, // Standard browser globals
             },
             parserOptions: {
-                project: true, // Auto-detect tsconfig.json (e.g., client/tsconfig.json or client/tsconfig.app.json)
-                tsconfigRootDir: 'client', // Specifies the root for the client's tsconfig path resolution
+                project: './client/tsconfig.eslint.json',
+                tsconfigRootDir: '.', // Paths in project are relative to repo root
             }
         },
         plugins: {
@@ -68,8 +68,8 @@ export default tseslint.config(
                 // Example: 'MY_KV_NAMESPACE': 'readonly', 'MY_VARIABLE': 'readonly',
             },
             parserOptions: {
-                project: true, // Auto-detect the root tsconfig.json
-                tsconfigRootDir: '.', // Specifies the root for the main project's tsconfig path resolution
+                project: './tsconfig.eslint.json',
+                tsconfigRootDir: '.',
             }
         },
         rules: {
