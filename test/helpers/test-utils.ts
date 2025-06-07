@@ -140,7 +140,7 @@ export async function assertResponse(
 export async function assertJsonResponse(
     response: Response,
     expectedStatus: number,
-    expectedProperties?: Record<string, any>
+    expectedProperties?: Record<string, unknown>
 ) {
     expect(response.status).toBe(expectedStatus);
 

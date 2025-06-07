@@ -3,7 +3,16 @@ function randomId() {
 }
 
 // Environment-aware API endpoints
-function getApiEndpoints(env: any) {
+import type { D1Database } from '@cloudflare/workers-types';
+
+interface Env {
+    DB: D1Database;
+    OPENAI_TOKEN: string;
+    ENVIRONMENT: string;
+    ASSETS: { fetch(request: Request): Promise<Response> };
+}
+
+function getApiEndpoints(env: Env) {
     const isLocal = env.ENVIRONMENT === 'development';
 
     console.log('isLocal:', isLocal);
@@ -19,7 +28,7 @@ function getApiEndpoints(env: any) {
 
 const SESSIONS = new Map(); // In-memory session store (for demo; use DB or KV in production)
 
-async function getUserIdFromRequest(request: Request, env: any): Promise<number | null> {
+async function getUserIdFromRequest(request: Request): Promise<number | null> {
     const auth = request.headers.get('Authorization');
     if (!auth) return null;
     const session = SESSIONS.get(auth.replace('Bearer ', ''));
@@ -35,18 +44,17 @@ async function getSessionFromRequest(request: Request): Promise<{ user_id: numbe
 }
 
 export default {
-    async fetch(request: Request, env: any): Promise<Response> {
+    async fetch(request: Request, env: Env): Promise<Response> {
         const url = new URL(request.url);
 
         if (url.pathname === '/register' && request.method === 'POST') {
-            let body;
+            let body: unknown;
             try {
                 body = await request.json();
-            } catch (error) {
+            } catch {
                 return new Response('Invalid JSON', { status: 400 });
             }
-            const username = (body as any).username;
-            const password = (body as any).password;
+            const { username, password } = body as { username?: string; password?: string };
             if (!username || !password) return new Response('Missing username or password', { status: 400 });
             const exists = await env.DB.prepare('SELECT 1 FROM users WHERE username = ?').bind(username).first();
             if (exists) return new Response('Username already exists', { status: 409 });
@@ -55,14 +63,13 @@ export default {
         }
 
         if (url.pathname === '/login' && request.method === 'POST') {
-            let body;
+            let body: unknown;
             try {
                 body = await request.json();
-            } catch (error) {
+            } catch {
                 return new Response('Invalid JSON', { status: 400 });
             }
-            const username = (body as any).username;
-            const password = (body as any).password;
+            const { username, password } = body as { username?: string; password?: string };
             if (!username || !password) return new Response('Missing username or password', { status: 400 });
             const user = await env.DB.prepare('SELECT id, password, is_admin FROM users WHERE username = ?').bind(username).first();
             if (!user || user.password !== password) return new Response('Invalid credentials', { status: 401 });
@@ -77,7 +84,7 @@ export default {
             const func = searchParams.get("func") || "define";
 
             // Get user ID from request to fetch custom instructions
-            const userId = await getUserIdFromRequest(request, env);
+            const userId = await getUserIdFromRequest(request);
             let customInstructions = null;
 
             if (userId) {
@@ -176,7 +183,7 @@ export default {
         }
 
         if (url.pathname === '/vocab') {
-            const userId = await getUserIdFromRequest(request, env);
+            const userId = await getUserIdFromRequest(request);
             if (!userId) return new Response('Unauthorized', { status: 401 });
 
             if (request.method === 'GET') {
@@ -203,10 +210,10 @@ export default {
             }
 
             if (request.method === 'POST') {
-                let body;
+                let body: unknown;
                 try {
                     body = await request.json();
-                } catch (error) {
+                } catch {
                     return new Response('Invalid JSON', { status: 400 });
                 }
                 if (typeof body !== 'object' || body === null || !('word' in body)) {
@@ -225,13 +232,13 @@ export default {
             }
 
             if (request.method === 'DELETE') {
-                let body;
+                let body: unknown;
                 try {
-                    body = await request.json() as { words: string[] };
-                } catch (error) {
+                    body = await request.json();
+                } catch {
                     return new Response('Invalid JSON', { status: 400 });
                 }
-                const words = body.words;
+                const words = (body as { words: string[] }).words;
                 if (!Array.isArray(words) || words.length === 0) return new Response('No words provided', { status: 400 });
 
                 for (const word of words) {
@@ -289,14 +296,14 @@ export default {
 
             if (!userExists) return new Response('User not found', { status: 404 });
 
-            let body: any;
+            let body: unknown;
             try {
                 body = await request.json();
-            } catch (error) {
+            } catch {
                 return new Response('Invalid JSON', { status: 400 });
             }
 
-            const customInstructions = body.custom_instructions;
+            const customInstructions = (body as { custom_instructions?: string | null }).custom_instructions;
 
             // Check if custom_instructions is missing (not just undefined)
             if (!('custom_instructions' in body)) {
@@ -317,7 +324,7 @@ export default {
 
         // User profile endpoints
         if (url.pathname === '/profile' && request.method === 'GET') {
-            const userId = await getUserIdFromRequest(request, env);
+            const userId = await getUserIdFromRequest(request);
             console.log('GET /profile - userId:', userId);
             if (!userId) return new Response('Unauthorized', { status: 401 });
 
@@ -338,18 +345,18 @@ export default {
         }
 
         if (url.pathname === '/profile' && request.method === 'PUT') {
-            const userId = await getUserIdFromRequest(request, env);
+            const userId = await getUserIdFromRequest(request);
             console.log('PUT /profile - userId:', userId);
             if (!userId) return new Response('Unauthorized', { status: 401 });
 
-            let body: any;
+            let body: unknown;
             try {
                 body = await request.json();
-            } catch (error) {
+            } catch {
                 return new Response('Invalid JSON', { status: 400 });
             }
 
-            const customInstructions = body.custom_instructions;
+            const customInstructions = (body as { custom_instructions?: string | null }).custom_instructions;
             console.log('PUT /profile - customInstructions:', customInstructions);
 
             // Check if custom_instructions is missing (not just undefined)
