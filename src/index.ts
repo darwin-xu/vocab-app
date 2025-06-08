@@ -37,6 +37,7 @@ interface UserRow {
     password: string;
     is_admin: boolean;
     custom_instructions?: string | null;
+    created_at?: string;
 }
 
 interface VocabCountResult {
@@ -203,6 +204,66 @@ export default {
             const { results } = await env.DB.prepare('SELECT id, username, created_at FROM users ORDER BY created_at DESC').all();
 
             return new Response(JSON.stringify(results), { headers: { 'Content-Type': 'application/json' } });
+        }
+
+        // Admin endpoint to get user details by ID
+        if (url.pathname.startsWith('/admin/users/') && url.pathname !== '/admin/users') {
+            const session = await getSessionFromRequest(request);
+            if (!session) return new Response('Unauthorized', { status: 401 });
+            if (!session.is_admin) return new Response('Admin access required', { status: 403 });
+
+            const userIdStr = url.pathname.split('/admin/users/')[1];
+            const userId = parseInt(userIdStr, 10);
+            
+            if (isNaN(userId)) {
+                return new Response('Invalid user ID', { status: 400 });
+            }
+
+            if (request.method === 'GET') {
+                const user = (await env.DB.prepare('SELECT id, username, created_at, custom_instructions FROM users WHERE id = ?')
+                    .bind(userId)
+                    .first()) as UserRow | null;
+
+                if (!user) return new Response('User not found', { status: 404 });
+
+                return new Response(
+                    JSON.stringify({
+                        id: user.id,
+                        username: user.username,
+                        created_at: user.created_at,
+                        custom_instructions: user.custom_instructions,
+                    }),
+                    { headers: { 'Content-Type': 'application/json' } },
+                );
+            }
+
+            if (request.method === 'PUT') {
+                try {
+                    const body = (await request.json()) as UpdateUserRequestBody;
+                    if (!('custom_instructions' in body)) {
+                        return new Response('Missing custom_instructions', { status: 400 });
+                    }
+
+                    const instructionsValue = body.custom_instructions ?? null;
+
+                    // First check if user exists
+                    const userExists = await env.DB.prepare('SELECT 1 FROM users WHERE id = ?')
+                        .bind(userId)
+                        .first();
+
+                    if (!userExists) {
+                        return new Response('User not found', { status: 404 });
+                    }
+
+                    await env.DB.prepare('UPDATE users SET custom_instructions = ? WHERE id = ?')
+                        .bind(instructionsValue, userId)
+                        .run();
+
+                    return new Response('OK');
+                } catch {
+                    return new Response('Invalid JSON', { status: 400 });
+                }
+            }
         }
 
         if (url.pathname === '/profile') {
