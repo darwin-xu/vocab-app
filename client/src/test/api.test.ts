@@ -5,12 +5,14 @@ import * as api from '../api'
 const mockFetch = vi.fn()
 globalThis.fetch = mockFetch
 
-let localStorageMock: {
+type LocalStorageMock = {
   getItem: ReturnType<typeof vi.fn>
   setItem: ReturnType<typeof vi.fn>
   removeItem: ReturnType<typeof vi.fn>
   clear: ReturnType<typeof vi.fn>
-}
+} & Storage
+
+let localStorageMock: LocalStorageMock
 
 // Mock window.location.reload
 const mockReload = vi.fn()
