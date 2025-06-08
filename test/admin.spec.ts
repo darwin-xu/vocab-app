@@ -15,9 +15,15 @@ function createAuthenticatedRequest(url: string, token: string, options: Request
 
 // Helper function to create user and get token
 async function createUserAndGetToken(username: string, password: string, isAdmin = false) {
+    // Insert user directly into database
     const result = await env.DB.prepare('INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?) RETURNING id')
-        .bind(username, password, isAdmin ? 1 : 0).first();
+        .bind(username, password, isAdmin ? 1 : 0).first() as { id: number } | null;
 
+    if (!result) {
+        throw new Error('Failed to create user');
+    }
+
+    // Login to get token
     const loginRequest = new IncomingRequest('http://example.com/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -28,13 +34,14 @@ async function createUserAndGetToken(username: string, password: string, isAdmin
     const response = await worker.fetch(loginRequest, env, ctx);
     await waitOnExecutionContext(ctx);
 
-    const data = await response.json();
+    const data = await response.json() as { token: string };
     return { token: data.token, userId: result.id };
 }
 
 describe('Admin endpoints', () => {
     let adminToken: string;
     let userToken: string;
+    let adminUserId: number;
     let regularUserId: number;
 
     beforeAll(async () => {
