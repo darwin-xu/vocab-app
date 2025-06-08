@@ -135,8 +135,18 @@ function App() {
     const loadVocab = useCallback(async () => {
         try {
             const data = await fetchVocab(q, page, pageSize)
-            setVocab(data.results || [])
-            setTotalPages(Math.max(1, Math.ceil(data.total / pageSize)))
+            // Support both legacy and new API response shapes
+            const items = (data as any).items ?? (data as any).results ?? []
+            const totalPagesResp = (data as any).totalPages
+            const totalItems = (data as any).total
+            setVocab(items)
+            if (typeof totalPagesResp === 'number') {
+                setTotalPages(Math.max(1, totalPagesResp))
+            } else if (typeof totalItems === 'number') {
+                setTotalPages(Math.max(1, Math.ceil(totalItems / pageSize)))
+            } else {
+                setTotalPages(1)
+            }
             setSelected(new Set())
         } catch {
             logout()

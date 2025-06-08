@@ -22,7 +22,7 @@ vi.mock('../api', () => ({
   ttsCall: vi.fn(),
 }))
 
-describe.skip('App Component', () => {
+describe('App Component', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Clear localStorage to ensure tests start from unauthenticated state
@@ -93,7 +93,7 @@ describe.skip('App Component', () => {
 
       await waitFor(() => {
         expect(api.register).toHaveBeenCalledWith('newuser', 'newpass')
-        expect(screen.getByText('Registration successful! Please log in.')).toBeInTheDocument()
+        expect(screen.getByPlaceholderText(/word \(type to search\)…/i)).toBeInTheDocument()
       })
     })
 
@@ -288,8 +288,6 @@ describe.skip('App Component', () => {
         { id: 1, username: 'user1', created_at: '2025-01-01' },
         { id: 2, username: 'user2', created_at: '2025-01-02' }
       ])
-      localStorage.setItem('sessionToken', 'admin-token')
-      localStorage.setItem('isAdmin', 'true')
     })
 
     it('should show admin panel for admin users', async () => {
@@ -317,7 +315,6 @@ describe.skip('App Component', () => {
 
     it('should not show admin panel for regular users', async () => {
       vi.mocked(api.isAdmin).mockReturnValue(false)
-      localStorage.setItem('isAdmin', 'false')
 
       const user = userEvent.setup()
       render(<App />)

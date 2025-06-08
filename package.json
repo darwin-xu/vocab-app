@@ -16,6 +16,7 @@
         "test:coverage": "vitest run --coverage",
         "test:ui": "vitest --ui",
         "test:frontend": "cd client && npm run test",
+        "test:frontend:run": "cd client && npm test --silent",
         "test:all": "npm run test:run && npm run test:frontend:run",
         "cf-typegen": "wrangler types",
         "build:client": "cd client && npm install && npm run build",
