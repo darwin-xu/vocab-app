@@ -11,6 +11,7 @@ npm run dev
 ```
 
 This single command will:
+
 - ✅ Start the **Wrangler backend server** on `http://localhost:8787`
 - ✅ Start the **Vite frontend server** on `http://localhost:5173`
 - ✅ Enable **hot reloading** for both frontend and backend changes
@@ -19,16 +20,19 @@ This single command will:
 ### What You Get
 
 **🔥 Hot Reloading for Everything:**
+
 - Frontend changes (React, CSS, TypeScript) → Instant reload
 - Backend changes (Worker code) → Automatic restart and reload
 - No need to manually restart servers
 
 **🎯 Single Port Access:**
+
 - Open your browser to `http://localhost:5173/`
 - All API calls are automatically proxied to the backend
 - No CORS issues or manual port switching
 
 **📊 Color-Coded Logs:**
+
 - `backend` logs in **blue**
 - `frontend` logs in **green**
 - Easy to distinguish between frontend and backend activity
@@ -58,6 +62,7 @@ Press `Ctrl+C` once to stop both servers simultaneously.
 ### Troubleshooting
 
 If you encounter issues:
+
 1. Make sure no other processes are using ports 5173 or 8787
 2. Try stopping all processes: `pkill -f "wrangler\|vite"`
 3. Restart with `npm run dev`

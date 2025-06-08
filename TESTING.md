@@ -34,6 +34,7 @@ The application has a complete test suite covering both the backend (Cloudflare 
 ## Running Tests
 
 ### All Tests
+
 ```bash
 # Run both backend and frontend tests
 npm run test:all
@@ -46,15 +47,17 @@ npm run test:frontend
 ```
 
 ### Development Mode
+
 ```bash
 # Watch mode for backend tests
 npm run test:watch
 
-# Watch mode for frontend tests  
+# Watch mode for frontend tests
 cd client && npm run test
 ```
 
 ### Coverage Reports
+
 ```bash
 # Backend coverage
 npm run test:coverage
@@ -67,6 +70,7 @@ npm run test:coverage && cd client && npm run test:coverage
 ```
 
 ### Test UI
+
 ```bash
 # Backend test UI
 npm run test:ui
@@ -80,6 +84,7 @@ cd client && npm run test:ui
 ### Backend Tests
 
 #### 1. Authentication Tests (`auth.spec.ts`)
+
 - User registration with validation
 - Login/logout functionality
 - Session management
@@ -87,6 +92,7 @@ cd client && npm run test:ui
 - Admin vs regular user permissions
 
 #### 2. Vocabulary Tests (`vocab.spec.ts`)
+
 - CRUD operations for vocabulary words
 - Search and filtering
 - Pagination
@@ -94,12 +100,14 @@ cd client && npm run test:ui
 - Authorization checks
 
 #### 3. Admin Tests (`admin.spec.ts`)
+
 - User management endpoints
 - Admin-only access controls
 - User instruction management
 - Profile operations
 
 #### 4. Integration Tests (`integration.spec.ts`)
+
 - Complete user journeys
 - Cross-feature workflows
 - Data consistency
@@ -109,6 +117,7 @@ cd client && npm run test:ui
 ### Frontend Tests
 
 #### 1. API Module Tests (`api.test.ts`)
+
 - HTTP request handling
 - Authentication token management
 - Error response handling
@@ -116,6 +125,7 @@ cd client && npm run test:ui
 - API endpoint coverage
 
 #### 2. Component Tests (`app.test.tsx`)
+
 - User interface interactions
 - Form submissions and validation
 - State management
@@ -136,6 +146,7 @@ The test utilities provide common functions for:
 - **Assertions**: `assertResponse()`, `assertJsonResponse()`
 
 Example usage:
+
 ```typescript
 import { createTestUser, addTestVocab, DatabaseValidator } from './helpers/test-utils';
 
@@ -144,8 +155,8 @@ const user = await createTestUser('testuser', 'password');
 
 // Add vocabulary for testing
 await addTestVocab(user.id, [
-  { word: 'hello', add_date: '2025-01-01' },
-  { word: 'world', add_date: '2025-01-02' }
+    { word: 'hello', add_date: '2025-01-01' },
+    { word: 'world', add_date: '2025-01-02' },
 ]);
 
 // Validate database state
@@ -155,6 +166,7 @@ await DatabaseValidator.assertVocabCount(user.id, 2);
 ### Frontend Setup (`setup.ts`)
 
 Provides:
+
 - jsdom environment configuration
 - localStorage mocking
 - fetch API mocking
@@ -164,12 +176,14 @@ Provides:
 ## Coverage Targets
 
 ### Backend Coverage Thresholds
+
 - **Branches**: 80%
 - **Functions**: 80%
 - **Lines**: 80%
 - **Statements**: 80%
 
 ### Frontend Coverage Thresholds
+
 - **Branches**: 75%
 - **Functions**: 75%
 - **Lines**: 75%
@@ -178,25 +192,27 @@ Provides:
 ## Test Data Management
 
 ### Database Cleanup
+
 All tests use `beforeEach` hooks to ensure clean state:
 
 ```typescript
 beforeEach(async () => {
-  await cleanupDatabase();
+    await cleanupDatabase();
 });
 ```
 
 ### Mock Data
+
 Tests use consistent mock data patterns:
 
 ```typescript
 const mockVocabData = {
-  items: [
-    { word: 'hello', add_date: '2025-01-01' },
-    { word: 'world', add_date: '2025-01-02' }
-  ],
-  totalPages: 1,
-  currentPage: 1
+    items: [
+        { word: 'hello', add_date: '2025-01-01' },
+        { word: 'world', add_date: '2025-01-02' },
+    ],
+    totalPages: 1,
+    currentPage: 1,
 };
 ```
 
@@ -220,6 +236,7 @@ const mockVocabData = {
 ### Error Testing
 
 Always test error scenarios:
+
 - Invalid input validation
 - Authentication failures
 - Network errors
@@ -241,6 +258,7 @@ npm run test:coverage
 ## Debugging Tests
 
 ### Running Individual Tests
+
 ```bash
 # Run specific test file
 npx vitest test/auth.spec.ts
@@ -250,6 +268,7 @@ npx vitest test/auth.spec.ts -t "should register a new user"
 ```
 
 ### Debug Mode
+
 ```bash
 # Run with debug output
 DEBUG=1 npm test
@@ -259,7 +278,9 @@ npm test -- --reporter=verbose
 ```
 
 ### Browser Testing
+
 For frontend component debugging:
+
 ```bash
 cd client && npm run test:ui
 ```
@@ -267,6 +288,7 @@ cd client && npm run test:ui
 ## Performance Testing
 
 The integration tests include performance scenarios:
+
 - Large dataset handling (25+ vocabulary items)
 - Pagination performance
 - Search functionality with large datasets
@@ -275,6 +297,7 @@ The integration tests include performance scenarios:
 ## Security Testing
 
 Security aspects covered in tests:
+
 - Authentication bypass attempts
 - Data isolation between users
 - Admin privilege escalation
@@ -293,6 +316,7 @@ Security aspects covered in tests:
 ### Updating Test Data
 
 When adding new features:
+
 1. Update test utilities for new data types
 2. Add new helper functions as needed
 3. Update mock data structures

@@ -16,8 +16,9 @@ function createAuthenticatedRequest(url: string, token: string, options: Request
 // Helper function to create user and get token
 async function createUserAndGetToken(username: string, password: string, isAdmin = false) {
     // Insert user directly into database
-    const result = await env.DB.prepare('INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?) RETURNING id')
-        .bind(username, password, isAdmin ? 1 : 0).first() as { id: number } | null;
+    const result = (await env.DB.prepare('INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?) RETURNING id')
+        .bind(username, password, isAdmin ? 1 : 0)
+        .first()) as { id: number } | null;
 
     if (!result) {
         throw new Error('Failed to create user');
@@ -27,21 +28,20 @@ async function createUserAndGetToken(username: string, password: string, isAdmin
     const loginRequest = new IncomingRequest('http://example.com/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
     });
 
     const ctx = createExecutionContext();
     const response = await worker.fetch(loginRequest, env, ctx);
     await waitOnExecutionContext(ctx);
 
-    const data = await response.json() as { token: string };
+    const data = (await response.json()) as { token: string };
     return { token: data.token, userId: result.id };
 }
 
 describe('Admin endpoints', () => {
     let adminToken: string;
     let userToken: string;
-    let adminUserId: number;
     let regularUserId: number;
 
     beforeAll(async () => {
@@ -59,7 +59,6 @@ describe('Admin endpoints', () => {
 
         adminToken = admin.token;
         userToken = user.token;
-        adminUserId = admin.userId;
         regularUserId = user.userId;
     });
 
@@ -75,8 +74,8 @@ describe('Admin endpoints', () => {
 
             const users = await response.json();
             expect(users).toHaveLength(2);
-            expect(users.map(u => u.username)).toContain('admin');
-            expect(users.map(u => u.username)).toContain('testuser');
+            expect(users.map((u) => u.username)).toContain('admin');
+            expect(users.map((u) => u.username)).toContain('testuser');
         });
 
         it('should reject non-admin users', async () => {
@@ -106,7 +105,8 @@ describe('Admin endpoints', () => {
         beforeEach(async () => {
             // Add custom instructions to regular user
             await env.DB.prepare('UPDATE users SET custom_instructions = ? WHERE id = ?')
-                .bind('Custom instructions for user', regularUserId).run();
+                .bind('Custom instructions for user', regularUserId)
+                .run();
         });
 
         it('should return user details for admin', async () => {
@@ -153,7 +153,7 @@ describe('Admin endpoints', () => {
             const request = createAuthenticatedRequest(`http://example.com/admin/users/${regularUserId}`, adminToken, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ custom_instructions: newInstructions })
+                body: JSON.stringify({ custom_instructions: newInstructions }),
             });
 
             const ctx = createExecutionContext();
@@ -164,8 +164,7 @@ describe('Admin endpoints', () => {
             expect(await response.text()).toBe('OK');
 
             // Verify instructions were updated
-            const user = await env.DB.prepare('SELECT custom_instructions FROM users WHERE id = ?')
-                .bind(regularUserId).first();
+            const user = await env.DB.prepare('SELECT custom_instructions FROM users WHERE id = ?').bind(regularUserId).first();
             expect(user.custom_instructions).toBe(newInstructions);
         });
 
@@ -173,7 +172,7 @@ describe('Admin endpoints', () => {
             const request = createAuthenticatedRequest(`http://example.com/admin/users/${regularUserId}`, userToken, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ custom_instructions: 'New instructions' })
+                body: JSON.stringify({ custom_instructions: 'New instructions' }),
             });
 
             const ctx = createExecutionContext();
@@ -188,7 +187,7 @@ describe('Admin endpoints', () => {
             const request = createAuthenticatedRequest('http://example.com/admin/users/99999', adminToken, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ custom_instructions: 'New instructions' })
+                body: JSON.stringify({ custom_instructions: 'New instructions' }),
             });
 
             const ctx = createExecutionContext();
@@ -203,7 +202,7 @@ describe('Admin endpoints', () => {
             const request = createAuthenticatedRequest(`http://example.com/admin/users/${regularUserId}`, adminToken, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
+                body: JSON.stringify({}),
             });
 
             const ctx = createExecutionContext();
@@ -219,7 +218,8 @@ describe('Admin endpoints', () => {
         beforeEach(async () => {
             // Add custom instructions to regular user
             await env.DB.prepare('UPDATE users SET custom_instructions = ? WHERE id = ?')
-                .bind('My personal instructions', regularUserId).run();
+                .bind('My personal instructions', regularUserId)
+                .run();
         });
 
         it('should return own profile for authenticated user', async () => {
@@ -255,7 +255,7 @@ describe('Admin endpoints', () => {
             const request = createAuthenticatedRequest('http://example.com/profile', userToken, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ custom_instructions: newInstructions })
+                body: JSON.stringify({ custom_instructions: newInstructions }),
             });
 
             const ctx = createExecutionContext();
@@ -266,8 +266,7 @@ describe('Admin endpoints', () => {
             expect(await response.text()).toBe('OK');
 
             // Verify instructions were updated
-            const user = await env.DB.prepare('SELECT custom_instructions FROM users WHERE id = ?')
-                .bind(regularUserId).first();
+            const user = await env.DB.prepare('SELECT custom_instructions FROM users WHERE id = ?').bind(regularUserId).first();
             expect(user.custom_instructions).toBe(newInstructions);
         });
 
@@ -275,7 +274,7 @@ describe('Admin endpoints', () => {
             const request = new IncomingRequest('http://example.com/profile', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ custom_instructions: 'New instructions' })
+                body: JSON.stringify({ custom_instructions: 'New instructions' }),
             });
 
             const ctx = createExecutionContext();
@@ -290,7 +289,7 @@ describe('Admin endpoints', () => {
             const request = createAuthenticatedRequest('http://example.com/profile', userToken, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
+                body: JSON.stringify({}),
             });
 
             const ctx = createExecutionContext();

@@ -4,7 +4,8 @@ import type { Env } from '../src/types';
 // Global test setup function
 export async function setupDatabase(env: Env): Promise<void> {
     try {
-        await env.DB.prepare(`
+        await env.DB.prepare(
+            `
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
@@ -13,9 +14,11 @@ export async function setupDatabase(env: Env): Promise<void> {
                 custom_instructions TEXT DEFAULT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
-        `).run();
+        `,
+        ).run();
 
-        await env.DB.prepare(`
+        await env.DB.prepare(
+            `
             CREATE TABLE IF NOT EXISTS vocab (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
@@ -23,7 +26,8 @@ export async function setupDatabase(env: Env): Promise<void> {
                 add_date TEXT NOT NULL,
                 FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
             )
-        `).run();
+        `,
+        ).run();
     } catch (error) {
         console.warn('Error setting up database:', error instanceof Error ? error.message : String(error));
     }

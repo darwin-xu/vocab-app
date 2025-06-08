@@ -17,13 +17,14 @@ function createAuthenticatedRequest(url: string, token: string, options: Request
 async function createUserAndGetToken(username: string, password: string, isAdmin = false) {
     // Insert user directly into database
     const result = await env.DB.prepare('INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?) RETURNING id')
-        .bind(username, password, isAdmin ? 1 : 0).first();
+        .bind(username, password, isAdmin ? 1 : 0)
+        .first();
 
     // Login to get token
     const loginRequest = new IncomingRequest('http://example.com/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
     });
 
     const ctx = createExecutionContext();
@@ -57,12 +58,11 @@ describe('Vocabulary endpoints', () => {
     describe('GET /vocab', () => {
         beforeEach(async () => {
             // Add some test vocabulary
+            await env.DB.prepare('INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)').bind(userId, 'hello', '2025-01-01').run();
+            await env.DB.prepare('INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)').bind(userId, 'world', '2025-01-02').run();
             await env.DB.prepare('INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)')
-                .bind(userId, 'hello', '2025-01-01').run();
-            await env.DB.prepare('INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)')
-                .bind(userId, 'world', '2025-01-02').run();
-            await env.DB.prepare('INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)')
-                .bind(userId, 'vocabulary', '2025-01-03').run();
+                .bind(userId, 'vocabulary', '2025-01-03')
+                .run();
         });
 
         it('should fetch vocabulary for authenticated user', async () => {
@@ -76,9 +76,9 @@ describe('Vocabulary endpoints', () => {
 
             const data = await response.json();
             expect(data.items).toHaveLength(3);
-            expect(data.items.map(item => item.word)).toContain('hello');
-            expect(data.items.map(item => item.word)).toContain('world');
-            expect(data.items.map(item => item.word)).toContain('vocabulary');
+            expect(data.items.map((item) => item.word)).toContain('hello');
+            expect(data.items.map((item) => item.word)).toContain('world');
+            expect(data.items.map((item) => item.word)).toContain('vocabulary');
         });
 
         it('should filter vocabulary by search query', async () => {
@@ -121,11 +121,12 @@ describe('Vocabulary endpoints', () => {
             expect(await response.text()).toBe('Unauthorized');
         });
 
-        it('should only return user\'s own vocabulary', async () => {
+        it("should only return user's own vocabulary", async () => {
             // Create another user with vocabulary
             const otherUser = await createUserAndGetToken('otheruser', 'otherpass');
             await env.DB.prepare('INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)')
-                .bind(otherUser.userId, 'other', '2025-01-04').run();
+                .bind(otherUser.userId, 'other', '2025-01-04')
+                .run();
 
             const request = createAuthenticatedRequest('http://example.com/vocab', userToken);
 
@@ -137,7 +138,7 @@ describe('Vocabulary endpoints', () => {
 
             const data = await response.json();
             expect(data.items).toHaveLength(3);
-            expect(data.items.map(item => item.word)).not.toContain('other');
+            expect(data.items.map((item) => item.word)).not.toContain('other');
         });
     });
 
@@ -146,7 +147,7 @@ describe('Vocabulary endpoints', () => {
             const request = createAuthenticatedRequest('http://example.com/vocab', userToken, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ word: 'newword' })
+                body: JSON.stringify({ word: 'newword' }),
             });
 
             const ctx = createExecutionContext();
@@ -157,8 +158,7 @@ describe('Vocabulary endpoints', () => {
             expect(await response.text()).toBe('OK');
 
             // Verify word was added to database
-            const vocab = await env.DB.prepare('SELECT * FROM vocab WHERE user_id = ? AND word = ?')
-                .bind(userId, 'newword').first();
+            const vocab = await env.DB.prepare('SELECT * FROM vocab WHERE user_id = ? AND word = ?').bind(userId, 'newword').first();
             expect(vocab).toBeTruthy();
             expect(vocab.word).toBe('newword');
         });
@@ -167,7 +167,7 @@ describe('Vocabulary endpoints', () => {
             const request = new IncomingRequest('http://example.com/vocab', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ word: 'newword' })
+                body: JSON.stringify({ word: 'newword' }),
             });
 
             const ctx = createExecutionContext();
@@ -182,7 +182,7 @@ describe('Vocabulary endpoints', () => {
             const request = createAuthenticatedRequest('http://example.com/vocab', userToken, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({})
+                body: JSON.stringify({}),
             });
 
             const ctx = createExecutionContext();
@@ -198,18 +198,19 @@ describe('Vocabulary endpoints', () => {
         beforeEach(async () => {
             // Add test vocabulary
             await env.DB.prepare('INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)')
-                .bind(userId, 'delete1', '2025-01-01').run();
+                .bind(userId, 'delete1', '2025-01-01')
+                .run();
             await env.DB.prepare('INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)')
-                .bind(userId, 'delete2', '2025-01-02').run();
-            await env.DB.prepare('INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)')
-                .bind(userId, 'keep', '2025-01-03').run();
+                .bind(userId, 'delete2', '2025-01-02')
+                .run();
+            await env.DB.prepare('INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)').bind(userId, 'keep', '2025-01-03').run();
         });
 
         it('should delete selected vocabulary words', async () => {
             const request = createAuthenticatedRequest('http://example.com/vocab', userToken, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ words: ['delete1', 'delete2'] })
+                body: JSON.stringify({ words: ['delete1', 'delete2'] }),
             });
 
             const ctx = createExecutionContext();
@@ -220,8 +221,7 @@ describe('Vocabulary endpoints', () => {
             expect(await response.text()).toBe('OK');
 
             // Verify words were deleted
-            const remainingVocab = await env.DB.prepare('SELECT word FROM vocab WHERE user_id = ?')
-                .bind(userId).all();
+            const remainingVocab = await env.DB.prepare('SELECT word FROM vocab WHERE user_id = ?').bind(userId).all();
             expect(remainingVocab.results).toHaveLength(1);
             expect(remainingVocab.results[0].word).toBe('keep');
         });
@@ -230,7 +230,7 @@ describe('Vocabulary endpoints', () => {
             const request = new IncomingRequest('http://example.com/vocab', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ words: ['delete1'] })
+                body: JSON.stringify({ words: ['delete1'] }),
             });
 
             const ctx = createExecutionContext();
@@ -241,16 +241,17 @@ describe('Vocabulary endpoints', () => {
             expect(await response.text()).toBe('Unauthorized');
         });
 
-        it('should only delete user\'s own vocabulary', async () => {
+        it("should only delete user's own vocabulary", async () => {
             // Create another user with vocabulary
             const otherUser = await createUserAndGetToken('otheruser', 'otherpass');
             await env.DB.prepare('INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)')
-                .bind(otherUser.userId, 'delete1', '2025-01-04').run();
+                .bind(otherUser.userId, 'delete1', '2025-01-04')
+                .run();
 
             const request = createAuthenticatedRequest('http://example.com/vocab', userToken, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ words: ['delete1'] })
+                body: JSON.stringify({ words: ['delete1'] }),
             });
 
             const ctx = createExecutionContext();
@@ -260,12 +261,10 @@ describe('Vocabulary endpoints', () => {
             expect(response.status).toBe(200);
 
             // Verify only current user's word was deleted
-            const userVocab = await env.DB.prepare('SELECT word FROM vocab WHERE user_id = ?')
-                .bind(userId).all();
+            const userVocab = await env.DB.prepare('SELECT word FROM vocab WHERE user_id = ?').bind(userId).all();
             expect(userVocab.results).toHaveLength(2); // delete1 deleted, delete2 and keep remain
 
-            const otherUserVocab = await env.DB.prepare('SELECT word FROM vocab WHERE user_id = ?')
-                .bind(otherUser.userId).all();
+            const otherUserVocab = await env.DB.prepare('SELECT word FROM vocab WHERE user_id = ?').bind(otherUser.userId).all();
             expect(otherUserVocab.results).toHaveLength(1); // Other user's word remains
         });
     });

@@ -27,7 +27,7 @@ export async function login(username: string, password: string) {
     const res = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
     });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
@@ -40,7 +40,7 @@ export async function register(username: string, password: string) {
     const res = await fetch('/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
     });
     if (!res.ok) throw new Error(await res.text());
 }
@@ -55,7 +55,7 @@ export async function addWord(word: string) {
     const res = await authFetch('/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word })
+        body: JSON.stringify({ word }),
     });
     if (!res.ok) throw new Error(await res.text());
 }
@@ -64,7 +64,7 @@ export async function removeWords(words: string[]) {
     const res = await authFetch('/remove', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ words })
+        body: JSON.stringify({ words }),
     });
     if (!res.ok) throw new Error(await res.text());
 }
@@ -98,7 +98,7 @@ export async function updateUserInstructions(userId: string, customInstructions:
     const res = await authFetch(`/admin/users/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ custom_instructions: customInstructions })
+        body: JSON.stringify({ custom_instructions: customInstructions }),
     });
     if (!res.ok) throw new Error(await res.text());
 }
@@ -113,7 +113,7 @@ export async function updateOwnProfile(customInstructions: string) {
     const res = await authFetch('/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ custom_instructions: customInstructions })
+        body: JSON.stringify({ custom_instructions: customInstructions }),
     });
     if (!res.ok) throw new Error(await res.text());
 }
