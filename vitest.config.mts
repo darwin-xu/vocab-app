@@ -1,13 +1,14 @@
 import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config';
 
 export default defineWorkersConfig({
-	test: {
-		poolOptions: {
-			workers: {
-				wrangler: { configPath: './wrangler.toml' },
-			},
-		},
-		restoreMocks: true,
+        test: {
+                poolOptions: {
+                        workers: {
+                                wrangler: { configPath: './wrangler.toml' },
+                        },
+                },
+                include: ['test/**/*.spec.ts'],
+                restoreMocks: true,
 		clearMocks: true,
 		unstubEnvs: true,
 		unstubGlobals: true,

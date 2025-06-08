@@ -1,5 +1,5 @@
 // test/helpers/test-utils.ts
-import { env } from 'cloudflare:test';
+import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
 import { expect } from 'vitest';
 import worker from '../../src/index';
 import { setupTestEnvironment } from '../setup';
@@ -89,6 +89,51 @@ export async function createTestUser(
     };
 }
 
+export async function createTestUsers(users: Array<{ username: string; password: string; isAdmin?: boolean }>): Promise<TestUser[]> {
+    const createdUsers: TestUser[] = [];
+    for (const user of users) {
+        const testUser = await createTestUser(user.username, user.password, user.isAdmin || false);
+        createdUsers.push(testUser);
+    }
+    return createdUsers;
+}
+
+export async function addTestVocab(userId: number, vocabItems: TestVocabItem[]): Promise<void> {
+    for (const item of vocabItems) {
+        await env.DB.prepare('INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)')
+            .bind(userId, item.word, item.add_date).run();
+    }
+}
+
+export async function cleanupDatabase(): Promise<void> {
+    await env.DB.prepare('DELETE FROM vocab').run();
+    await env.DB.prepare('DELETE FROM users').run();
+}
+
+export async function makeAuthenticatedRequest(
+    url: string,
+    token: string,
+    options: RequestInit = {}
+): Promise<Response> {
+    const request = createAuthenticatedRequest(url, token, options);
+    const ctx = createExecutionContext();
+    const response = await worker.fetch(request, env, ctx);
+    await waitOnExecutionContext(ctx);
+    return response;
+}
+
+export async function assertResponse(
+    response: Response,
+    expectedStatus: number,
+    expectedText?: string
+): Promise<void> {
+    expect(response.status).toBe(expectedStatus);
+    if (expectedText !== undefined) {
+        const text = await response.text();
+        expect(text).toBe(expectedText);
+    }
+}
+
 /**
  * Asserts that a response contains JSON with expected properties
  */
@@ -141,4 +186,49 @@ export async function assertUserExists(
     if (!user) return;
 
     expect(user.username).toBe(username);
+}
+
+export class DatabaseValidator {
+    static async assertUserExists(username: string, shouldExist = true) {
+        const user = await env.DB.prepare('SELECT * FROM users WHERE username = ?')
+            .bind(username).first();
+
+        if (shouldExist) {
+            expect(user).toBeTruthy();
+            expect(user.username).toBe(username);
+        } else {
+            expect(user).toBeNull();
+        }
+
+        return user;
+    }
+
+    static async assertVocabExists(userId: number, word: string, shouldExist = true) {
+        const vocab = await env.DB.prepare('SELECT * FROM vocab WHERE user_id = ? AND word = ?')
+            .bind(userId, word).first();
+
+        if (shouldExist) {
+            expect(vocab).toBeTruthy();
+            expect(vocab.word).toBe(word);
+            expect(vocab.user_id).toBe(userId);
+        } else {
+            expect(vocab).toBeNull();
+        }
+
+        return vocab;
+    }
+
+    static async assertVocabCount(userId: number, expectedCount: number) {
+        const result = await env.DB.prepare('SELECT COUNT(*) as count FROM vocab WHERE user_id = ?')
+            .bind(userId).first();
+
+        expect(result.count).toBe(expectedCount);
+    }
+
+    static async assertUserInstructions(userId: number, expectedInstructions: string | null) {
+        const user = await env.DB.prepare('SELECT custom_instructions FROM users WHERE id = ?')
+            .bind(userId).first();
+
+        expect(user.custom_instructions).toBe(expectedInstructions);
+    }
 }

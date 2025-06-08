@@ -36,6 +36,7 @@ describe('Admin endpoints', () => {
     let adminToken: string;
     let userToken: string;
     let regularUserId: number;
+    let adminUserId: number;
 
     beforeAll(async () => {
         // Initialize database schema

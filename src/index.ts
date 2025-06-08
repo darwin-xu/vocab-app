@@ -223,6 +223,62 @@ export default {
             );
         }
 
+        if (url.pathname.startsWith('/admin/users/') && request.method === 'GET') {
+            const session = await getSessionFromRequest(request);
+            if (!session) return new Response('Unauthorized', { status: 401 });
+            if (!session.is_admin) return new Response('Admin access required', { status: 403 });
+
+            const userId = url.pathname.split('/').pop();
+            if (!userId) return new Response('Invalid user ID', { status: 400 });
+
+            const user = await env.DB.prepare(
+                'SELECT id, username, custom_instructions FROM users WHERE id = ?'
+            ).bind(userId).first();
+
+            if (!user) return new Response('User not found', { status: 404 });
+
+            return new Response(JSON.stringify(user), {
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        if (url.pathname.startsWith('/admin/users/') && request.method === 'PUT') {
+            const session = await getSessionFromRequest(request);
+            if (!session) return new Response('Unauthorized', { status: 401 });
+            if (!session.is_admin) return new Response('Admin access required', { status: 403 });
+
+            const userId = url.pathname.split('/').pop();
+            if (!userId) return new Response('Invalid user ID', { status: 400 });
+
+            const userExists = await env.DB.prepare(
+                'SELECT id FROM users WHERE id = ?'
+            ).bind(userId).first();
+
+            if (!userExists) return new Response('User not found', { status: 404 });
+
+            let body: any;
+            try {
+                body = await request.json();
+            } catch {
+                return new Response('Invalid JSON', { status: 400 });
+            }
+
+            const customInstructions = body.custom_instructions;
+            if (!('custom_instructions' in body)) {
+                return new Response('Missing custom_instructions', { status: 400 });
+            }
+
+            const instructionsValue = customInstructions === undefined ? null : customInstructions;
+
+            await env.DB.prepare(
+                'UPDATE users SET custom_instructions = ? WHERE id = ?'
+            ).bind(instructionsValue, userId).run();
+
+            return new Response('OK', {
+                headers: { 'Content-Type': 'text/plain' }
+            });
+        }
+
         if (url.pathname === '/profile') {
             const userId = await getUserIdFromRequest(request);
             if (!userId) return new Response('Unauthorized', { status: 401 });
