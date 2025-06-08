@@ -1,16 +1,14 @@
 // test/vocab.spec.ts
-import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
+import { env } from 'cloudflare:test';
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import worker from '../src/index';
 import { initializeTestDatabase } from './helpers/test-utils';
-
-const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 
 // Helper function to create authenticated request
 function createAuthenticatedRequest(url: string, token: string, options: RequestInit = {}) {
     const headers = new Headers(options.headers);
     headers.set('Authorization', `Bearer ${token}`);
-    return new IncomingRequest(url, { ...options, headers });
+    return new Request(url, { ...options, headers });
 }
 
 // Helper function to create user and get token
@@ -18,20 +16,21 @@ async function createUserAndGetToken(username: string, password: string, isAdmin
     // Insert user directly into database
     const result = await env.DB.prepare('INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?) RETURNING id')
         .bind(username, password, isAdmin ? 1 : 0)
-        .first();
+        .first() as { id: number } | null;
+    
+    if (!result) {
+        throw new Error('Failed to create user');
+    }
 
     // Login to get token
-    const loginRequest = new IncomingRequest('http://example.com/login', {
+    const loginRequest = new Request('http://example.com/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
     });
 
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(loginRequest, env, ctx);
-    await waitOnExecutionContext(ctx);
-
-    const data = await response.json();
+    const response = await worker.fetch(loginRequest, env);
+    const data = await response.json() as { token: string };
     return { token: data.token, userId: result.id };
 }
 
@@ -68,13 +67,11 @@ describe('Vocabulary endpoints', () => {
         it('should fetch vocabulary for authenticated user', async () => {
             const request = createAuthenticatedRequest('http://example.com/vocab', userToken);
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
 
-            const data = await response.json();
+            const data = await response.json() as { items: Array<{ word: string }> };
             expect(data.items).toHaveLength(3);
             expect(data.items.map((item) => item.word)).toContain('hello');
             expect(data.items.map((item) => item.word)).toContain('world');
@@ -84,13 +81,11 @@ describe('Vocabulary endpoints', () => {
         it('should filter vocabulary by search query', async () => {
             const request = createAuthenticatedRequest('http://example.com/vocab?q=hello', userToken);
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
 
-            const data = await response.json();
+            const data = await response.json() as { items: Array<{ word: string }> };
             expect(data.items).toHaveLength(1);
             expect(data.items[0].word).toBe('hello');
         });
@@ -98,24 +93,20 @@ describe('Vocabulary endpoints', () => {
         it('should handle pagination', async () => {
             const request = createAuthenticatedRequest('http://example.com/vocab?page=1&pageSize=2', userToken);
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
 
-            const data = await response.json();
+            const data = await response.json() as { items: Array<{ word: string }>, currentPage: number, totalPages: number };
             expect(data.items).toHaveLength(2);
             expect(data.currentPage).toBe(1);
             expect(data.totalPages).toBe(2);
         });
 
         it('should reject unauthenticated requests', async () => {
-            const request = new IncomingRequest('http://example.com/vocab');
+            const request = new Request('http://example.com/vocab');
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(401);
             expect(await response.text()).toBe('Unauthorized');
@@ -130,13 +121,11 @@ describe('Vocabulary endpoints', () => {
 
             const request = createAuthenticatedRequest('http://example.com/vocab', userToken);
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
 
-            const data = await response.json();
+            const data = await response.json() as { items: Array<{ word: string }> };
             expect(data.items).toHaveLength(3);
             expect(data.items.map((item) => item.word)).not.toContain('other');
         });
@@ -150,29 +139,25 @@ describe('Vocabulary endpoints', () => {
                 body: JSON.stringify({ word: 'newword' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
             expect(await response.text()).toBe('OK');
 
             // Verify word was added to database
-            const vocab = await env.DB.prepare('SELECT * FROM vocab WHERE user_id = ? AND word = ?').bind(userId, 'newword').first();
+            const vocab = await env.DB.prepare('SELECT * FROM vocab WHERE user_id = ? AND word = ?').bind(userId, 'newword').first() as { word: string } | null;
             expect(vocab).toBeTruthy();
-            expect(vocab.word).toBe('newword');
+            expect(vocab?.word).toBe('newword');
         });
 
         it('should reject adding word without authentication', async () => {
-            const request = new IncomingRequest('http://example.com/vocab', {
+            const request = new Request('http://example.com/vocab', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ word: 'newword' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(401);
             expect(await response.text()).toBe('Unauthorized');
@@ -185,9 +170,7 @@ describe('Vocabulary endpoints', () => {
                 body: JSON.stringify({}),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(400);
             expect(await response.text()).toBe('Missing word');
@@ -213,9 +196,7 @@ describe('Vocabulary endpoints', () => {
                 body: JSON.stringify({ words: ['delete1', 'delete2'] }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
             expect(await response.text()).toBe('OK');
@@ -223,19 +204,17 @@ describe('Vocabulary endpoints', () => {
             // Verify words were deleted
             const remainingVocab = await env.DB.prepare('SELECT word FROM vocab WHERE user_id = ?').bind(userId).all();
             expect(remainingVocab.results).toHaveLength(1);
-            expect(remainingVocab.results[0].word).toBe('keep');
+            expect((remainingVocab.results[0] as { word: string }).word).toBe('keep');
         });
 
         it('should reject deletion without authentication', async () => {
-            const request = new IncomingRequest('http://example.com/vocab', {
+            const request = new Request('http://example.com/vocab', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ words: ['delete1'] }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(401);
             expect(await response.text()).toBe('Unauthorized');
@@ -254,9 +233,7 @@ describe('Vocabulary endpoints', () => {
                 body: JSON.stringify({ words: ['delete1'] }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
 
