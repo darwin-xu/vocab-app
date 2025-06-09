@@ -17,7 +17,7 @@ async function createUserAndGetToken(username: string, password: string, isAdmin
     const result = await env.DB.prepare('INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?) RETURNING id')
         .bind(username, password, isAdmin ? 1 : 0)
         .first() as { id: number } | null;
-    
+
     if (!result) {
         throw new Error('Failed to create user');
     }

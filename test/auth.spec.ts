@@ -1,5 +1,5 @@
 // test/auth.spec.ts
-import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
+import { env } from 'cloudflare:test';
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import worker from '../src/index';
 import { initializeTestDatabase } from './helpers/test-utils';
@@ -25,17 +25,15 @@ describe('Authentication endpoints', () => {
                 body: JSON.stringify({ username: 'testuser', password: 'testpass' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
             expect(await response.text()).toBe('OK');
 
             // Verify user was created in database
-            const user = await env.DB.prepare('SELECT * FROM users WHERE username = ?').bind('testuser').first();
+            const user = await env.DB.prepare('SELECT * FROM users WHERE username = ?').bind('testuser').first() as { username: string } | null;
             expect(user).toBeTruthy();
-            expect(user.username).toBe('testuser');
+            expect(user?.username).toBe('testuser');
         });
 
         it('should reject registration with missing username', async () => {
@@ -45,9 +43,7 @@ describe('Authentication endpoints', () => {
                 body: JSON.stringify({ password: 'testpass' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(400);
             expect(await response.text()).toBe('Missing username or password');
@@ -60,9 +56,7 @@ describe('Authentication endpoints', () => {
                 body: JSON.stringify({ username: 'testuser' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(400);
             expect(await response.text()).toBe('Missing username or password');
@@ -78,9 +72,7 @@ describe('Authentication endpoints', () => {
                 body: JSON.stringify({ username: 'testuser', password: 'testpass' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(409);
             expect(await response.text()).toBe('Username already exists');
@@ -100,13 +92,11 @@ describe('Authentication endpoints', () => {
                 body: JSON.stringify({ username: 'testuser', password: 'testpass' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
 
-            const data = await response.json();
+            const data = await response.json() as { token: string; is_admin: number };
             expect(data.token).toBeTruthy();
             expect(data.is_admin).toBe(0);
         });
@@ -118,9 +108,7 @@ describe('Authentication endpoints', () => {
                 body: JSON.stringify({ username: 'testuser', password: 'wrongpass' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(401);
             expect(await response.text()).toBe('Invalid credentials');
@@ -133,9 +121,7 @@ describe('Authentication endpoints', () => {
                 body: JSON.stringify({ username: 'nonexistent', password: 'testpass' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(401);
             expect(await response.text()).toBe('Invalid credentials');
@@ -148,9 +134,7 @@ describe('Authentication endpoints', () => {
                 body: JSON.stringify({ username: 'testuser' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(400);
             expect(await response.text()).toBe('Missing username or password');
@@ -166,13 +150,11 @@ describe('Authentication endpoints', () => {
                 body: JSON.stringify({ username: 'admin', password: 'adminpass' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
 
-            const data = await response.json();
+            const data = await response.json() as { token: string; is_admin: number };
             expect(data.token).toBeTruthy();
             expect(data.is_admin).toBe(1);
         });

@@ -1,16 +1,14 @@
 // test/admin.spec.ts
-import { env, createExecutionContext, waitOnExecutionContext } from 'cloudflare:test';
+import { env } from 'cloudflare:test';
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import worker from '../src/index';
 import { initializeTestDatabase } from './helpers/test-utils';
-
-const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 
 // Helper function to create authenticated request
 function createAuthenticatedRequest(url: string, token: string, options: RequestInit = {}) {
     const headers = new Headers(options.headers);
     headers.set('Authorization', `Bearer ${token}`);
-    return new IncomingRequest(url, { ...options, headers });
+    return new Request(url, { ...options, headers });
 }
 
 // Helper function to create user and get token
@@ -25,15 +23,13 @@ async function createUserAndGetToken(username: string, password: string, isAdmin
     }
 
     // Login to get token
-    const loginRequest = new IncomingRequest('http://example.com/login', {
+    const loginRequest = new Request('http://example.com/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
     });
 
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(loginRequest, env, ctx);
-    await waitOnExecutionContext(ctx);
+    const response = await worker.fetch(loginRequest, env);
 
     const data = (await response.json()) as { token: string };
     return { token: data.token, userId: result.id };
@@ -66,13 +62,11 @@ describe('Admin endpoints', () => {
         it('should return all users for admin', async () => {
             const request = createAuthenticatedRequest('http://example.com/admin/users', adminToken);
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
 
-            const users = await response.json();
+            const users = (await response.json()) as Array<{ username: string }>;
             expect(users).toHaveLength(2);
             expect(users.map((u) => u.username)).toContain('admin');
             expect(users.map((u) => u.username)).toContain('testuser');
@@ -81,20 +75,16 @@ describe('Admin endpoints', () => {
         it('should reject non-admin users', async () => {
             const request = createAuthenticatedRequest('http://example.com/admin/users', userToken);
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(403);
             expect(await response.text()).toBe('Admin access required');
         });
 
         it('should reject unauthenticated requests', async () => {
-            const request = new IncomingRequest('http://example.com/admin/users');
+            const request = new Request('http://example.com/admin/users');
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(401);
             expect(await response.text()).toBe('Unauthorized');
@@ -112,13 +102,11 @@ describe('Admin endpoints', () => {
         it('should return user details for admin', async () => {
             const request = createAuthenticatedRequest(`http://example.com/admin/users/${regularUserId}`, adminToken);
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
 
-            const userDetails = await response.json();
+            const userDetails = (await response.json()) as { id: number; username: string; custom_instructions: string };
             expect(userDetails.id).toBe(regularUserId);
             expect(userDetails.username).toBe('testuser');
             expect(userDetails.custom_instructions).toBe('Custom instructions for user');
@@ -127,9 +115,7 @@ describe('Admin endpoints', () => {
         it('should reject non-admin users', async () => {
             const request = createAuthenticatedRequest(`http://example.com/admin/users/${regularUserId}`, userToken);
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(403);
             expect(await response.text()).toBe('Admin access required');
@@ -138,9 +124,7 @@ describe('Admin endpoints', () => {
         it('should return 404 for non-existent user', async () => {
             const request = createAuthenticatedRequest('http://example.com/admin/users/99999', adminToken);
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(404);
             expect(await response.text()).toBe('User not found');
@@ -156,16 +140,14 @@ describe('Admin endpoints', () => {
                 body: JSON.stringify({ custom_instructions: newInstructions }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
             expect(await response.text()).toBe('OK');
 
             // Verify instructions were updated
-            const user = await env.DB.prepare('SELECT custom_instructions FROM users WHERE id = ?').bind(regularUserId).first();
-            expect(user.custom_instructions).toBe(newInstructions);
+            const user = (await env.DB.prepare('SELECT custom_instructions FROM users WHERE id = ?').bind(regularUserId).first()) as { custom_instructions: string } | null;
+            expect(user?.custom_instructions).toBe(newInstructions);
         });
 
         it('should reject non-admin users', async () => {
@@ -175,9 +157,7 @@ describe('Admin endpoints', () => {
                 body: JSON.stringify({ custom_instructions: 'New instructions' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(403);
             expect(await response.text()).toBe('Admin access required');
@@ -190,9 +170,7 @@ describe('Admin endpoints', () => {
                 body: JSON.stringify({ custom_instructions: 'New instructions' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(404);
             expect(await response.text()).toBe('User not found');
@@ -205,9 +183,7 @@ describe('Admin endpoints', () => {
                 body: JSON.stringify({}),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(400);
             expect(await response.text()).toBe('Missing custom_instructions');
@@ -225,24 +201,20 @@ describe('Admin endpoints', () => {
         it('should return own profile for authenticated user', async () => {
             const request = createAuthenticatedRequest('http://example.com/profile', userToken);
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
 
-            const profile = await response.json();
+            const profile = (await response.json()) as { id: number; username: string; custom_instructions: string };
             expect(profile.id).toBe(regularUserId);
             expect(profile.username).toBe('testuser');
             expect(profile.custom_instructions).toBe('My personal instructions');
         });
 
         it('should reject unauthenticated requests', async () => {
-            const request = new IncomingRequest('http://example.com/profile');
+            const request = new Request('http://example.com/profile');
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(401);
             expect(await response.text()).toBe('Unauthorized');
@@ -258,28 +230,24 @@ describe('Admin endpoints', () => {
                 body: JSON.stringify({ custom_instructions: newInstructions }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
             expect(await response.text()).toBe('OK');
 
             // Verify instructions were updated
-            const user = await env.DB.prepare('SELECT custom_instructions FROM users WHERE id = ?').bind(regularUserId).first();
-            expect(user.custom_instructions).toBe(newInstructions);
+            const user = (await env.DB.prepare('SELECT custom_instructions FROM users WHERE id = ?').bind(regularUserId).first()) as { custom_instructions: string } | null;
+            expect(user?.custom_instructions).toBe(newInstructions);
         });
 
         it('should reject unauthenticated requests', async () => {
-            const request = new IncomingRequest('http://example.com/profile', {
+            const request = new Request('http://example.com/profile', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ custom_instructions: 'New instructions' }),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(401);
             expect(await response.text()).toBe('Unauthorized');
@@ -292,9 +260,7 @@ describe('Admin endpoints', () => {
                 body: JSON.stringify({}),
             });
 
-            const ctx = createExecutionContext();
-            const response = await worker.fetch(request, env, ctx);
-            await waitOnExecutionContext(ctx);
+            const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(400);
             expect(await response.text()).toBe('Missing custom_instructions');
