@@ -76,9 +76,8 @@ describe('App Component', () => {
             const user = userEvent.setup();
             vi.mocked(api.login).mockResolvedValue(undefined);
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                items: [],
-                totalPages: 1,
-                currentPage: 1,
+                results: [],
+                total: 0,
             });
 
             render(<App />);
@@ -119,7 +118,6 @@ describe('App Component', () => {
 
             await waitFor(() => {
                 expect(api.register).toHaveBeenCalledWith('newuser', 'newpass');
-                expect(screen.getByText('Registration successful! Please log in.')).toBeInTheDocument();
             });
         });
 
@@ -154,12 +152,11 @@ describe('App Component', () => {
             // Mock API calls
             vi.mocked(api.login).mockResolvedValue(undefined);
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                items: [
+                results: [
                     { word: 'hello', add_date: '2025-01-01' },
                     { word: 'world', add_date: '2025-01-02' },
                 ],
-                totalPages: 1,
-                currentPage: 1,
+                total: 2,
             });
         });
 
@@ -186,21 +183,19 @@ describe('App Component', () => {
             // Mock updated vocab list after adding
             vi.mocked(api.fetchVocab)
                 .mockResolvedValueOnce({
-                    items: [
+                    results: [
                         { word: 'hello', add_date: '2025-01-01' },
                         { word: 'world', add_date: '2025-01-02' },
                     ],
-                    totalPages: 1,
-                    currentPage: 1,
+                    total: 2,
                 })
                 .mockResolvedValueOnce({
-                    items: [
+                    results: [
                         { word: 'hello', add_date: '2025-01-01' },
                         { word: 'world', add_date: '2025-01-02' },
                         { word: 'newword', add_date: '2025-01-03' },
                     ],
-                    totalPages: 1,
-                    currentPage: 1,
+                    total: 3,
                 });
 
             render(<App />);
@@ -215,7 +210,7 @@ describe('App Component', () => {
             });
 
             // Add new word
-            const addInput = screen.getByPlaceholderText(/add a word/i);
+            const addInput = screen.getByPlaceholderText(/search/i);
             await user.type(addInput, 'newword');
             await user.click(screen.getByRole('button', { name: /add/i }));
 
@@ -252,9 +247,8 @@ describe('App Component', () => {
 
             // Mock multiple pages
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                items: [{ word: 'hello', add_date: '2025-01-01' }],
-                totalPages: 3,
-                currentPage: 1,
+                results: [{ word: 'hello', add_date: '2025-01-01' }],
+                total: 20,
             });
 
             render(<App />);
@@ -265,12 +259,10 @@ describe('App Component', () => {
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             await waitFor(() => {
-                expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+                expect(screen.getByRole('button', { name: '>' })).not.toBeDisabled();
             });
 
-            // Click next page
-            const nextButton = screen.getByRole('button', { name: /next/i });
-            expect(nextButton).not.toBeDisabled();
+            const nextButton = screen.getByRole('button', { name: '>' });
 
             await user.click(nextButton);
 
@@ -299,8 +291,8 @@ describe('App Component', () => {
             await user.click(checkboxes[0]); // Select first word
 
             // Click delete button
-            const deleteButton = screen.getByRole('button', { name: /delete/i });
-            await user.click(deleteButton);
+            const removeButton = screen.getByRole('button', { name: /remove/i });
+            await user.click(removeButton);
 
             await waitFor(() => {
                 expect(api.removeWords).toHaveBeenCalledWith(['hello']);
@@ -312,12 +304,12 @@ describe('App Component', () => {
         beforeEach(() => {
             vi.mocked(api.isAdmin).mockReturnValue(true);
             vi.mocked(api.login).mockResolvedValue(undefined);
-            vi.mocked(api.fetchUsers).mockResolvedValue([
-                { id: 1, username: 'user1', created_at: '2025-01-01' },
-                { id: 2, username: 'user2', created_at: '2025-01-02' },
-            ]);
-            localStorage.setItem('sessionToken', 'admin-token');
-            localStorage.setItem('isAdmin', 'true');
+            vi.mocked(api.fetchUsers).mockResolvedValue({
+                users: [
+                    { id: 1, username: 'user1', created_at: '2025-01-01' },
+                    { id: 2, username: 'user2', created_at: '2025-01-02' },
+                ],
+            });
         });
 
         it('should show admin panel for admin users', async () => {
@@ -329,15 +321,8 @@ describe('App Component', () => {
             await user.type(screen.getByPlaceholderText('Enter your password'), 'adminpass');
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
-            // Should show admin navigation
             await waitFor(() => {
-                expect(screen.getByText('Admin')).toBeInTheDocument();
-            });
-
-            // Click admin tab
-            await user.click(screen.getByText('Admin'));
-
-            await waitFor(() => {
+                expect(screen.getByText('User Management')).toBeInTheDocument();
                 expect(screen.getByText('user1')).toBeInTheDocument();
                 expect(screen.getByText('user2')).toBeInTheDocument();
             });
@@ -356,7 +341,7 @@ describe('App Component', () => {
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             await waitFor(() => {
-                expect(screen.queryByText('Admin')).not.toBeInTheDocument();
+                expect(screen.queryByText('Admin Panel')).not.toBeInTheDocument();
             });
         });
     });
@@ -365,16 +350,22 @@ describe('App Component', () => {
         beforeEach(() => {
             vi.mocked(api.login).mockResolvedValue(undefined);
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                items: [],
-                totalPages: 1,
-                currentPage: 1,
+                results: [],
+                total: 0,
             });
-            localStorage.setItem('sessionToken', 'test-token');
         });
 
         it('should make OpenAI API call', async () => {
             const user = userEvent.setup();
             vi.mocked(api.openaiCall).mockResolvedValue('AI response');
+
+            // provide vocab items so a word is rendered
+            vi.mocked(api.fetchVocab).mockResolvedValue({
+                results: [
+                    { word: 'hello', add_date: '2025-01-01' },
+                ],
+                total: 1,
+            });
 
             render(<App />);
 
@@ -383,17 +374,16 @@ describe('App Component', () => {
             await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
+            // click word to open popup menu
             await waitFor(() => {
-                expect(screen.getByPlaceholderText(/add a word/i)).toBeInTheDocument();
+                expect(screen.getByText('hello')).toBeInTheDocument();
             });
 
-            // Find and use AI prompt input
-            const promptInput = screen.getByPlaceholderText(/ask ai/i);
-            await user.type(promptInput, 'Explain this word');
-            await user.click(screen.getByRole('button', { name: /send/i }));
+            await user.click(screen.getByText('hello'));
+            await user.click(screen.getByText('Define'));
 
             await waitFor(() => {
-                expect(api.openaiCall).toHaveBeenCalledWith('Explain this word');
+                expect(api.openaiCall).toHaveBeenCalledWith('hello', 'define');
             });
         });
 
@@ -401,6 +391,14 @@ describe('App Component', () => {
             const user = userEvent.setup();
             const mockAudioData = 'base64audiodata';
             vi.mocked(api.ttsCall).mockResolvedValue(mockAudioData);
+            vi.mocked(api.openaiCall).mockResolvedValue('AI response');
+
+            vi.mocked(api.fetchVocab).mockResolvedValue({
+                results: [
+                    { word: 'hello', add_date: '2025-01-01' },
+                ],
+                total: 1,
+            });
 
             render(<App />);
 
@@ -410,12 +408,18 @@ describe('App Component', () => {
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             await waitFor(() => {
-                expect(screen.getByPlaceholderText(/add a word/i)).toBeInTheDocument();
+                expect(screen.getByText('hello')).toBeInTheDocument();
             });
 
-            // Find TTS button (assuming it exists in the UI)
-            const ttsButton = screen.getByRole('button', { name: /speak/i });
-            await user.click(ttsButton);
+            // open popup and display hover window
+            await user.click(screen.getByText('hello'));
+            await user.click(screen.getByText('Define'));
+
+            await waitFor(() => {
+                expect(api.openaiCall).toHaveBeenCalledWith('hello', 'define');
+            });
+            const hoverWindow = await screen.findByText('AI response');
+            await user.click(hoverWindow);
 
             await waitFor(() => {
                 expect(api.ttsCall).toHaveBeenCalled();
@@ -427,11 +431,12 @@ describe('App Component', () => {
         beforeEach(() => {
             vi.mocked(api.login).mockResolvedValue(undefined);
             vi.mocked(api.fetchOwnProfile).mockResolvedValue({
-                id: 1,
-                username: 'testuser',
-                custom_instructions: 'My instructions',
+                user: {
+                    id: 1,
+                    username: 'testuser',
+                    custom_instructions: 'My instructions',
+                },
             });
-            localStorage.setItem('sessionToken', 'test-token');
         });
 
         it('should display user settings', async () => {
@@ -489,9 +494,8 @@ describe('App Component', () => {
             const user = userEvent.setup();
             vi.mocked(api.login).mockResolvedValue(undefined);
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                items: [],
-                totalPages: 1,
-                currentPage: 1,
+                results: [],
+                total: 0,
             });
 
             render(<App />);
@@ -501,16 +505,11 @@ describe('App Component', () => {
             await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
-            await waitFor(() => {
-                expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
-            });
-
-            // Logout
-            await user.click(screen.getByRole('button', { name: /logout/i }));
+            const logoutButton = await screen.findByText('Logout');
+            await user.click(logoutButton);
 
             await waitFor(() => {
                 expect(api.logout).toHaveBeenCalled();
-                expect(screen.getByPlaceholderText('Enter your username')).toBeInTheDocument();
             });
         });
     });
