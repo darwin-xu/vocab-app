@@ -27,7 +27,7 @@ function useWindowSize() {
     });
 
     useEffect(() => {
-        let timeoutId: number | null = null;
+        let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
         function handleResize() {
             // Debounce resize events to improve performance
