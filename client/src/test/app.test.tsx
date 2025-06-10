@@ -1,34 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import './setup'; // Ensure setup is loaded
 import App from '../app';
 import * as api from '../api';
-
-// Create localStorage mock if it doesn't exist
-if (!globalThis.localStorage) {
-    const storage: Record<string, string> = {};
-    globalThis.localStorage = {
-        getItem: vi.fn((key: string) => storage[key] || null),
-        setItem: vi.fn((key: string, value: string) => {
-            storage[key] = value;
-        }),
-        removeItem: vi.fn((key: string) => {
-            delete storage[key];
-        }),
-        clear: vi.fn(() => {
-            for (const key in storage) {
-                delete storage[key];
-            }
-        }),
-        get length() {
-            return Object.keys(storage).length;
-        },
-        key: vi.fn((index: number) => {
-            const keys = Object.keys(storage);
-            return keys[index] || null;
-        }),
-    } as Storage;
-}
 
 // Mock the API module
 vi.mock('../api', () => ({
@@ -73,7 +48,6 @@ describe('App Component', () => {
         });
 
         it('should handle successful login', async () => {
-            const user = userEvent.setup();
             vi.mocked(api.login).mockResolvedValue(undefined);
             vi.mocked(api.fetchVocab).mockResolvedValue({
                 results: [],
@@ -81,6 +55,7 @@ describe('App Component', () => {
             });
 
             render(<App />);
+            const user = userEvent.setup();
 
             await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
             await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
@@ -92,10 +67,10 @@ describe('App Component', () => {
         });
 
         it('should handle login error', async () => {
-            const user = userEvent.setup();
             vi.mocked(api.login).mockRejectedValue(new Error('Invalid credentials'));
 
             render(<App />);
+            const user = userEvent.setup();
 
             await user.type(screen.getByPlaceholderText('Enter your username'), 'wronguser');
             await user.type(screen.getByPlaceholderText('Enter your password'), 'wrongpass');
@@ -107,10 +82,10 @@ describe('App Component', () => {
         });
 
         it('should handle successful registration', async () => {
-            const user = userEvent.setup();
             vi.mocked(api.register).mockResolvedValue(undefined);
 
             render(<App />);
+            const user = userEvent.setup();
 
             await user.type(screen.getByPlaceholderText('Enter your username'), 'newuser');
             await user.type(screen.getByPlaceholderText('Enter your password'), 'newpass');
@@ -122,10 +97,10 @@ describe('App Component', () => {
         });
 
         it('should handle registration error', async () => {
-            const user = userEvent.setup();
             vi.mocked(api.register).mockRejectedValue(new Error('Username already exists'));
 
             render(<App />);
+            const user = userEvent.setup();
 
             await user.type(screen.getByPlaceholderText('Enter your username'), 'existinguser');
             await user.type(screen.getByPlaceholderText('Enter your password'), 'password');
@@ -137,8 +112,8 @@ describe('App Component', () => {
         });
 
         it('should validate required fields', async () => {
-            const user = userEvent.setup();
             render(<App />);
+            const user = userEvent.setup();
 
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
@@ -161,8 +136,8 @@ describe('App Component', () => {
         });
 
         it('should display vocabulary list after login', async () => {
-            const user = userEvent.setup();
             render(<App />);
+            const user = userEvent.setup();
 
             // Perform login
             await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
@@ -177,7 +152,6 @@ describe('App Component', () => {
         });
 
         it('should add new vocabulary word', async () => {
-            const user = userEvent.setup();
             vi.mocked(api.addWord).mockResolvedValue(undefined);
 
             // Mock updated vocab list after adding
@@ -199,6 +173,7 @@ describe('App Component', () => {
                 });
 
             render(<App />);
+            const user = userEvent.setup();
 
             // Login first
             await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
@@ -220,9 +195,8 @@ describe('App Component', () => {
         });
 
         it('should handle search functionality', async () => {
-            const user = userEvent.setup();
-
             render(<App />);
+            const user = userEvent.setup();
 
             // Login first
             await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
@@ -243,8 +217,6 @@ describe('App Component', () => {
         });
 
         it('should handle pagination', async () => {
-            const user = userEvent.setup();
-
             // Mock multiple pages
             vi.mocked(api.fetchVocab).mockResolvedValue({
                 results: [{ word: 'hello', add_date: '2025-01-01' }],
@@ -252,6 +224,7 @@ describe('App Component', () => {
             });
 
             render(<App />);
+            const user = userEvent.setup();
 
             // Login first
             await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
@@ -272,10 +245,10 @@ describe('App Component', () => {
         });
 
         it('should delete selected words', async () => {
-            const user = userEvent.setup();
             vi.mocked(api.removeWords).mockResolvedValue(undefined);
 
             render(<App />);
+            const user = userEvent.setup();
 
             // Login first
             await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
@@ -313,8 +286,8 @@ describe('App Component', () => {
         });
 
         it('should show admin panel for admin users', async () => {
-            const user = userEvent.setup();
             render(<App />);
+            const user = userEvent.setup();
 
             // Login as admin
             await user.type(screen.getByPlaceholderText('Enter your username'), 'admin');
@@ -332,8 +305,8 @@ describe('App Component', () => {
             vi.mocked(api.isAdmin).mockReturnValue(false);
             localStorage.setItem('isAdmin', 'false');
 
-            const user = userEvent.setup();
             render(<App />);
+            const user = userEvent.setup();
 
             // Login as regular user
             await user.type(screen.getByPlaceholderText('Enter your username'), 'user');
@@ -356,7 +329,6 @@ describe('App Component', () => {
         });
 
         it('should make OpenAI API call', async () => {
-            const user = userEvent.setup();
             vi.mocked(api.openaiCall).mockResolvedValue('AI response');
 
             // provide vocab items so a word is rendered
@@ -368,6 +340,7 @@ describe('App Component', () => {
             });
 
             render(<App />);
+            const user = userEvent.setup();
 
             // Login first
             await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
@@ -388,7 +361,6 @@ describe('App Component', () => {
         });
 
         it('should handle TTS functionality', async () => {
-            const user = userEvent.setup();
             const mockAudioData = 'base64audiodata';
             vi.mocked(api.ttsCall).mockResolvedValue(mockAudioData);
             vi.mocked(api.openaiCall).mockResolvedValue('AI response');
@@ -401,6 +373,7 @@ describe('App Component', () => {
             });
 
             render(<App />);
+            const user = userEvent.setup();
 
             // Login first
             await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
@@ -440,8 +413,8 @@ describe('App Component', () => {
         });
 
         it('should display user settings', async () => {
-            const user = userEvent.setup();
             render(<App />);
+            const user = userEvent.setup();
 
             // Login first
             await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
@@ -458,10 +431,10 @@ describe('App Component', () => {
         });
 
         it('should update user profile', async () => {
-            const user = userEvent.setup();
             vi.mocked(api.updateOwnProfile).mockResolvedValue(undefined);
 
             render(<App />);
+            const user = userEvent.setup();
 
             // Login first
             await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
@@ -491,7 +464,6 @@ describe('App Component', () => {
 
     describe('Logout Functionality', () => {
         it('should handle logout', async () => {
-            const user = userEvent.setup();
             vi.mocked(api.login).mockResolvedValue(undefined);
             vi.mocked(api.fetchVocab).mockResolvedValue({
                 results: [],
@@ -499,6 +471,7 @@ describe('App Component', () => {
             });
 
             render(<App />);
+            const user = userEvent.setup();
 
             // Login first
             await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
