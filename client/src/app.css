@@ -74,7 +74,11 @@ body {
 }
 
 body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family:
+        'Inter',
+        system-ui,
+        -apple-system,
+        sans-serif;
     background: var(--gradient-primary);
     color: var(--auth-text-dark);
     line-height: 1.6;
@@ -97,7 +101,6 @@ body::before {
 }
 
 @keyframes float {
-
     0%,
     100% {
         transform: translateY(0px) rotate(0deg);
@@ -132,7 +135,9 @@ h1 {
     font-weight: 800;
     text-align: center;
     color: white;
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(102, 126, 234, 0.6);
+    text-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        0 2px 6px rgba(102, 126, 234, 0.6);
     letter-spacing: -0.02em;
     position: relative;
     padding: var(--space-sm) 0;
@@ -187,7 +192,9 @@ h1::after {
 .field-row input#word:focus {
     outline: none;
     border-color: var(--vocab-primary);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1), var(--shadow-md);
+    box-shadow:
+        0 0 0 3px rgba(102, 126, 234, 0.1),
+        var(--shadow-md);
     background: rgba(255, 255, 255, 1);
     transform: translateY(-1px);
 }
@@ -342,7 +349,7 @@ td:nth-child(5) {
 
 /* Word styling */
 .montserrat-unique {
-    font-family: "Montserrat", sans-serif;
+    font-family: 'Montserrat', sans-serif;
     font-weight: 600;
     color: var(--auth-text-dark);
     cursor: pointer;
@@ -364,7 +371,7 @@ td:nth-child(5) {
 }
 
 /* Checkbox styling */
-input[type="checkbox"] {
+input[type='checkbox'] {
     appearance: none;
     width: 16px;
     height: 16px;
@@ -377,18 +384,18 @@ input[type="checkbox"] {
     margin: 0;
 }
 
-input[type="checkbox"]:hover {
+input[type='checkbox']:hover {
     border-color: var(--vocab-primary);
     background: rgba(255, 255, 255, 1);
     transform: scale(1.05);
 }
 
-input[type="checkbox"]:checked {
+input[type='checkbox']:checked {
     background: var(--gradient-primary);
     border-color: var(--vocab-primary);
 }
 
-input[type="checkbox"]:checked::after {
+input[type='checkbox']:checked::after {
     content: '✓';
     position: absolute;
     top: 50%;
@@ -738,7 +745,9 @@ input[type="checkbox"]:checked::after {
     color: white;
     font-size: 2.5rem;
     font-weight: 800;
-    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(102, 126, 234, 0.6);
+    text-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        0 2px 6px rgba(102, 126, 234, 0.6);
     letter-spacing: -0.02em;
     margin-bottom: var(--space-lg);
 }

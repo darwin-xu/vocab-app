@@ -1,7 +1,7 @@
 {
-	"files.associations": {
-		"wrangler.json": "jsonc"
-	},
+    "files.associations": {
+        "wrangler.json": "jsonc"
+    },
     "editor.tabSize": 4,
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
