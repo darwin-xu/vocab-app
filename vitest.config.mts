@@ -2,6 +2,8 @@ import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config';
 
 export default defineWorkersConfig({
     test: {
+        include: ['test/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+        exclude: ['client/**/*'],
         poolOptions: {
             workers: {
                 wrangler: { configPath: './wrangler.toml' },
@@ -20,7 +22,8 @@ export default defineWorkersConfig({
                 'test/**',
                 'dist/**',
                 '**/*.d.ts',
-                '**/node_modules/**'
+                '**/node_modules/**',
+                'client/**'
             ],
             include: ['src/**/*.ts'],
             thresholds: {

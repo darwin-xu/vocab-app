@@ -64,6 +64,15 @@ Object.defineProperty(globalThis, 'speechSynthesis', {
     configurable: true,
 });
 
+// Mock Audio API used by TTS playback
+Object.defineProperty(globalThis, 'Audio', {
+    value: function () {
+        return { play: vi.fn() } as unknown as HTMLAudioElement;
+    },
+    writable: true,
+    configurable: true,
+});
+
 // Mock fetch
 Object.defineProperty(globalThis, 'fetch', {
     value: vi.fn(),
