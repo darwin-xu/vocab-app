@@ -224,7 +224,7 @@ describe('API functions', () => {
 
             const result = await api.openaiCall('testword', 'define');
 
-            expect(mockFetch).toHaveBeenCalledWith('/openai?word=testword&func=define', {
+            expect(mockFetch).toHaveBeenCalledWith('/openai?word=testword&action=define', {
                 headers: expect.any(Headers),
             });
             expect(result).toBe('AI response');

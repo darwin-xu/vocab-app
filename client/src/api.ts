@@ -69,8 +69,8 @@ export async function removeWords(words: string[]) {
     if (!res.ok) throw new Error(await res.text());
 }
 
-export async function openaiCall(word: string, func: string) {
-    const res = await authFetch(`/openai?word=${encodeURIComponent(word)}&func=${func}`);
+export async function openaiCall(word: string, action: string) {
+    const res = await authFetch(`/openai?word=${encodeURIComponent(word)}&action=${action}`);
     if (!res.ok) throw new Error(await res.text());
     return res.text();
 }

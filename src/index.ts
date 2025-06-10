@@ -308,7 +308,7 @@ export default {
         if (url.pathname === '/openai') {
             const { searchParams } = new URL(request.url);
             const word = searchParams.get('word') ?? 'Say hi!';
-            const func = searchParams.get('func') ?? 'define';
+            const action = searchParams.get('action') ?? 'define';
 
             const userId = await getUserIdFromRequest(request);
             let customInstructions: string | null = null;
@@ -322,9 +322,9 @@ export default {
 
             const defaultPrompt = `Define the word '${word}'`;
             const prompt =
-                func === 'example'
+                action === 'example'
                     ? `Make 1~3 sentences using the word '${word}'. Provide in markdown lists.`
-                    : func === 'synonym'
+                    : action === 'synonym'
                         ? `List 1~3 synonyms for the word '${word}'. Provide in markdown lists`
                         : defaultPrompt;
 

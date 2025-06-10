@@ -14,3 +14,12 @@ CREATE TABLE IF NOT EXISTS vocab (
   add_date TEXT NOT NULL,
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- Index on user_id to improve join performance with users table
+CREATE INDEX IF NOT EXISTS idx_vocab_user_id ON vocab(user_id);
+
+-- Compound index on (user_id, word) for faster user-specific word lookups
+CREATE INDEX IF NOT EXISTS idx_vocab_user_word ON vocab(user_id, word);
+
+-- Index on word column for search functionality
+CREATE INDEX IF NOT EXISTS idx_vocab_word ON vocab(word);
