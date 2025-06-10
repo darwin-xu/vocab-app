@@ -81,6 +81,9 @@ jobs:
       - name: Install client dependencies
         run: cd client && npm ci --legacy-peer-deps
         
+      - name: Build client (required for backend tests)
+        run: npm run build:client
+        
       - name: Run all tests
         run: npm run test:all
         env:
