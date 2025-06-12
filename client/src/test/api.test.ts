@@ -208,7 +208,7 @@ describe('API functions', () => {
 
             await api.addWord('testword');
 
-            expect(mockFetch).toHaveBeenCalledWith('/add', {
+            expect(mockFetch).toHaveBeenCalledWith('/vocab', {
                 method: 'POST',
                 headers: expect.any(Headers),
                 body: JSON.stringify({ word: 'testword' }),
@@ -229,8 +229,8 @@ describe('API functions', () => {
 
             await api.removeWords(['word1', 'word2']);
 
-            expect(mockFetch).toHaveBeenCalledWith('/remove', {
-                method: 'POST',
+            expect(mockFetch).toHaveBeenCalledWith('/vocab', {
+                method: 'DELETE',
                 headers: expect.any(Headers),
                 body: JSON.stringify({ words: ['word1', 'word2'] }),
             });

@@ -169,8 +169,8 @@ function App() {
     const loadVocab = useCallback(async () => {
         try {
             const data = await fetchVocab(q, page, pageSize);
-            setVocab(data.results || []);
-            setTotalPages(Math.max(1, Math.ceil(data.total / pageSize)));
+            setVocab(data.items || []);
+            setTotalPages(Math.max(1, data.totalPages || 1));
             setSelected(new Set());
         } catch {
             logout();

@@ -58,8 +58,9 @@ describe('App Component', () => {
         it('should handle successful login', async () => {
             vi.mocked(api.login).mockResolvedValue(undefined);
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                results: [],
-                total: 0,
+                items: [],
+                totalPages: 0,
+                currentPage: 1,
             });
 
             render(<App />);
@@ -171,11 +172,12 @@ describe('App Component', () => {
             // Mock API calls
             vi.mocked(api.login).mockResolvedValue(undefined);
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                results: [
+                items: [
                     { word: 'hello', add_date: '2025-01-01' },
                     { word: 'world', add_date: '2025-01-02' },
                 ],
-                total: 2,
+                totalPages: 1,
+                currentPage: 1,
             });
         });
 
@@ -207,19 +209,21 @@ describe('App Component', () => {
             // Mock updated vocab list after adding
             vi.mocked(api.fetchVocab)
                 .mockResolvedValueOnce({
-                    results: [
+                    items: [
                         { word: 'hello', add_date: '2025-01-01' },
                         { word: 'world', add_date: '2025-01-02' },
                     ],
-                    total: 2,
+                    totalPages: 1,
+                    currentPage: 1,
                 })
                 .mockResolvedValueOnce({
-                    results: [
+                    items: [
                         { word: 'hello', add_date: '2025-01-01' },
                         { word: 'world', add_date: '2025-01-02' },
                         { word: 'newword', add_date: '2025-01-03' },
                     ],
-                    total: 3,
+                    totalPages: 1,
+                    currentPage: 1,
                 });
 
             render(<App />);
@@ -285,8 +289,9 @@ describe('App Component', () => {
         it('should handle pagination', async () => {
             // Mock multiple pages
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                results: [{ word: 'hello', add_date: '2025-01-01' }],
-                total: 20,
+                items: [{ word: 'hello', add_date: '2025-01-01' }],
+                totalPages: 2,
+                currentPage: 1,
             });
 
             render(<App />);
@@ -423,8 +428,9 @@ describe('App Component', () => {
         beforeEach(() => {
             vi.mocked(api.login).mockResolvedValue(undefined);
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                results: [],
-                total: 0,
+                items: [],
+                totalPages: 0,
+                currentPage: 1,
             });
         });
 
@@ -433,8 +439,9 @@ describe('App Component', () => {
 
             // provide vocab items so a word is rendered
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                results: [{ word: 'hello', add_date: '2025-01-01' }],
-                total: 1,
+                items: [{ word: 'hello', add_date: '2025-01-01' }],
+                totalPages: 1,
+                currentPage: 1,
             });
 
             render(<App />);
@@ -470,8 +477,9 @@ describe('App Component', () => {
             vi.mocked(api.openaiCall).mockResolvedValue('AI response');
 
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                results: [{ word: 'hello', add_date: '2025-01-01' }],
-                total: 1,
+                items: [{ word: 'hello', add_date: '2025-01-01' }],
+                totalPages: 1,
+                currentPage: 1,
             });
 
             render(<App />);
@@ -591,8 +599,9 @@ describe('App Component', () => {
         it('should handle logout', async () => {
             vi.mocked(api.login).mockResolvedValue(undefined);
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                results: [],
-                total: 0,
+                items: [],
+                totalPages: 0,
+                currentPage: 1,
             });
 
             render(<App />);
