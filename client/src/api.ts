@@ -57,7 +57,7 @@ export async function fetchVocab(q = '', page = 1, pageSize = 20) {
 }
 
 export async function addWord(word: string) {
-    const res = await authFetch('/add', {
+    const res = await authFetch('/vocab', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word }),
@@ -66,8 +66,8 @@ export async function addWord(word: string) {
 }
 
 export async function removeWords(words: string[]) {
-    const res = await authFetch('/remove', {
-        method: 'POST',
+    const res = await authFetch('/vocab', {
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ words }),
     });
