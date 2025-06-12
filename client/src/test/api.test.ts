@@ -83,7 +83,12 @@ describe('API functions', () => {
         it('should login successfully', async () => {
             const mockResponse = {
                 ok: true,
-                json: vi.fn().mockResolvedValue({ token: 'test-token', is_admin: false }),
+                json: vi
+                    .fn()
+                    .mockResolvedValue({
+                        token: 'test-token',
+                        is_admin: false,
+                    }),
             };
             mockFetch.mockResolvedValue(mockResponse);
 
@@ -92,11 +97,23 @@ describe('API functions', () => {
             expect(mockFetch).toHaveBeenCalledWith('/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: 'testuser', password: 'testpass' }),
+                body: JSON.stringify({
+                    username: 'testuser',
+                    password: 'testpass',
+                }),
             });
-            expect(localStorageMock.setItem).toHaveBeenCalledWith('sessionToken', 'test-token');
-            expect(localStorageMock.setItem).toHaveBeenCalledWith('username', 'testuser');
-            expect(localStorageMock.setItem).toHaveBeenCalledWith('isAdmin', 'false');
+            expect(localStorageMock.setItem).toHaveBeenCalledWith(
+                'sessionToken',
+                'test-token',
+            );
+            expect(localStorageMock.setItem).toHaveBeenCalledWith(
+                'username',
+                'testuser',
+            );
+            expect(localStorageMock.setItem).toHaveBeenCalledWith(
+                'isAdmin',
+                'false',
+            );
         });
 
         it('should handle login error', async () => {
@@ -106,7 +123,9 @@ describe('API functions', () => {
             };
             mockFetch.mockResolvedValue(mockResponse);
 
-            await expect(api.login('testuser', 'wrongpass')).rejects.toThrow('Invalid credentials');
+            await expect(api.login('testuser', 'wrongpass')).rejects.toThrow(
+                'Invalid credentials',
+            );
         });
     });
 
@@ -122,7 +141,10 @@ describe('API functions', () => {
             expect(mockFetch).toHaveBeenCalledWith('/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: 'newuser', password: 'newpass' }),
+                body: JSON.stringify({
+                    username: 'newuser',
+                    password: 'newpass',
+                }),
             });
         });
 
@@ -133,7 +155,9 @@ describe('API functions', () => {
             };
             mockFetch.mockResolvedValue(mockResponse);
 
-            await expect(api.register('existinguser', 'password')).rejects.toThrow('Username already exists');
+            await expect(
+                api.register('existinguser', 'password'),
+            ).rejects.toThrow('Username already exists');
         });
     });
 
@@ -152,9 +176,12 @@ describe('API functions', () => {
 
             const result = await api.fetchVocab();
 
-            expect(mockFetch).toHaveBeenCalledWith('/vocab?q=&page=1&pageSize=20', {
-                headers: expect.any(Headers),
-            });
+            expect(mockFetch).toHaveBeenCalledWith(
+                '/vocab?q=&page=1&pageSize=20',
+                {
+                    headers: expect.any(Headers),
+                },
+            );
             expect(result).toEqual({ words: ['test'] });
         });
 
@@ -224,9 +251,12 @@ describe('API functions', () => {
 
             const result = await api.openaiCall('testword', 'define');
 
-            expect(mockFetch).toHaveBeenCalledWith('/openai?word=testword&action=define', {
-                headers: expect.any(Headers),
-            });
+            expect(mockFetch).toHaveBeenCalledWith(
+                '/openai?word=testword&action=define',
+                {
+                    headers: expect.any(Headers),
+                },
+            );
             expect(result).toBe('AI response');
         });
     });
@@ -303,7 +333,9 @@ describe('API functions', () => {
                 expect(mockFetch).toHaveBeenCalledWith('/admin/users/123', {
                     method: 'PUT',
                     headers: expect.any(Headers),
-                    body: JSON.stringify({ custom_instructions: 'new instructions' }),
+                    body: JSON.stringify({
+                        custom_instructions: 'new instructions',
+                    }),
                 });
             });
         });
@@ -343,7 +375,9 @@ describe('API functions', () => {
                 expect(mockFetch).toHaveBeenCalledWith('/profile', {
                     method: 'PUT',
                     headers: expect.any(Headers),
-                    body: JSON.stringify({ custom_instructions: 'updated instructions' }),
+                    body: JSON.stringify({
+                        custom_instructions: 'updated instructions',
+                    }),
                 });
             });
         });
@@ -371,9 +405,15 @@ describe('API functions', () => {
             it('should clear tokens and reload the page', () => {
                 api.logout();
 
-                expect(localStorageMock.removeItem).toHaveBeenCalledWith('sessionToken');
-                expect(localStorageMock.removeItem).toHaveBeenCalledWith('username');
-                expect(localStorageMock.removeItem).toHaveBeenCalledWith('isAdmin');
+                expect(localStorageMock.removeItem).toHaveBeenCalledWith(
+                    'sessionToken',
+                );
+                expect(localStorageMock.removeItem).toHaveBeenCalledWith(
+                    'username',
+                );
+                expect(localStorageMock.removeItem).toHaveBeenCalledWith(
+                    'isAdmin',
+                );
                 expect(mockReload).toHaveBeenCalled();
             });
         });

@@ -17,7 +17,10 @@ function clearToken() {
 }
 
 function authFetch(path: string, options: RequestInit = {}) {
-    const headers = options.headers instanceof Headers ? options.headers : new Headers(options.headers);
+    const headers =
+        options.headers instanceof Headers
+            ? options.headers
+            : new Headers(options.headers);
     const token = getToken();
     if (token) headers.set('Authorization', `Bearer ${token}`);
     return fetch(path, { ...options, headers });
@@ -46,7 +49,9 @@ export async function register(username: string, password: string) {
 }
 
 export async function fetchVocab(q = '', page = 1, pageSize = 20) {
-    const res = await authFetch(`/vocab?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}`);
+    const res = await authFetch(
+        `/vocab?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}`,
+    );
     if (res.status === 401) throw new Error('Unauthorized');
     return res.json();
 }
@@ -70,7 +75,9 @@ export async function removeWords(words: string[]) {
 }
 
 export async function openaiCall(word: string, action: string) {
-    const res = await authFetch(`/openai?word=${encodeURIComponent(word)}&action=${action}`);
+    const res = await authFetch(
+        `/openai?word=${encodeURIComponent(word)}&action=${action}`,
+    );
     if (!res.ok) throw new Error(await res.text());
     return res.text();
 }
@@ -94,7 +101,10 @@ export async function fetchUserDetails(userId: string) {
     return res.json();
 }
 
-export async function updateUserInstructions(userId: string, customInstructions: string) {
+export async function updateUserInstructions(
+    userId: string,
+    customInstructions: string,
+) {
     const res = await authFetch(`/admin/users/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },

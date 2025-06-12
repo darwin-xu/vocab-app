@@ -47,7 +47,11 @@ export async function initializeTestDatabase(): Promise<void> {
 /**
  * Creates an authenticated request with proper headers
  */
-export function createAuthenticatedRequest(url: string, token: string, options: RequestInit = {}): Request {
+export function createAuthenticatedRequest(
+    url: string,
+    token: string,
+    options: RequestInit = {},
+): Request {
     const headers = new Headers(options.headers);
     headers.set('Authorization', `Bearer ${token}`);
     return new Request(url, { ...options, headers });
@@ -56,9 +60,15 @@ export function createAuthenticatedRequest(url: string, token: string, options: 
 /**
  * Creates a user in the database and returns user info with auth token
  */
-export async function createTestUser(username: string, password: string, isAdmin = false): Promise<TestUser> {
+export async function createTestUser(
+    username: string,
+    password: string,
+    isAdmin = false,
+): Promise<TestUser> {
     // Insert user directly into database
-    const result = (await env.DB.prepare('INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?) RETURNING id')
+    const result = (await env.DB.prepare(
+        'INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?) RETURNING id',
+    )
         .bind(username, password, isAdmin ? 1 : 0)
         .first()) as D1QueryResult | null;
 
@@ -108,8 +118,13 @@ export async function assertJsonResponse<T extends Record<string, unknown>>(
 /**
  * Asserts that a vocabulary item exists in the database
  */
-export async function assertVocabExists(userId: number, word: string): Promise<void> {
-    const vocab = (await env.DB.prepare('SELECT * FROM vocab WHERE user_id = ? AND word = ?')
+export async function assertVocabExists(
+    userId: number,
+    word: string,
+): Promise<void> {
+    const vocab = (await env.DB.prepare(
+        'SELECT * FROM vocab WHERE user_id = ? AND word = ?',
+    )
         .bind(userId, word)
         .first()) as D1VocabResult | null;
 
@@ -124,7 +139,9 @@ export async function assertVocabExists(userId: number, word: string): Promise<v
  * Asserts that a user exists in the database
  */
 export async function assertUserExists(username: string): Promise<void> {
-    const user = (await env.DB.prepare('SELECT * FROM users WHERE username = ?').bind(username).first()) as D1UserResult | null;
+    const user = (await env.DB.prepare('SELECT * FROM users WHERE username = ?')
+        .bind(username)
+        .first()) as D1UserResult | null;
 
     expect(user).not.toBeNull();
     if (!user) return;
@@ -143,16 +160,27 @@ export async function cleanupDatabase(): Promise<void> {
 /**
  * Adds test vocabulary items to the database
  */
-export async function addTestVocab(userId: number, vocabItems: TestVocabItem[]): Promise<void> {
+export async function addTestVocab(
+    userId: number,
+    vocabItems: TestVocabItem[],
+): Promise<void> {
     for (const item of vocabItems) {
-        await env.DB.prepare('INSERT INTO vocab (word, user_id, add_date) VALUES (?, ?, ?)').bind(item.word, userId, item.add_date).run();
+        await env.DB.prepare(
+            'INSERT INTO vocab (word, user_id, add_date) VALUES (?, ?, ?)',
+        )
+            .bind(item.word, userId, item.add_date)
+            .run();
     }
 }
 
 /**
  * Makes an authenticated request to the API
  */
-export async function makeAuthenticatedRequest(url: string, token: string, options: RequestInit = {}): Promise<Response> {
+export async function makeAuthenticatedRequest(
+    url: string,
+    token: string,
+    options: RequestInit = {},
+): Promise<Response> {
     const headers = new Headers(options.headers);
     headers.set('Authorization', `Bearer ${token}`);
     const request = new Request(url, { ...options, headers });
@@ -162,7 +190,10 @@ export async function makeAuthenticatedRequest(url: string, token: string, optio
 /**
  * Asserts basic response properties
  */
-export function assertResponse(response: Response, expectedStatus: number): void {
+export function assertResponse(
+    response: Response,
+    expectedStatus: number,
+): void {
     expect(response.status).toBe(expectedStatus);
 }
 
@@ -171,23 +202,36 @@ export function assertResponse(response: Response, expectedStatus: number): void
  */
 export class DatabaseValidator {
     static async userCount(): Promise<number> {
-        const result = (await env.DB.prepare('SELECT COUNT(*) as count FROM users').first()) as { count: number } | null;
+        const result = (await env.DB.prepare(
+            'SELECT COUNT(*) as count FROM users',
+        ).first()) as { count: number } | null;
         return result?.count || 0;
     }
 
     static async vocabCount(userId: number): Promise<number> {
-        const result = (await env.DB.prepare('SELECT COUNT(*) as count FROM vocab WHERE user_id = ?').bind(userId).first()) as {
+        const result = (await env.DB.prepare(
+            'SELECT COUNT(*) as count FROM vocab WHERE user_id = ?',
+        )
+            .bind(userId)
+            .first()) as {
             count: number;
         } | null;
         return result?.count || 0;
     }
 
     static async userExists(username: string): Promise<boolean> {
-        const user = await env.DB.prepare('SELECT id FROM users WHERE username = ?').bind(username).first();
+        const user = await env.DB.prepare(
+            'SELECT id FROM users WHERE username = ?',
+        )
+            .bind(username)
+            .first();
         return !!user;
     }
 
-    static async assertUserExists(username: string, shouldExist = true): Promise<void> {
+    static async assertUserExists(
+        username: string,
+        shouldExist = true,
+    ): Promise<void> {
         const exists = await this.userExists(username);
         if (shouldExist) {
             expect(exists).toBe(true);
@@ -196,8 +240,16 @@ export class DatabaseValidator {
         }
     }
 
-    static async assertVocabExists(userId: number, word: string, shouldExist = true): Promise<void> {
-        const vocab = await env.DB.prepare('SELECT id FROM vocab WHERE user_id = ? AND word = ?').bind(userId, word).first();
+    static async assertVocabExists(
+        userId: number,
+        word: string,
+        shouldExist = true,
+    ): Promise<void> {
+        const vocab = await env.DB.prepare(
+            'SELECT id FROM vocab WHERE user_id = ? AND word = ?',
+        )
+            .bind(userId, word)
+            .first();
         if (shouldExist) {
             expect(vocab).toBeTruthy();
         } else {
@@ -205,8 +257,15 @@ export class DatabaseValidator {
         }
     }
 
-    static async assertUserInstructions(userId: number, expectedInstructions: string): Promise<void> {
-        const user = (await env.DB.prepare('SELECT custom_instructions FROM users WHERE id = ?').bind(userId).first()) as {
+    static async assertUserInstructions(
+        userId: number,
+        expectedInstructions: string,
+    ): Promise<void> {
+        const user = (await env.DB.prepare(
+            'SELECT custom_instructions FROM users WHERE id = ?',
+        )
+            .bind(userId)
+            .first()) as {
             custom_instructions: string | null;
         } | null;
         expect(user).toBeTruthy();

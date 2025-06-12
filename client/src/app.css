@@ -23,7 +23,11 @@
     /* Gradient patterns */
     --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --gradient-secondary: linear-gradient(135deg, #8b5cf6 0%, #667eea 100%);
-    --gradient-surface: linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.92) 100%);
+    --gradient-surface: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(255, 255, 255, 0.92) 100%
+    );
 
     /* Border radius scale */
     --radius-xs: 6px;

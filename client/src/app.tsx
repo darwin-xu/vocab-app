@@ -113,7 +113,9 @@ function App() {
     const { width: windowWidth, height: windowHeight } = useWindowSize();
     const pageSize = calculatePageSize(windowHeight);
 
-    const [view, setView] = useState<'auth' | 'vocab' | 'admin' | 'user-settings'>('auth');
+    const [view, setView] = useState<
+        'auth' | 'vocab' | 'admin' | 'user-settings'
+    >('auth');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [authMsg, setAuthMsg] = useState('');
@@ -122,8 +124,18 @@ function App() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [selected, setSelected] = useState<Set<string>>(new Set());
-    const [popup, setPopup] = useState<{ word: string; x: number; y: number; func?: string } | null>(null);
-    const [hover, setHover] = useState<{ show: boolean; x: number; y: number; content: string }>({ show: false, x: 0, y: 0, content: '' });
+    const [popup, setPopup] = useState<{
+        word: string;
+        x: number;
+        y: number;
+        func?: string;
+    } | null>(null);
+    const [hover, setHover] = useState<{
+        show: boolean;
+        x: number;
+        y: number;
+        content: string;
+    }>({ show: false, x: 0, y: 0, content: '' });
     const [isLoading, setIsLoading] = useState(false);
 
     // Admin-related state
@@ -199,14 +211,18 @@ function App() {
         try {
             // Check if user is editing their own profile
             const currentUserId = localStorage.getItem('userId');
-            const isOwnProfile = currentUserId && selectedUser.id.toString() === currentUserId;
+            const isOwnProfile =
+                currentUserId && selectedUser.id.toString() === currentUserId;
 
             if (isOwnProfile) {
                 // Use own profile API
                 await updateOwnProfile(customInstructions);
             } else {
                 // Use admin API for managing other users
-                await updateUserInstructions(selectedUser.id.toString(), customInstructions);
+                await updateUserInstructions(
+                    selectedUser.id.toString(),
+                    customInstructions,
+                );
             }
 
             setView(isAdmin() ? 'admin' : 'vocab');
@@ -249,7 +265,10 @@ function App() {
     // Handle click outside dropdown
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node)
+            ) {
                 setDropdownOpen(false);
             }
         }
@@ -337,7 +356,8 @@ function App() {
 
     // Smart pagination function that determines which page numbers to show
     function getVisiblePageNumbers() {
-        const maxVisiblePages = windowWidth < 768 ? 5 : windowWidth < 1024 ? 7 : 9;
+        const maxVisiblePages =
+            windowWidth < 768 ? 5 : windowWidth < 1024 ? 7 : 9;
 
         if (totalPages <= maxVisiblePages) {
             return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -363,7 +383,9 @@ function App() {
                         <div className="logo-icon">📚</div>
                         <h1>Vocabulary Builder</h1>
                     </div>
-                    <p className="auth-subtitle">Build your vocabulary, one word at a time</p>
+                    <p className="auth-subtitle">
+                        Build your vocabulary, one word at a time
+                    </p>
                 </div>
 
                 <div className="auth-form">
@@ -406,7 +428,9 @@ function App() {
                             onClick={() => handleAuth(true)}
                             disabled={!username || !password || isLoading}
                         >
-                            {isLoading ? 'Creating Account...' : 'Create Account'}
+                            {isLoading
+                                ? 'Creating Account...'
+                                : 'Create Account'}
                         </button>
                     </div>
 
@@ -427,11 +451,16 @@ function App() {
             }}
         >
             <div className="user-avatar" ref={dropdownRef}>
-                <div className={`avatar-button ${dropdownOpen ? 'open' : ''}`} onClick={() => setDropdownOpen(!dropdownOpen)}>
+                <div
+                    className={`avatar-button ${dropdownOpen ? 'open' : ''}`}
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                >
                     {getUserInitials()}
                 </div>
                 <div className={`user-dropdown ${dropdownOpen ? 'open' : ''}`}>
-                    <div className="dropdown-header">{localStorage.getItem('username')} (Admin)</div>
+                    <div className="dropdown-header">
+                        {localStorage.getItem('username')} (Admin)
+                    </div>
                     <button
                         className="dropdown-item"
                         onClick={() => {
@@ -470,13 +499,17 @@ function App() {
                         {users.map((user) => (
                             <tr key={user.id}>
                                 <td>
-                                    <span className="montserrat-unique">{user.username}</span>
+                                    <span className="montserrat-unique">
+                                        {user.username}
+                                    </span>
                                 </td>
                                 <td>{formatRelativeTime(user.created_at)}</td>
                                 <td>
                                     <button
                                         className="settings-btn"
-                                        onClick={() => loadUserDetails(user.id.toString())}
+                                        onClick={() =>
+                                            loadUserDetails(user.id.toString())
+                                        }
                                         title="User Settings"
                                     >
                                         Settings
@@ -493,16 +526,24 @@ function App() {
         <div className="auth-page">
             <div className="auth-container user-settings-container">
                 <div className="auth-header">
-                    <h1>{selectedUser?.id.toString() === localStorage.getItem('userId') ? 'My Settings' : 'User Settings'}</h1>
+                    <h1>
+                        {selectedUser?.id.toString() ===
+                        localStorage.getItem('userId')
+                            ? 'My Settings'
+                            : 'User Settings'}
+                    </h1>
                     <p className="auth-subtitle">
-                        {selectedUser?.id.toString() === localStorage.getItem('userId')
+                        {selectedUser?.id.toString() ===
+                        localStorage.getItem('userId')
                             ? 'Configure your custom word definition instructions'
                             : `Configure custom instructions for ${selectedUser?.username}`}
                     </p>
                 </div>
                 <div className="auth-form">
                     <div className="form-group">
-                        <label htmlFor="instructions">Custom Word Definition Instructions</label>
+                        <label htmlFor="instructions">
+                            Custom Word Definition Instructions
+                        </label>
                         <textarea
                             id="instructions"
                             placeholder="Enter custom instructions for how words should be defined for this user. Use {word} as placeholder for the word to be defined.
@@ -512,7 +553,9 @@ Define the word '{word}' in a simple way:
 **Meaning:** [simple definition]
 **Example:** [example sentence]"
                             value={customInstructions}
-                            onChange={(e) => setCustomInstructions(e.target.value)}
+                            onChange={(e) =>
+                                setCustomInstructions(e.target.value)
+                            }
                             rows={10}
                             style={{
                                 width: '100%',
@@ -520,17 +563,26 @@ Define the word '{word}' in a simple way:
                                 border: '2px solid #e5e7eb',
                                 borderRadius: 'var(--radius-lg)',
                                 fontSize: 'var(--font-sm)',
-                                fontFamily: 'Monaco, Menlo, Ubuntu Mono, monospace',
+                                fontFamily:
+                                    'Monaco, Menlo, Ubuntu Mono, monospace',
                                 resize: 'vertical',
                                 minHeight: '250px',
                             }}
                         />
                     </div>
                     <div className="auth-buttons">
-                        <button className="btn btn-primary" onClick={saveUserInstructions}>
+                        <button
+                            className="btn btn-primary"
+                            onClick={saveUserInstructions}
+                        >
                             Save Instructions
                         </button>
-                        <button className="btn btn-secondary" onClick={() => setView(isAdmin() ? 'admin' : 'vocab')}>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() =>
+                                setView(isAdmin() ? 'admin' : 'vocab')
+                            }
+                        >
                             Cancel
                         </button>
                     </div>
@@ -546,11 +598,16 @@ Define the word '{word}' in a simple way:
             }}
         >
             <div className="user-avatar" ref={dropdownRef}>
-                <div className={`avatar-button ${dropdownOpen ? 'open' : ''}`} onClick={() => setDropdownOpen(!dropdownOpen)}>
+                <div
+                    className={`avatar-button ${dropdownOpen ? 'open' : ''}`}
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                >
                     {getUserInitials()}
                 </div>
                 <div className={`user-dropdown ${dropdownOpen ? 'open' : ''}`}>
-                    <div className="dropdown-header">{localStorage.getItem('username')}</div>
+                    <div className="dropdown-header">
+                        {localStorage.getItem('username')}
+                    </div>
                     <button
                         className="dropdown-item"
                         onClick={() => {
@@ -591,14 +648,21 @@ Define the word '{word}' in a simple way:
             <div className="container">
                 <h1>Vocabulary Builder</h1>
                 <div className="field-row">
-                    <input id="word" placeholder="Word (type to search)…" value={q} onChange={(e) => setQ(e.target.value)} />
+                    <input
+                        id="word"
+                        placeholder="Word (type to search)…"
+                        value={q}
+                        onChange={(e) => setQ(e.target.value)}
+                    />
                     <button
                         id="addBtn"
                         className={selected.size > 0 ? 'remove-mode' : ''}
                         onClick={selected.size > 0 ? handleRemove : handleAdd}
                         disabled={selected.size > 0 ? false : !q.trim()}
                     >
-                        {selected.size > 0 ? `Remove (${selected.size})` : 'Add Word'}
+                        {selected.size > 0
+                            ? `Remove (${selected.size})`
+                            : 'Add Word'}
                     </button>
                 </div>
                 <table>
@@ -615,27 +679,48 @@ Define the word '{word}' in a simple way:
                         {(vocab || []).map((r) => (
                             <tr key={r.word}>
                                 <td>
-                                    <input type="checkbox" checked={selected.has(r.word)} onChange={() => toggleSelect(r.word)} />
+                                    <input
+                                        type="checkbox"
+                                        checked={selected.has(r.word)}
+                                        onChange={() => toggleSelect(r.word)}
+                                    />
                                 </td>
                                 <td>
-                                    <span className="montserrat-unique" onClick={(e) => openMenu(e, r.word)}>
+                                    <span
+                                        className="montserrat-unique"
+                                        onClick={(e) => openMenu(e, r.word)}
+                                    >
                                         {r.word}
                                     </span>
                                 </td>
                                 <td>
                                     <button
                                         className="dict-btn"
-                                        onClick={() => window.open(`https://dictionary.cambridge.org/dictionary/english/${r.word}`)}
+                                        onClick={() =>
+                                            window.open(
+                                                `https://dictionary.cambridge.org/dictionary/english/${r.word}`,
+                                            )
+                                        }
                                     >
-                                        <img src="https://dictionary.cambridge.org/favicon.ico" alt="Cambridge" />
+                                        <img
+                                            src="https://dictionary.cambridge.org/favicon.ico"
+                                            alt="Cambridge"
+                                        />
                                     </button>
                                 </td>
                                 <td>
                                     <button
                                         className="mw-btn"
-                                        onClick={() => window.open(`https://www.merriam-webster.com/dictionary/${r.word}`)}
+                                        onClick={() =>
+                                            window.open(
+                                                `https://www.merriam-webster.com/dictionary/${r.word}`,
+                                            )
+                                        }
                                     >
-                                        <img src="https://www.merriam-webster.com/favicon.ico" alt="MW" />
+                                        <img
+                                            src="https://www.merriam-webster.com/favicon.ico"
+                                            alt="MW"
+                                        />
                                     </button>
                                 </td>
                                 <td>{formatRelativeTime(r.add_date)}</td>
@@ -645,20 +730,33 @@ Define the word '{word}' in a simple way:
                 </table>
             </div>
             <div id="pagination">
-                <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
+                <button
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => p - 1)}
+                >
                     &lt;
                 </button>
                 {getVisiblePageNumbers().map((pageNum) => (
-                    <span key={pageNum} className={page === pageNum ? 'active' : ''} onClick={() => setPage(pageNum)}>
+                    <span
+                        key={pageNum}
+                        className={page === pageNum ? 'active' : ''}
+                        onClick={() => setPage(pageNum)}
+                    >
                         {pageNum}
                     </span>
                 ))}
-                <button disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
+                <button
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                >
                     &gt;
                 </button>
             </div>
             {popup && (
-                <div className="popup-menu" style={{ left: popup.x, top: popup.y }}>
+                <div
+                    className="popup-menu"
+                    style={{ left: popup.x, top: popup.y }}
+                >
                     <button onClick={() => doPopup('define')}>Define</button>
                     <button onClick={() => doPopup('example')}>Example</button>
                     <button onClick={() => doPopup('synonym')}>Synonym</button>
@@ -670,7 +768,9 @@ Define the word '{word}' in a simple way:
                     className="show"
                     style={{ left: hover.x, top: hover.y }}
                     onClick={() => {
-                        ttsCall(hover.content).then((b64) => new Audio(`data:audio/wav;base64,${b64}`).play());
+                        ttsCall(hover.content).then((b64) =>
+                            new Audio(`data:audio/wav;base64,${b64}`).play(),
+                        );
                         closeHover();
                     }}
                     dangerouslySetInnerHTML={{ __html: marked(hover.content) }}

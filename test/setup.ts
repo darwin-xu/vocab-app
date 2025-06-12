@@ -29,7 +29,10 @@ export async function setupDatabase(env: Env): Promise<void> {
         `,
         ).run();
     } catch (error) {
-        console.warn('Error setting up database:', error instanceof Error ? error.message : String(error));
+        console.warn(
+            'Error setting up database:',
+            error instanceof Error ? error.message : String(error),
+        );
     }
 }
 

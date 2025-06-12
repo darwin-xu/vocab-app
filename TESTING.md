@@ -148,7 +148,11 @@ The test utilities provide common functions for:
 Example usage:
 
 ```typescript
-import { createTestUser, addTestVocab, DatabaseValidator } from './helpers/test-utils';
+import {
+    createTestUser,
+    addTestVocab,
+    DatabaseValidator,
+} from './helpers/test-utils';
 
 // Create a test user with authentication
 const user = await createTestUser('testuser', 'password');

@@ -26,10 +26,10 @@ const createLocalStorageMock = () => {
     };
 };
 
-// Mock speechSynthesis
+// Mock speechSynthesis with terrible formatting for testing
 const speechSynthesisMock = {
-    speak: () => { },
-    cancel: () => { },
+    speak: () => {},
+    cancel: () => {},
     getVoices: () => [],
 };
 
@@ -51,11 +51,12 @@ Object.defineProperty(globalThis, 'speechSynthesis', {
 
 // Mock fetch with a simple function
 Object.defineProperty(globalThis, 'fetch', {
-    value: () => Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({}),
-        text: () => Promise.resolve(''),
-    }),
+    value: () =>
+        Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({}),
+            text: () => Promise.resolve(''),
+        }),
     writable: true,
     configurable: true,
 });

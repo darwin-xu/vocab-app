@@ -41,10 +41,18 @@ describe('App Component', () => {
         it('should render login form initially', () => {
             render(<App />);
 
-            expect(screen.getByPlaceholderText('Enter your username')).toBeInTheDocument();
-            expect(screen.getByPlaceholderText('Enter your password')).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Sign In' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Create Account' })).toBeInTheDocument();
+            expect(
+                screen.getByPlaceholderText('Enter your username'),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByPlaceholderText('Enter your password'),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Sign In' }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Create Account' }),
+            ).toBeInTheDocument();
         });
 
         it('should handle successful login', async () => {
@@ -57,8 +65,14 @@ describe('App Component', () => {
             render(<App />);
             const user = userEvent.setup();
 
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'testuser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'testpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             await waitFor(() => {
@@ -67,17 +81,27 @@ describe('App Component', () => {
         });
 
         it('should handle login error', async () => {
-            vi.mocked(api.login).mockRejectedValue(new Error('Invalid credentials'));
+            vi.mocked(api.login).mockRejectedValue(
+                new Error('Invalid credentials'),
+            );
 
             render(<App />);
             const user = userEvent.setup();
 
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'wronguser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'wrongpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'wronguser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'wrongpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             await waitFor(() => {
-                expect(screen.getByText('Invalid credentials')).toBeInTheDocument();
+                expect(
+                    screen.getByText('Invalid credentials'),
+                ).toBeInTheDocument();
             });
         });
 
@@ -87,9 +111,17 @@ describe('App Component', () => {
             render(<App />);
             const user = userEvent.setup();
 
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'newuser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'newpass');
-            await user.click(screen.getByRole('button', { name: 'Create Account' }));
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'newuser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'newpass',
+            );
+            await user.click(
+                screen.getByRole('button', { name: 'Create Account' }),
+            );
 
             await waitFor(() => {
                 expect(api.register).toHaveBeenCalledWith('newuser', 'newpass');
@@ -97,17 +129,29 @@ describe('App Component', () => {
         });
 
         it('should handle registration error', async () => {
-            vi.mocked(api.register).mockRejectedValue(new Error('Username already exists'));
+            vi.mocked(api.register).mockRejectedValue(
+                new Error('Username already exists'),
+            );
 
             render(<App />);
             const user = userEvent.setup();
 
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'existinguser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'password');
-            await user.click(screen.getByRole('button', { name: 'Create Account' }));
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'existinguser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'password',
+            );
+            await user.click(
+                screen.getByRole('button', { name: 'Create Account' }),
+            );
 
             await waitFor(() => {
-                expect(screen.getByText('Username already exists')).toBeInTheDocument();
+                expect(
+                    screen.getByText('Username already exists'),
+                ).toBeInTheDocument();
             });
         });
 
@@ -140,8 +184,14 @@ describe('App Component', () => {
             const user = userEvent.setup();
 
             // Perform login
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'testuser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'testpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             // Wait for vocabulary to load and display
@@ -176,8 +226,14 @@ describe('App Component', () => {
             const user = userEvent.setup();
 
             // Login first
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'testuser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'testpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             await waitFor(() => {
@@ -199,8 +255,14 @@ describe('App Component', () => {
             const user = userEvent.setup();
 
             // Login first
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'testuser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'testpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             await waitFor(() => {
@@ -212,7 +274,11 @@ describe('App Component', () => {
             await user.type(searchInput, 'hello');
 
             await waitFor(() => {
-                expect(api.fetchVocab).toHaveBeenCalledWith('hello', 1, expect.any(Number));
+                expect(api.fetchVocab).toHaveBeenCalledWith(
+                    'hello',
+                    1,
+                    expect.any(Number),
+                );
             });
         });
 
@@ -227,12 +293,20 @@ describe('App Component', () => {
             const user = userEvent.setup();
 
             // Login first
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'testuser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'testpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             await waitFor(() => {
-                expect(screen.getByRole('button', { name: '>' })).not.toBeDisabled();
+                expect(
+                    screen.getByRole('button', { name: '>' }),
+                ).not.toBeDisabled();
             });
 
             const nextButton = screen.getByRole('button', { name: '>' });
@@ -240,7 +314,11 @@ describe('App Component', () => {
             await user.click(nextButton);
 
             await waitFor(() => {
-                expect(api.fetchVocab).toHaveBeenCalledWith('', 2, expect.any(Number));
+                expect(api.fetchVocab).toHaveBeenCalledWith(
+                    '',
+                    2,
+                    expect.any(Number),
+                );
             });
         });
 
@@ -251,8 +329,14 @@ describe('App Component', () => {
             const user = userEvent.setup();
 
             // Login first
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'testuser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'testpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             await waitFor(() => {
@@ -264,7 +348,9 @@ describe('App Component', () => {
             await user.click(checkboxes[0]); // Select first word
 
             // Click delete button
-            const removeButton = screen.getByRole('button', { name: /remove/i });
+            const removeButton = screen.getByRole('button', {
+                name: /remove/i,
+            });
             await user.click(removeButton);
 
             await waitFor(() => {
@@ -290,8 +376,14 @@ describe('App Component', () => {
             const user = userEvent.setup();
 
             // Login as admin
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'admin');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'adminpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'admin',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'adminpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             await waitFor(() => {
@@ -309,12 +401,20 @@ describe('App Component', () => {
             const user = userEvent.setup();
 
             // Login as regular user
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'user');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'userpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'user',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'userpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             await waitFor(() => {
-                expect(screen.queryByText('Admin Panel')).not.toBeInTheDocument();
+                expect(
+                    screen.queryByText('Admin Panel'),
+                ).not.toBeInTheDocument();
             });
         });
     });
@@ -333,9 +433,7 @@ describe('App Component', () => {
 
             // provide vocab items so a word is rendered
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                results: [
-                    { word: 'hello', add_date: '2025-01-01' },
-                ],
+                results: [{ word: 'hello', add_date: '2025-01-01' }],
                 total: 1,
             });
 
@@ -343,8 +441,14 @@ describe('App Component', () => {
             const user = userEvent.setup();
 
             // Login first
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'testuser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'testpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             // click word to open popup menu
@@ -366,9 +470,7 @@ describe('App Component', () => {
             vi.mocked(api.openaiCall).mockResolvedValue('AI response');
 
             vi.mocked(api.fetchVocab).mockResolvedValue({
-                results: [
-                    { word: 'hello', add_date: '2025-01-01' },
-                ],
+                results: [{ word: 'hello', add_date: '2025-01-01' }],
                 total: 1,
             });
 
@@ -376,8 +478,14 @@ describe('App Component', () => {
             const user = userEvent.setup();
 
             // Login first
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'testuser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'testpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             await waitFor(() => {
@@ -417,8 +525,14 @@ describe('App Component', () => {
             const user = userEvent.setup();
 
             // Login first
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'testuser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'testpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             // Navigate to settings
@@ -437,19 +551,28 @@ describe('App Component', () => {
             const user = userEvent.setup();
 
             // Login first
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'testuser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'testpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             // Navigate to settings
             await user.click(screen.getByText('Settings'));
 
             await waitFor(() => {
-                expect(screen.getByDisplayValue('My instructions')).toBeInTheDocument();
+                expect(
+                    screen.getByDisplayValue('My instructions'),
+                ).toBeInTheDocument();
             });
 
             // Update instructions
-            const instructionsInput = screen.getByDisplayValue('My instructions');
+            const instructionsInput =
+                screen.getByDisplayValue('My instructions');
             await user.clear(instructionsInput);
             await user.type(instructionsInput, 'Updated instructions');
 
@@ -457,7 +580,9 @@ describe('App Component', () => {
             await user.click(saveButton);
 
             await waitFor(() => {
-                expect(api.updateOwnProfile).toHaveBeenCalledWith('Updated instructions');
+                expect(api.updateOwnProfile).toHaveBeenCalledWith(
+                    'Updated instructions',
+                );
             });
         });
     });
@@ -474,8 +599,14 @@ describe('App Component', () => {
             const user = userEvent.setup();
 
             // Login first
-            await user.type(screen.getByPlaceholderText('Enter your username'), 'testuser');
-            await user.type(screen.getByPlaceholderText('Enter your password'), 'testpass');
+            await user.type(
+                screen.getByPlaceholderText('Enter your username'),
+                'testuser',
+            );
+            await user.type(
+                screen.getByPlaceholderText('Enter your password'),
+                'testpass',
+            );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
             const logoutButton = await screen.findByText('Logout');

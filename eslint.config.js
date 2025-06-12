@@ -3,6 +3,7 @@ import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
+import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
     // Global ignores
@@ -56,7 +57,11 @@ export default tseslint.config(
                 ...globals.browser, // Standard browser globals
             },
             parserOptions: {
-                project: ['./client/tsconfig.json', './client/tsconfig.app.json', './client/tsconfig.node.json'],
+                project: [
+                    './client/tsconfig.json',
+                    './client/tsconfig.app.json',
+                    './client/tsconfig.node.json',
+                ],
                 tsconfigRootDir: import.meta.dirname,
             },
         },
@@ -67,7 +72,10 @@ export default tseslint.config(
         rules: {
             // Rules from the original client ESLint configuration
             ...reactHooks.configs.recommended.rules,
-            'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+            'react-refresh/only-export-components': [
+                'warn',
+                { allowConstantExport: true },
+            ],
             // If tseslint.configs.recommended has rules conflicting with React/browser, they can be adjusted here.
         },
     },
@@ -125,4 +133,7 @@ export default tseslint.config(
         },
         // No typescript-eslint specific parserOptions needed here if these are plain JS.
     },
+
+    // Prettier config - must be last to override conflicting rules
+    prettier,
 );

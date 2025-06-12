@@ -22,7 +22,10 @@ describe('Authentication endpoints', () => {
             const request = new IncomingRequest('http://example.com/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: 'testuser', password: 'testpass' }),
+                body: JSON.stringify({
+                    username: 'testuser',
+                    password: 'testpass',
+                }),
             });
 
             const response = await worker.fetch(request, env);
@@ -31,7 +34,13 @@ describe('Authentication endpoints', () => {
             expect(await response.text()).toBe('OK');
 
             // Verify user was created in database
-            const user = await env.DB.prepare('SELECT * FROM users WHERE username = ?').bind('testuser').first() as { username: string } | null;
+            const user = (await env.DB.prepare(
+                'SELECT * FROM users WHERE username = ?',
+            )
+                .bind('testuser')
+                .first()) as {
+                username: string;
+            } | null;
             expect(user).toBeTruthy();
             expect(user?.username).toBe('testuser');
         });
@@ -64,12 +73,19 @@ describe('Authentication endpoints', () => {
 
         it('should reject registration with existing username', async () => {
             // First registration
-            await env.DB.prepare('INSERT INTO users (username, password) VALUES (?, ?)').bind('testuser', 'testpass').run();
+            await env.DB.prepare(
+                'INSERT INTO users (username, password) VALUES (?, ?)',
+            )
+                .bind('testuser', 'testpass')
+                .run();
 
             const request = new IncomingRequest('http://example.com/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: 'testuser', password: 'testpass' }),
+                body: JSON.stringify({
+                    username: 'testuser',
+                    password: 'testpass',
+                }),
             });
 
             const response = await worker.fetch(request, env);
@@ -82,21 +98,31 @@ describe('Authentication endpoints', () => {
     describe('POST /login', () => {
         beforeEach(async () => {
             // Create a test user
-            await env.DB.prepare('INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)').bind('testuser', 'testpass', 0).run();
+            await env.DB.prepare(
+                'INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)',
+            )
+                .bind('testuser', 'testpass', 0)
+                .run();
         });
 
         it('should login successfully with correct credentials', async () => {
             const request = new IncomingRequest('http://example.com/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: 'testuser', password: 'testpass' }),
+                body: JSON.stringify({
+                    username: 'testuser',
+                    password: 'testpass',
+                }),
             });
 
             const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
 
-            const data = await response.json() as { token: string; is_admin: number };
+            const data = (await response.json()) as {
+                token: string;
+                is_admin: number;
+            };
             expect(data.token).toBeTruthy();
             expect(data.is_admin).toBe(0);
         });
@@ -105,7 +131,10 @@ describe('Authentication endpoints', () => {
             const request = new IncomingRequest('http://example.com/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: 'testuser', password: 'wrongpass' }),
+                body: JSON.stringify({
+                    username: 'testuser',
+                    password: 'wrongpass',
+                }),
             });
 
             const response = await worker.fetch(request, env);
@@ -118,7 +147,10 @@ describe('Authentication endpoints', () => {
             const request = new IncomingRequest('http://example.com/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: 'nonexistent', password: 'testpass' }),
+                body: JSON.stringify({
+                    username: 'nonexistent',
+                    password: 'testpass',
+                }),
             });
 
             const response = await worker.fetch(request, env);
@@ -142,19 +174,29 @@ describe('Authentication endpoints', () => {
 
         it('should return admin flag for admin users', async () => {
             // Create admin user
-            await env.DB.prepare('INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)').bind('admin', 'adminpass', 1).run();
+            await env.DB.prepare(
+                'INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)',
+            )
+                .bind('admin', 'adminpass', 1)
+                .run();
 
             const request = new IncomingRequest('http://example.com/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: 'admin', password: 'adminpass' }),
+                body: JSON.stringify({
+                    username: 'admin',
+                    password: 'adminpass',
+                }),
             });
 
             const response = await worker.fetch(request, env);
 
             expect(response.status).toBe(200);
 
-            const data = await response.json() as { token: string; is_admin: number };
+            const data = (await response.json()) as {
+                token: string;
+                is_admin: number;
+            };
             expect(data.token).toBeTruthy();
             expect(data.is_admin).toBe(1);
         });

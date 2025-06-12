@@ -1,4 +1,5 @@
 For any code changes:
+
 1. Enforce the formatting by Prettier.
 2. Enforce static code analysis by ESLint.
 3. Run regression tests to ensure code quality.

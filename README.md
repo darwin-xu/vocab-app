@@ -33,11 +33,13 @@ Our application includes comprehensive testing:
 ## Testing
 
 Run all tests:
+
 ```bash
 npm run test:all
 ```
 
 Run specific test suites:
+
 ```bash
 npm run test:backend     # Backend API tests
 npm run test:frontend    # Frontend React tests
