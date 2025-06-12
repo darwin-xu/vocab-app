@@ -11,6 +11,7 @@ export interface UserRow {
     password: string;
     is_admin: boolean;
     custom_instructions?: string | null;
+    created_at?: string;
 }
 
 export interface VocabCountResult {
@@ -24,4 +25,26 @@ export interface Message {
 
 export interface OpenAIResponse {
     choices?: { message?: { content?: string } }[];
+}
+
+export interface RegisterRequestBody {
+    username: string;
+    password: string;
+}
+
+export interface LoginRequestBody {
+    username: string;
+    password: string;
+}
+
+export interface VocabRequestBody {
+    word: string;
+}
+
+export interface DeleteVocabRequestBody {
+    words: string[];
+}
+
+export interface UpdateUserRequestBody {
+    custom_instructions?: string | null;
 }

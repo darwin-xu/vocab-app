@@ -1,48 +1,14 @@
-interface Env {
-    DB: D1Database;
-    ASSETS: { fetch: (request: Request) => Promise<Response> };
-    OPENAI_TOKEN: string;
-    ENVIRONMENT?: string;
-}
-
-interface RegisterRequestBody {
-    username: string;
-    password: string;
-}
-
-interface LoginRequestBody {
-    username: string;
-    password: string;
-}
-
-interface VocabRequestBody {
-    word: string;
-}
-
-interface DeleteVocabRequestBody {
-    words: string[];
-}
-
-interface UpdateUserRequestBody {
-    custom_instructions?: string | null;
-}
-
-interface OpenAIResponse {
-    choices?: { message?: { content?: string } }[];
-}
-
-interface UserRow {
-    id: number;
-    username: string;
-    password: string;
-    is_admin: boolean;
-    custom_instructions?: string | null;
-    created_at?: string;
-}
-
-interface VocabCountResult {
-    count: number;
-}
+import {
+    Env,
+    UserRow,
+    VocabCountResult,
+    OpenAIResponse,
+    RegisterRequestBody,
+    LoginRequestBody,
+    VocabRequestBody,
+    DeleteVocabRequestBody,
+    UpdateUserRequestBody,
+} from './types.js';
 
 function randomId(): string {
     return Array.from(crypto.getRandomValues(new Uint8Array(16)))
