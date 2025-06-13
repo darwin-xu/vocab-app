@@ -743,11 +743,11 @@ Define the word '{word}' in a simple way:
                     id="hover-window"
                     className="show"
                     style={{ left: hover.x, top: hover.y }}
-                    onClick={() => {
+                    onClick={(e) => {
+                        e.stopPropagation();
                         ttsCall(hover.content).then((b64) =>
                             new Audio(`data:audio/wav;base64,${b64}`).play(),
                         );
-                        closeHover();
                     }}
                     dangerouslySetInnerHTML={{ __html: marked(hover.content) }}
                 />
