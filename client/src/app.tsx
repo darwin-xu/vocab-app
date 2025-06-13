@@ -124,12 +124,6 @@ function App() {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [selected, setSelected] = useState<Set<string>>(new Set());
-    const [popup, setPopup] = useState<{
-        word: string;
-        x: number;
-        y: number;
-        func?: string;
-    } | null>(null);
     const [hover, setHover] = useState<{
         show: boolean;
         x: number;
@@ -338,16 +332,10 @@ function App() {
         setSelected(s);
     }
 
-    function openMenu(e: React.MouseEvent, word: string) {
+    async function openDefinition(e: React.MouseEvent, word: string) {
         e.stopPropagation();
-        setPopup({ word, x: e.pageX, y: e.pageY });
-    }
-
-    async function doPopup(action: string) {
-        if (!popup) return;
-        const text = await openaiCall(popup.word, action);
-        setHover({ show: true, x: popup.x, y: popup.y, content: text });
-        setPopup(null);
+        const text = await openaiCall(word, 'define');
+        setHover({ show: true, x: e.pageX, y: e.pageY, content: text });
     }
 
     function closeHover() {
@@ -446,7 +434,6 @@ function App() {
         // Admin user management interface
         <div
             onClick={() => {
-                if (popup) setPopup(null);
                 closeHover();
             }}
         >
@@ -593,7 +580,6 @@ Define the word '{word}' in a simple way:
         // Regular vocabulary interface
         <div
             onClick={() => {
-                if (popup) setPopup(null);
                 closeHover();
             }}
         >
@@ -688,7 +674,7 @@ Define the word '{word}' in a simple way:
                                 <td>
                                     <span
                                         className="montserrat-unique"
-                                        onClick={(e) => openMenu(e, r.word)}
+                                        onClick={(e) => openDefinition(e, r.word)}
                                     >
                                         {r.word}
                                     </span>
@@ -752,16 +738,6 @@ Define the word '{word}' in a simple way:
                     &gt;
                 </button>
             </div>
-            {popup && (
-                <div
-                    className="popup-menu"
-                    style={{ left: popup.x, top: popup.y }}
-                >
-                    <button onClick={() => doPopup('define')}>Define</button>
-                    <button onClick={() => doPopup('example')}>Example</button>
-                    <button onClick={() => doPopup('synonym')}>Synonym</button>
-                </div>
-            )}
             {hover.show && (
                 <div
                     id="hover-window"

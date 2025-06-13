@@ -458,13 +458,12 @@ describe('App Component', () => {
             );
             await user.click(screen.getByRole('button', { name: 'Sign In' }));
 
-            // click word to open popup menu
+            // click word to directly show definition
             await waitFor(() => {
                 expect(screen.getByText('hello')).toBeInTheDocument();
             });
 
             await user.click(screen.getByText('hello'));
-            await user.click(screen.getByText('Define'));
 
             await waitFor(() => {
                 expect(api.openaiCall).toHaveBeenCalledWith('hello', 'define');
@@ -500,9 +499,8 @@ describe('App Component', () => {
                 expect(screen.getByText('hello')).toBeInTheDocument();
             });
 
-            // open popup and display hover window
+            // click word to directly show definition
             await user.click(screen.getByText('hello'));
-            await user.click(screen.getByText('Define'));
 
             await waitFor(() => {
                 expect(api.openaiCall).toHaveBeenCalledWith('hello', 'define');
