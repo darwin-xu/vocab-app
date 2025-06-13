@@ -129,8 +129,10 @@ function App() {
         x: number;
         y: number;
         content: string;
+        isLoading?: boolean;
     }>({ show: false, x: 0, y: 0, content: '' });
     const [isLoading, setIsLoading] = useState(false);
+    const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     // Admin-related state
     const [users, setUsers] = useState<User[]>([]);
@@ -186,6 +188,15 @@ function App() {
         if (view === 'vocab') loadVocab();
         if (view === 'admin') loadUsers();
     }, [view, loadVocab, loadUsers]);
+
+    // Cleanup loading interval on unmount
+    useEffect(() => {
+        return () => {
+            if (loadingIntervalRef.current) {
+                clearInterval(loadingIntervalRef.current);
+            }
+        };
+    }, []);
 
     // Load user details for settings
     async function loadUserDetails(userId: string) {
@@ -334,11 +345,42 @@ function App() {
 
     async function openDefinition(e: React.MouseEvent, word: string) {
         e.stopPropagation();
-        const text = await openaiCall(word, 'define');
-        setHover({ show: true, x: e.pageX, y: e.pageY, content: text });
+        
+        // Show loading window immediately
+        setHover({ show: true, x: e.pageX, y: e.pageY, content: 'Loading.', isLoading: true });
+        
+        // Start loading animation
+        let dots = 1;
+        loadingIntervalRef.current = setInterval(() => {
+            dots = (dots % 3) + 1;
+            const loadingText = 'Loading' + '.'.repeat(dots);
+            setHover(prev => prev.isLoading ? { ...prev, content: loadingText } : prev);
+        }, 500);
+        
+        try {
+            const text = await openaiCall(word, 'define');
+            // Clear loading interval and show result
+            if (loadingIntervalRef.current) {
+                clearInterval(loadingIntervalRef.current);
+                loadingIntervalRef.current = null;
+            }
+            setHover({ show: true, x: e.pageX, y: e.pageY, content: text, isLoading: false });
+        } catch {
+            // Clear loading interval and show error
+            if (loadingIntervalRef.current) {
+                clearInterval(loadingIntervalRef.current);
+                loadingIntervalRef.current = null;
+            }
+            setHover({ show: true, x: e.pageX, y: e.pageY, content: 'Error loading definition. Please try again.', isLoading: false });
+        }
     }
 
     function closeHover() {
+        // Clear loading interval if it's running
+        if (loadingIntervalRef.current) {
+            clearInterval(loadingIntervalRef.current);
+            loadingIntervalRef.current = null;
+        }
         setHover((h) => ({ ...h, show: false }));
     }
 
