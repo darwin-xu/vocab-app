@@ -83,12 +83,10 @@ describe('API functions', () => {
         it('should login successfully', async () => {
             const mockResponse = {
                 ok: true,
-                json: vi
-                    .fn()
-                    .mockResolvedValue({
-                        token: 'test-token',
-                        is_admin: false,
-                    }),
+                json: vi.fn().mockResolvedValue({
+                    token: 'test-token',
+                    is_admin: false,
+                }),
             };
             mockFetch.mockResolvedValue(mockResponse);
 

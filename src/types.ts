@@ -24,7 +24,11 @@ export interface Message {
 }
 
 export interface OpenAIResponse {
-    choices?: { message?: { content?: string } }[];
+    output?: {
+        content?: {
+            text?: string;
+        }[];
+    }[];
 }
 
 export interface RegisterRequestBody {

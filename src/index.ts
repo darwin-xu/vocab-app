@@ -10,6 +10,8 @@ import {
     UpdateUserRequestBody,
 } from './types.js';
 
+import cachedSchema from './schemas/english_dictionary.schema.json';
+
 function randomId(): string {
     return Array.from(crypto.getRandomValues(new Uint8Array(16)))
         .map((b) => b.toString(16).padStart(2, '0'))
@@ -365,15 +367,15 @@ export default {
                       ? `List 1~3 synonyms for the word '${word}'. Provide in markdown lists`
                       : defaultPrompt;
 
-            const messages = [
+            const input = [
                 ...(customInstructions
-                    ? [{ role: 'developer', content: customInstructions }]
+                    ? [{ role: 'system', content: { customInstructions } }]
                     : []),
                 { role: 'user', content: prompt },
             ];
 
             const openaiRes = await fetch(
-                `${getApiEndpoints(env)}/v1/chat/completions`,
+                `${getApiEndpoints(env)}/v1/responses`,
                 {
                     method: 'POST',
                     headers: {
@@ -382,7 +384,10 @@ export default {
                     },
                     body: JSON.stringify({
                         model: 'gpt-4.1-nano',
-                        messages,
+                        input: input,
+                        text: {
+                            format: cachedSchema,
+                        },
                     }),
                 },
             );
@@ -393,7 +398,7 @@ export default {
             }
 
             const data = (await openaiRes.json()) as OpenAIResponse;
-            const content = data.choices?.[0]?.message?.content ?? '';
+            const content = data.output?.[0].content?.[0]?.text;
 
             return new Response(content);
         }

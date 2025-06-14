@@ -1,0 +1,66 @@
+{
+    "type": "json_schema",
+    "name": "english_dictionary",
+    "strict": true,
+    "schema": {
+        "type": "object",
+        "properties": {
+            "word": {
+                "type": "string",
+                "description": "The word being defined."
+            },
+            "phonetic_symbol": {
+                "type": "string",
+                "description": "The International Phonetic Alphabet of this word."
+            },
+            "meanings": {
+                "type": "array",
+                "description": "A list of meanings for the word, each with its part of speech, definition, and example sentences.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "part_of_speech": {
+                            "type": "string",
+                            "description": "The grammatical category to which the word belongs.",
+                            "enum": [
+                                "noun",
+                                "verb",
+                                "adjective",
+                                "adverb",
+                                "pronoun",
+                                "preposition",
+                                "conjunction",
+                                "interjection"
+                            ]
+                        },
+                        "definition": {
+                            "type": "string",
+                            "description": "A clear and concise explanation of the meaning of the word."
+                        },
+                        "examples": {
+                            "type": "array",
+                            "description": "A list of example sentences demonstrating the use of the word in this sense.",
+                            "items": {
+                                "type": "string"
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    "required": ["part_of_speech", "definition", "examples"],
+                    "additionalProperties": false
+                },
+                "minItems": 1
+            },
+            "synonyms": {
+                "type": "array",
+                "description": "A list of words that have similar meanings.",
+                "items": {
+                    "type": "string"
+                },
+                "minItems": 1
+            }
+        },
+        "required": ["word", "phonetic_symbol", "meanings", "synonyms"],
+        "additionalProperties": false
+    }
+}

@@ -345,18 +345,26 @@ function App() {
 
     async function openDefinition(e: React.MouseEvent, word: string) {
         e.stopPropagation();
-        
+
         // Show loading window immediately
-        setHover({ show: true, x: e.pageX, y: e.pageY, content: 'Loading.', isLoading: true });
-        
+        setHover({
+            show: true,
+            x: e.pageX,
+            y: e.pageY,
+            content: 'Loading.',
+            isLoading: true,
+        });
+
         // Start loading animation
         let dots = 1;
         loadingIntervalRef.current = setInterval(() => {
             dots = (dots % 3) + 1;
             const loadingText = 'Loading' + '.'.repeat(dots);
-            setHover(prev => prev.isLoading ? { ...prev, content: loadingText } : prev);
+            setHover((prev) =>
+                prev.isLoading ? { ...prev, content: loadingText } : prev,
+            );
         }, 500);
-        
+
         try {
             const text = await openaiCall(word, 'define');
             // Clear loading interval and show result
@@ -364,14 +372,26 @@ function App() {
                 clearInterval(loadingIntervalRef.current);
                 loadingIntervalRef.current = null;
             }
-            setHover({ show: true, x: e.pageX, y: e.pageY, content: text, isLoading: false });
+            setHover({
+                show: true,
+                x: e.pageX,
+                y: e.pageY,
+                content: text,
+                isLoading: false,
+            });
         } catch {
             // Clear loading interval and show error
             if (loadingIntervalRef.current) {
                 clearInterval(loadingIntervalRef.current);
                 loadingIntervalRef.current = null;
             }
-            setHover({ show: true, x: e.pageX, y: e.pageY, content: 'Error loading definition. Please try again.', isLoading: false });
+            setHover({
+                show: true,
+                x: e.pageX,
+                y: e.pageY,
+                content: 'Error loading definition. Please try again.',
+                isLoading: false,
+            });
         }
     }
 
@@ -716,7 +736,9 @@ Define the word '{word}' in a simple way:
                                 <td>
                                     <span
                                         className="montserrat-unique"
-                                        onClick={(e) => openDefinition(e, r.word)}
+                                        onClick={(e) =>
+                                            openDefinition(e, r.word)
+                                        }
                                     >
                                         {r.word}
                                     </span>
