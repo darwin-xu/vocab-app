@@ -452,13 +452,15 @@ describe('Integration Tests', () => {
                 profileResponse,
                 200,
             )) as {
-                id: number;
-                username: string;
-                custom_instructions: string | null;
+                user: {
+                    id: number;
+                    username: string;
+                    custom_instructions: string | null;
+                };
             };
-            expect(profileData.id).toBe(user.id);
-            expect(profileData.username).toBe('testuser');
-            expect(profileData.custom_instructions).toBeNull();
+            expect(profileData.user.id).toBe(user.id);
+            expect(profileData.user.username).toBe('testuser');
+            expect(profileData.user.custom_instructions).toBeNull();
 
             // 2. Update profile instructions
             const updateResponse = await makeAuthenticatedRequest(
@@ -484,8 +486,8 @@ describe('Integration Tests', () => {
             const updatedProfileData = (await assertJsonResponse(
                 updatedProfileResponse,
                 200,
-            )) as { custom_instructions: string };
-            expect(updatedProfileData.custom_instructions).toBe(
+            )) as { user: { custom_instructions: string } };
+            expect(updatedProfileData.user.custom_instructions).toBe(
                 'My personal instructions',
             );
 

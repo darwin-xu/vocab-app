@@ -98,7 +98,8 @@ export async function fetchUsers() {
 export async function fetchUserDetails(userId: string) {
     const res = await authFetch(`/admin/users/${userId}`);
     if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    const userData = await res.json();
+    return { user: userData }; // Wrap to match fetchOwnProfile format
 }
 
 export async function updateUserInstructions(

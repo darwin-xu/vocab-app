@@ -306,7 +306,7 @@ describe('API functions', () => {
             it('should fetch user details successfully', async () => {
                 const mockResponse = {
                     ok: true,
-                    json: vi.fn().mockResolvedValue({ user: { id: '123' } }),
+                    json: vi.fn().mockResolvedValue({ id: '123' }), // Backend returns user data directly
                 };
                 mockFetch.mockResolvedValue(mockResponse);
 
@@ -315,7 +315,7 @@ describe('API functions', () => {
                 expect(mockFetch).toHaveBeenCalledWith('/admin/users/123', {
                     headers: expect.any(Headers),
                 });
-                expect(result).toEqual({ user: { id: '123' } });
+                expect(result).toEqual({ user: { id: '123' } }); // API wrapper adds user wrapper
             });
         });
 
