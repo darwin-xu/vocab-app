@@ -514,7 +514,7 @@ input[type='checkbox']:checked::after {
     word-break: break-word;
     line-height: 1.6;
     cursor: pointer;
-    max-width: 400px;
+    max-width: 800px;
     animation: hoverFadeIn 0.3s ease-out;
 }
 
@@ -783,10 +783,13 @@ input[type='checkbox']:checked::after {
     max-width: 700px !important;
 }
 
-.user-settings-container textarea {
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-    font-size: var(--font-sm);
-    line-height: 1.5;
+/* Fix for user settings page - override auth-page constraints */
+.auth-page.user-settings-page {
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+    align-items: flex-start;
+    padding-top: 2rem;
 }
 
 /* Mobile responsive design */
@@ -796,6 +799,18 @@ input[type='checkbox']:checked::after {
         min-height: calc(100vh - 140px);
         padding-bottom: 100px;
         /* Adjust bottom padding for mobile */
+    }
+
+    /* User settings responsive fixes */
+    .auth-page.user-settings-page {
+        padding: var(--space-md);
+        align-items: flex-start;
+        padding-top: var(--space-lg);
+    }
+
+    .user-settings-container {
+        max-width: 100% !important;
+        margin: 0;
     }
 
     h1 {
@@ -893,10 +908,10 @@ input[type='checkbox']:checked::after {
     }
 
     #hover-window {
-        max-width: calc(100vw - 2rem);
+        max-width: calc(100vw - 1rem);
         padding: var(--space-md);
         font-size: var(--font-sm);
-        margin: var(--space-sm);
+        margin: var(--space-xs);
     }
 }
 

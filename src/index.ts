@@ -11,6 +11,7 @@ import {
 } from './types.js';
 
 import cachedSchema from './schemas/english_dictionary.schema.json';
+import { convertDictionaryToMarkdown } from './utils/jsonToMarkdown.js';
 
 function randomId(): string {
     return Array.from(crypto.getRandomValues(new Uint8Array(16)))
@@ -400,7 +401,22 @@ export default {
             const data = (await openaiRes.json()) as OpenAIResponse;
             const content = data.output?.[0].content?.[0]?.text;
 
-            return new Response(content);
+            // Try to parse the content as JSON and convert to Markdown
+            let responseText = content;
+            if (content) {
+                try {
+                    const jsonData = JSON.parse(content);
+                    // Check if it matches our dictionary schema structure
+                    if (jsonData.word && jsonData.meanings) {
+                        responseText = convertDictionaryToMarkdown(jsonData);
+                    }
+                } catch {
+                    // If parsing fails, return the original content
+                    console.log('Could not parse OpenAI response as JSON, returning original content');
+                }
+            }
+
+            return new Response(responseText);
         }
 
         if (url.pathname === '/tts') {
