@@ -3,6 +3,117 @@
 const SESSION_TOKEN_KEY = 'sessionToken';
 const USERNAME_KEY = 'username';
 
+// Cache for OpenAI responses with 5-minute timeout
+interface CacheEntry {
+    data: string;
+    timestamp: number;
+}
+
+class OpenAICache {
+    private cache = new Map<string, CacheEntry>();
+    private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+    private getCacheKey(word: string, action: string): string {
+        return `${word.toLowerCase()}-${action}`;
+    }
+
+    private getTTSCacheKey(text: string): string {
+        return `tts-${text.toLowerCase()}`;
+    }
+
+    get(word: string, action: string): string | null {
+        const key = this.getCacheKey(word, action);
+        const entry = this.cache.get(key);
+        
+        if (!entry) {
+            return null;
+        }
+
+        // Check if cache entry has expired
+        if (Date.now() - entry.timestamp > this.CACHE_DURATION) {
+            this.cache.delete(key);
+            return null;
+        }
+
+        return entry.data;
+    }
+
+    getTTS(text: string): string | null {
+        const key = this.getTTSCacheKey(text);
+        const entry = this.cache.get(key);
+        
+        if (!entry) {
+            return null;
+        }
+
+        // Check if cache entry has expired
+        if (Date.now() - entry.timestamp > this.CACHE_DURATION) {
+            this.cache.delete(key);
+            return null;
+        }
+
+        return entry.data;
+    }
+
+    set(word: string, action: string, data: string): void {
+        const key = this.getCacheKey(word, action);
+        this.cache.set(key, {
+            data,
+            timestamp: Date.now()
+        });
+    }
+
+    setTTS(text: string, data: string): void {
+        const key = this.getTTSCacheKey(text);
+        this.cache.set(key, {
+            data,
+            timestamp: Date.now()
+        });
+    }
+
+    clear(): void {
+        this.cache.clear();
+    }
+
+    // Clean up expired entries (optional optimization)
+    cleanup(): void {
+        const now = Date.now();
+        for (const [key, entry] of this.cache.entries()) {
+            if (now - entry.timestamp > this.CACHE_DURATION) {
+                this.cache.delete(key);
+            }
+        }
+    }
+
+    // Get cache statistics for debugging
+    getStats(): { totalEntries: number; validEntries: number; expiredEntries: number } {
+        const now = Date.now();
+        let validEntries = 0;
+        let expiredEntries = 0;
+
+        for (const [, entry] of this.cache.entries()) {
+            if (now - entry.timestamp > this.CACHE_DURATION) {
+                expiredEntries++;
+            } else {
+                validEntries++;
+            }
+        }
+
+        return {
+            totalEntries: this.cache.size,
+            validEntries,
+            expiredEntries
+        };
+    }
+}
+
+const openaiCache = new OpenAICache();
+
+// Set up periodic cleanup of expired cache entries (every 10 minutes)
+setInterval(() => {
+    openaiCache.cleanup();
+}, 10 * 60 * 1000);
+
 function getToken() {
     return localStorage.getItem(SESSION_TOKEN_KEY) || '';
 }
@@ -75,18 +186,58 @@ export async function removeWords(words: string[]) {
 }
 
 export async function openaiCall(word: string, action: string) {
+    // Check cache first
+    const cachedResponse = openaiCache.get(word, action);
+    if (cachedResponse) {
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`🎯 Cache hit for "${word}" (${action})`);
+        }
+        return cachedResponse;
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`🌐 Cache miss for "${word}" (${action}) - fetching from API`);
+    }
     const res = await authFetch(
         `/openai?word=${encodeURIComponent(word)}&action=${action}`,
     );
     if (!res.ok) throw new Error(await res.text());
-    return res.text();
+    const responseData = await res.text();
+
+    // Store in cache
+    openaiCache.set(word, action, responseData);
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`💾 Cached response for "${word}" (${action})`);
+    }
+
+    return responseData;
 }
 
 export async function ttsCall(text: string) {
+    // Check cache first
+    const cachedResponse = openaiCache.getTTS(text);
+    if (cachedResponse) {
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`🎯 TTS Cache hit for "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`);
+        }
+        return cachedResponse;
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`🌐 TTS Cache miss for "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}" - fetching from API`);
+    }
     const res = await authFetch(`/tts?text=${encodeURIComponent(text)}`);
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
-    return data.audio as string;
+    const audioData = data.audio as string;
+
+    // Store in cache
+    openaiCache.setTTS(text, audioData);
+    if (process.env.NODE_ENV === 'development') {
+        console.log(`💾 Cached TTS response for "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`);
+    }
+
+    return audioData;
 }
 
 export async function fetchUsers() {
@@ -169,5 +320,16 @@ export function isAdmin() {
 export function logout() {
     clearToken();
     localStorage.removeItem('isAdmin');
+    openaiCache.clear(); // Clear OpenAI cache on logout
     window.location.reload();
+}
+
+// Export for testing purposes only
+export function _clearCacheForTesting() {
+    openaiCache.clear();
+}
+
+// Export for debugging purposes
+export function _getCacheStats() {
+    return openaiCache.getStats();
 }
