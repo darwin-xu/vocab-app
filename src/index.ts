@@ -372,7 +372,7 @@ export default {
 
             const input = [
                 ...(customInstructions
-                    ? [{ role: 'system', content: { customInstructions } }]
+                    ? [{ role: 'system', content: customInstructions }]
                     : []),
                 { role: 'user', content: prompt },
             ];
