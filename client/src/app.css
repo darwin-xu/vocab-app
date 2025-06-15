@@ -534,11 +534,6 @@ input[type='checkbox']:checked::after {
     display: block;
 }
 
-#hover-window:hover {
-    transform: scale(1.02);
-    box-shadow: 0 25px 70px rgba(102, 126, 234, 0.2);
-}
-
 #hover-window h1,
 #hover-window h2,
 #hover-window h3 {
