@@ -17,6 +17,7 @@ import {
     updateUserInstructions,
     fetchOwnProfile,
     updateOwnProfile,
+    saveNote,
 } from './api';
 
 // Custom hook to track window size
@@ -97,6 +98,7 @@ function formatRelativeTime(dateString: string): string {
 interface VocabItem {
     word: string;
     add_date: string;
+    note?: string | null;
 }
 interface User {
     id: number;
@@ -392,6 +394,17 @@ function App() {
                 content: 'Error loading definition. Please try again.',
                 isLoading: false,
             });
+        }
+    }
+
+    async function editNote(word: string, current: string | null | undefined) {
+        const note = window.prompt(`Note for ${word}:`, current || '');
+        if (note === null) return;
+        try {
+            await saveNote(word, note);
+            loadVocab();
+        } catch (error) {
+            console.error('Error saving note:', error);
         }
     }
 
@@ -718,6 +731,7 @@ Define the word '{word}' in a simple way:
                         <tr>
                             <th></th>
                             <th>Word</th>
+                            <th>Note</th>
                             <th></th>
                             <th></th>
                             <th>Added</th>
@@ -742,6 +756,12 @@ Define the word '{word}' in a simple way:
                                     >
                                         {r.word}
                                     </span>
+                                </td>
+                                <td
+                                    onClick={() => editNote(r.word, r.note)}
+                                    className="note-cell"
+                                >
+                                    {r.note || '➕'}
                                 </td>
                                 <td>
                                     <button

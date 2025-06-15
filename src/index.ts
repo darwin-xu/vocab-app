@@ -136,7 +136,7 @@ export default {
 
                 const total = totalRow?.count ?? 0;
                 const { results } = await env.DB.prepare(
-                    'SELECT * FROM vocab WHERE user_id = ? AND word LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?',
+                    'SELECT v.word, v.add_date, n.note FROM vocab v LEFT JOIN notes n ON v.user_id = n.user_id AND v.word = n.word WHERE v.user_id = ? AND v.word LIKE ? ORDER BY v.id DESC LIMIT ? OFFSET ?',
                 )
                     .bind(userId, `%${q}%`, pageSize, offset)
                     .all();
@@ -345,6 +345,58 @@ export default {
             }
         }
 
+        if (url.pathname === '/notes') {
+            const userId = await getUserIdFromRequest(request);
+            if (!userId) return new Response('Unauthorized', { status: 401 });
+
+            if (request.method === 'GET') {
+                const word = url.searchParams.get('word') ?? '';
+                const row = (await env.DB.prepare(
+                    'SELECT note FROM notes WHERE user_id = ? AND word = ?',
+                )
+                    .bind(userId, word)
+                    .first()) as { note: string } | null;
+
+                return new Response(
+                    JSON.stringify({ note: row ? row.note : null }),
+                    { headers: { 'Content-Type': 'application/json' } },
+                );
+            }
+
+            if (request.method === 'PUT') {
+                try {
+                    const body = (await request.json()) as NoteRequestBody;
+                    if (!body.word) {
+                        return new Response('Missing word', { status: 400 });
+                    }
+
+                    const exists = await env.DB.prepare(
+                        'SELECT id FROM notes WHERE user_id = ? AND word = ?',
+                    )
+                        .bind(userId, body.word)
+                        .first();
+
+                    if (exists) {
+                        await env.DB.prepare(
+                            'UPDATE notes SET note = ? WHERE user_id = ? AND word = ?',
+                        )
+                            .bind(body.note, userId, body.word)
+                            .run();
+                    } else {
+                        await env.DB.prepare(
+                            'INSERT INTO notes (user_id, word, note) VALUES (?, ?, ?)',
+                        )
+                            .bind(userId, body.word, body.note)
+                            .run();
+                    }
+
+                    return new Response('OK');
+                } catch {
+                    return new Response('Invalid JSON', { status: 400 });
+                }
+            }
+        }
+
         if (url.pathname === '/openai') {
             const { searchParams } = new URL(request.url);
             const word = searchParams.get('word') ?? 'Say hi!';
@@ -414,7 +466,9 @@ export default {
                     }
                 } catch {
                     // If parsing fails, return the original content
-                    console.log('Could not parse OpenAI response as JSON, returning original content');
+                    console.log(
+                        'Could not parse OpenAI response as JSON, returning original content',
+                    );
                 }
             }
 

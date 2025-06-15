@@ -129,6 +129,15 @@ export async function updateOwnProfile(customInstructions: string) {
     if (!res.ok) throw new Error(await res.text());
 }
 
+export async function saveNote(word: string, note: string) {
+    const res = await authFetch('/notes', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word, note }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+}
+
 export function isAdmin() {
     return localStorage.getItem('isAdmin') === 'true';
 }

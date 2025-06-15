@@ -341,4 +341,54 @@ describe('Vocabulary endpoints', () => {
             expect(otherUserVocab.results).toHaveLength(1); // Other user's word remains
         });
     });
+
+    describe('/notes endpoints', () => {
+        beforeEach(async () => {
+            await env.DB.prepare(
+                'INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)',
+            )
+                .bind(userId, 'noteWord', '2025-01-01')
+                .run();
+        });
+
+        it('should add and retrieve a note', async () => {
+            const putReq = createAuthenticatedRequest(
+                'http://example.com/notes',
+                userToken,
+                {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ word: 'noteWord', note: 'my note' }),
+                },
+            );
+
+            const putRes = await worker.fetch(putReq, env);
+
+            expect(putRes.status).toBe(200);
+            expect(await putRes.text()).toBe('OK');
+
+            const getReq = createAuthenticatedRequest(
+                'http://example.com/notes?word=noteWord',
+                userToken,
+            );
+
+            const getRes = await worker.fetch(getReq, env);
+
+            expect(getRes.status).toBe(200);
+            const data = (await getRes.json()) as { note: string | null };
+            expect(data.note).toBe('my note');
+
+            const vocabReq = createAuthenticatedRequest(
+                'http://example.com/vocab',
+                userToken,
+            );
+
+            const vocabRes = await worker.fetch(vocabReq, env);
+            const vocabData = (await vocabRes.json()) as {
+                items: Array<{ word: string; note?: string }>;
+            };
+            const item = vocabData.items.find((i) => i.word === 'noteWord');
+            expect(item?.note).toBe('my note');
+        });
+    });
 });
