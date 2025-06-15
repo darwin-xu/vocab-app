@@ -13,7 +13,6 @@ import {
     logout,
     isAdmin,
     fetchUsers,
-    getNote,
     saveNote,
     fetchUserDetails,
     updateUserInstructions,
