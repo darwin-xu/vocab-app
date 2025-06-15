@@ -274,13 +274,15 @@ describe('Admin endpoints', () => {
             expect(response.status).toBe(200);
 
             const profile = (await response.json()) as {
-                id: number;
-                username: string;
-                custom_instructions: string;
+                user: {
+                    id: number;
+                    username: string;
+                    custom_instructions: string;
+                };
             };
-            expect(profile.id).toBe(regularUserId);
-            expect(profile.username).toBe('testuser');
-            expect(profile.custom_instructions).toBe(
+            expect(profile.user.id).toBe(regularUserId);
+            expect(profile.user.username).toBe('testuser');
+            expect(profile.user.custom_instructions).toBe(
                 'My personal instructions',
             );
         });

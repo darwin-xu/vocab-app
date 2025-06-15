@@ -310,9 +310,11 @@ export default {
 
                 return new Response(
                     JSON.stringify({
-                        id: user.id,
-                        username: user?.username,
-                        custom_instructions: user.custom_instructions,
+                        user: {
+                            id: user.id,
+                            username: user?.username,
+                            custom_instructions: user.custom_instructions,
+                        },
                     }),
                     { headers: { 'Content-Type': 'application/json' } },
                 );
