@@ -136,7 +136,12 @@ export default {
 
                 const total = totalRow?.count ?? 0;
                 const { results } = await env.DB.prepare(
-                    'SELECT * FROM vocab WHERE user_id = ? AND word LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?',
+                    `SELECT v.word, v.add_date, n.note
+                     FROM vocab v
+                     LEFT JOIN notes n
+                     ON v.user_id = n.user_id AND v.word = n.word
+                     WHERE v.user_id = ? AND v.word LIKE ?
+                     ORDER BY v.id DESC LIMIT ? OFFSET ?`,
                 )
                     .bind(userId, `%${q}%`, pageSize, offset)
                     .all();
@@ -202,6 +207,30 @@ export default {
                 } catch {
                     return new Response('Invalid JSON', { status: 400 });
                 }
+            }
+        }
+
+        if (url.pathname === '/notes' && request.method === 'POST') {
+            const userId = await getUserIdFromRequest(request);
+            if (!userId) return new Response('Unauthorized', { status: 401 });
+
+            try {
+                const body = (await request.json()) as NoteRequestBody;
+                if (!body.word) {
+                    return new Response('Missing word', { status: 400 });
+                }
+
+                await env.DB.prepare(
+                    `INSERT INTO notes (user_id, word, note)
+                     VALUES (?, ?, ?)
+                     ON CONFLICT(user_id, word)
+                     DO UPDATE SET note = excluded.note`,
+                )
+                    .bind(userId, body.word, body.note)
+                    .run();
+                return new Response('OK');
+            } catch {
+                return new Response('Invalid JSON', { status: 400 });
             }
         }
 
@@ -414,7 +443,9 @@ export default {
                     }
                 } catch {
                     // If parsing fails, return the original content
-                    console.log('Could not parse OpenAI response as JSON, returning original content');
+                    console.log(
+                        'Could not parse OpenAI response as JSON, returning original content',
+                    );
                 }
             }
 

@@ -97,6 +97,7 @@ function formatRelativeTime(dateString: string): string {
 interface VocabItem {
     word: string;
     add_date: string;
+    note?: string | null;
 }
 interface User {
     id: number;
@@ -392,6 +393,21 @@ function App() {
                 content: 'Error loading definition. Please try again.',
                 isLoading: false,
             });
+        }
+    }
+
+    async function editNote(word: string, currentNote: string | null) {
+        const note = window.prompt('Enter note for ' + word, currentNote || '');
+        if (note === null) return;
+        try {
+            await saveNote(word, note);
+            setVocab((v) =>
+                v.map((item) =>
+                    item.word === word ? { ...item, note } : item,
+                ),
+            );
+        } catch (error) {
+            console.error('Error saving note:', error);
         }
     }
 
@@ -718,6 +734,7 @@ Define the word '{word}' in a simple way:
                         <tr>
                             <th></th>
                             <th>Word</th>
+                            <th>Note</th>
                             <th></th>
                             <th></th>
                             <th>Added</th>
@@ -742,6 +759,14 @@ Define the word '{word}' in a simple way:
                                     >
                                         {r.word}
                                     </span>
+                                </td>
+                                <td
+                                    className="note-cell"
+                                    onClick={() =>
+                                        editNote(r.word, r.note ?? null)
+                                    }
+                                >
+                                    {r.note ? r.note : '➕'}
                                 </td>
                                 <td>
                                     <button

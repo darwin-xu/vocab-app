@@ -15,6 +15,15 @@ CREATE TABLE IF NOT EXISTS vocab (
   FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    word TEXT NOT NULL,
+    note TEXT NOT NULL,
+    UNIQUE(user_id, word),
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Index on user_id to improve join performance with users table
 CREATE INDEX IF NOT EXISTS idx_vocab_user_id ON vocab(user_id);
 

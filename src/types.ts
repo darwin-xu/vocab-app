@@ -52,3 +52,8 @@ export interface DeleteVocabRequestBody {
 export interface UpdateUserRequestBody {
     custom_instructions?: string | null;
 }
+
+export interface NoteRequestBody {
+    word: string;
+    note: string;
+}

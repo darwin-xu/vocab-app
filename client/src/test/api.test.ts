@@ -235,6 +235,27 @@ describe('API functions', () => {
         });
     });
 
+    describe('saveNote', () => {
+        beforeEach(() => {
+            localStorageMock.getItem.mockReturnValue('test-token');
+        });
+
+        it('should save note successfully', async () => {
+            const mockResponse = {
+                ok: true,
+            };
+            mockFetch.mockResolvedValue(mockResponse);
+
+            await api.saveNote('word', 'note');
+
+            expect(mockFetch).toHaveBeenCalledWith('/notes', {
+                method: 'POST',
+                headers: expect.any(Headers),
+                body: JSON.stringify({ word: 'word', note: 'note' }),
+            });
+        });
+    });
+
     describe('openaiCall', () => {
         beforeEach(() => {
             localStorageMock.getItem.mockReturnValue('test-token');

@@ -140,6 +140,29 @@ describe('Vocabulary endpoints', () => {
             expect(data.totalPages).toBe(2);
         });
 
+        it('should include notes in results', async () => {
+            await env.DB.prepare(
+                'INSERT INTO notes (user_id, word, note) VALUES (?, ?, ?)',
+            )
+                .bind(userId, 'hello', 'greeting')
+                .run();
+
+            const request = createAuthenticatedRequest(
+                'http://example.com/vocab',
+                userToken,
+            );
+
+            const response = await worker.fetch(request, env);
+
+            expect(response.status).toBe(200);
+
+            const data = (await response.json()) as {
+                items: Array<{ word: string; note?: string }>;
+            };
+            const item = data.items.find((i) => i.word === 'hello');
+            expect(item?.note).toBe('greeting');
+        });
+
         it('should reject unauthenticated requests', async () => {
             const request = new Request('http://example.com/vocab');
 
@@ -339,6 +362,88 @@ describe('Vocabulary endpoints', () => {
                 .bind(otherUser.userId)
                 .all();
             expect(otherUserVocab.results).toHaveLength(1); // Other user's word remains
+        });
+    });
+
+    describe('POST /notes', () => {
+        beforeEach(async () => {
+            await env.DB.prepare(
+                'INSERT INTO vocab (user_id, word, add_date) VALUES (?, ?, ?)',
+            )
+                .bind(userId, 'noteWord', '2025-01-01')
+                .run();
+        });
+
+        it('should add note for word', async () => {
+            const request = createAuthenticatedRequest(
+                'http://example.com/notes',
+                userToken,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        word: 'noteWord',
+                        note: 'test note',
+                    }),
+                },
+            );
+
+            const response = await worker.fetch(request, env);
+
+            expect(response.status).toBe(200);
+            expect(await response.text()).toBe('OK');
+
+            const row = (await env.DB.prepare(
+                'SELECT note FROM notes WHERE user_id = ? AND word = ?',
+            )
+                .bind(userId, 'noteWord')
+                .first()) as { note: string } | null;
+            expect(row?.note).toBe('test note');
+        });
+
+        it('should update existing note', async () => {
+            await env.DB.prepare(
+                'INSERT INTO notes (user_id, word, note) VALUES (?, ?, ?)',
+            )
+                .bind(userId, 'noteWord', 'old')
+                .run();
+
+            const request = createAuthenticatedRequest(
+                'http://example.com/notes',
+                userToken,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        word: 'noteWord',
+                        note: 'new note',
+                    }),
+                },
+            );
+
+            const response = await worker.fetch(request, env);
+
+            expect(response.status).toBe(200);
+
+            const row = (await env.DB.prepare(
+                'SELECT note FROM notes WHERE user_id = ? AND word = ?',
+            )
+                .bind(userId, 'noteWord')
+                .first()) as { note: string } | null;
+            expect(row?.note).toBe('new note');
+        });
+
+        it('should reject unauthenticated requests', async () => {
+            const request = new Request('http://example.com/notes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ word: 'noteWord', note: 'fail' }),
+            });
+
+            const response = await worker.fetch(request, env);
+
+            expect(response.status).toBe(401);
+            expect(await response.text()).toBe('Unauthorized');
         });
     });
 });

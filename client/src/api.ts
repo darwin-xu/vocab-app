@@ -74,6 +74,15 @@ export async function removeWords(words: string[]) {
     if (!res.ok) throw new Error(await res.text());
 }
 
+export async function saveNote(word: string, note: string) {
+    const res = await authFetch('/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word, note }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+}
+
 export async function openaiCall(word: string, action: string) {
     const res = await authFetch(
         `/openai?word=${encodeURIComponent(word)}&action=${action}`,
