@@ -129,6 +129,39 @@ export async function updateOwnProfile(customInstructions: string) {
     if (!res.ok) throw new Error(await res.text());
 }
 
+export async function updateUserProfile(customInstructions: string | null) {
+    const res = await authFetch('/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ custom_instructions: customInstructions }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+}
+
+export async function getNote(word: string) {
+    const res = await authFetch(`/notes?word=${encodeURIComponent(word)}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+}
+
+export async function saveNote(word: string, note: string) {
+    const res = await authFetch('/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word, note }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+}
+
+export async function deleteNote(word: string) {
+    const res = await authFetch('/notes', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+}
+
 export function isAdmin() {
     return localStorage.getItem('isAdmin') === 'true';
 }

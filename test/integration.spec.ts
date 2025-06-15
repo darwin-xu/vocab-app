@@ -498,4 +498,191 @@ describe('Integration Tests', () => {
             );
         });
     });
+
+    describe('Notes Workflow', () => {
+        it('should handle notes workflow', async () => {
+            // 1. Create user and add vocabulary
+            const user = await createTestUser('noteuser', 'notepass');
+
+            // Add vocabulary words
+            await addTestVocab(user.id, [
+                { word: 'hello', add_date: '2025-01-01' },
+                { word: 'world', add_date: '2025-01-02' },
+                { word: 'vocabulary', add_date: '2025-01-03' },
+            ]);
+
+            // 2. Fetch vocabulary - should show words without notes
+            const initialVocabResponse = await makeAuthenticatedRequest(
+                'http://example.com/vocab',
+                user.token,
+            );
+
+            const initialVocabData = (await assertJsonResponse(
+                initialVocabResponse,
+                200,
+            )) as { items: Array<{ word: string; note: string | null }> };
+
+            expect(initialVocabData.items).toHaveLength(3);
+            expect(
+                initialVocabData.items.every((item) => item.note === null),
+            ).toBe(true);
+
+            // 3. Add a note to a word
+            const addNoteResponse = await makeAuthenticatedRequest(
+                'http://example.com/notes',
+                user.token,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        word: 'hello',
+                        note: 'This is a greeting word',
+                    }),
+                },
+            );
+
+            await assertResponse(addNoteResponse, 200);
+
+            // 4. Fetch vocabulary again - should show note for hello
+            const vocabWithNoteResponse = await makeAuthenticatedRequest(
+                'http://example.com/vocab',
+                user.token,
+            );
+
+            const vocabWithNoteData = (await assertJsonResponse(
+                vocabWithNoteResponse,
+                200,
+            )) as { items: Array<{ word: string; note: string | null }> };
+
+            const helloItem = vocabWithNoteData.items.find(
+                (item) => item.word === 'hello',
+            );
+            expect(helloItem?.note).toBe('This is a greeting word');
+
+            // 5. Get specific note
+            const getNoteResponse = await makeAuthenticatedRequest(
+                'http://example.com/notes?word=hello',
+                user.token,
+            );
+
+            const noteData = (await assertJsonResponse(
+                getNoteResponse,
+                200,
+            )) as { note: string };
+            expect(noteData.note).toBe('This is a greeting word');
+
+            // 6. Update the note
+            const updateNoteResponse = await makeAuthenticatedRequest(
+                'http://example.com/notes',
+                user.token,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        word: 'hello',
+                        note: 'Updated greeting note',
+                    }),
+                },
+            );
+
+            await assertResponse(updateNoteResponse, 200);
+
+            // 7. Verify note was updated
+            const getUpdatedNoteResponse = await makeAuthenticatedRequest(
+                'http://example.com/notes?word=hello',
+                user.token,
+            );
+
+            const updatedNoteData = (await assertJsonResponse(
+                getUpdatedNoteResponse,
+                200,
+            )) as { note: string };
+            expect(updatedNoteData.note).toBe('Updated greeting note');
+
+            // 8. Add notes to multiple words
+            await makeAuthenticatedRequest(
+                'http://example.com/notes',
+                user.token,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        word: 'world',
+                        note: 'Planet Earth',
+                    }),
+                },
+            );
+
+            // 9. Verify multiple notes in vocabulary list
+            const finalVocabResponse = await makeAuthenticatedRequest(
+                'http://example.com/vocab',
+                user.token,
+            );
+
+            const finalVocabData = (await assertJsonResponse(
+                finalVocabResponse,
+                200,
+            )) as { items: Array<{ word: string; note: string | null }> };
+
+            const finalHelloItem = finalVocabData.items.find(
+                (item) => item.word === 'hello',
+            );
+            const finalWorldItem = finalVocabData.items.find(
+                (item) => item.word === 'world',
+            );
+            const finalVocabItem = finalVocabData.items.find(
+                (item) => item.word === 'vocabulary',
+            );
+
+            expect(finalHelloItem?.note).toBe('Updated greeting note');
+            expect(finalWorldItem?.note).toBe('Planet Earth');
+            expect(finalVocabItem?.note).toBeNull();
+
+            // 10. Delete a note
+            const deleteNoteResponse = await makeAuthenticatedRequest(
+                'http://example.com/notes',
+                user.token,
+                {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ word: 'hello' }),
+                },
+            );
+
+            await assertResponse(deleteNoteResponse, 200);
+
+            // 11. Verify note was deleted
+            const deletedNoteResponse = await makeAuthenticatedRequest(
+                'http://example.com/notes?word=hello',
+                user.token,
+            );
+
+            const deletedNoteData = (await assertJsonResponse(
+                deletedNoteResponse,
+                200,
+            )) as { note: string | null };
+            expect(deletedNoteData.note).toBeNull();
+
+            // 12. Verify vocabulary list reflects deletion
+            const finalCheckResponse = await makeAuthenticatedRequest(
+                'http://example.com/vocab',
+                user.token,
+            );
+
+            const finalCheckData = (await assertJsonResponse(
+                finalCheckResponse,
+                200,
+            )) as { items: Array<{ word: string; note: string | null }> };
+
+            const finalCheckHelloItem = finalCheckData.items.find(
+                (item) => item.word === 'hello',
+            );
+            const finalCheckWorldItem = finalCheckData.items.find(
+                (item) => item.word === 'world',
+            );
+
+            expect(finalCheckHelloItem?.note).toBeNull();
+            expect(finalCheckWorldItem?.note).toBe('Planet Earth');
+        });
+    });
 });

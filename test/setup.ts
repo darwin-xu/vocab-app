@@ -28,6 +28,20 @@ export async function setupDatabase(env: Env): Promise<void> {
             )
         `,
         ).run();
+
+        await env.DB.prepare(
+            `
+            CREATE TABLE IF NOT EXISTS notes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                word TEXT NOT NULL,
+                note TEXT NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        `,
+        ).run();
     } catch (error) {
         console.warn(
             'Error setting up database:',

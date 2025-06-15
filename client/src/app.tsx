@@ -13,6 +13,8 @@ import {
     logout,
     isAdmin,
     fetchUsers,
+    getNote,
+    saveNote,
     fetchUserDetails,
     updateUserInstructions,
     fetchOwnProfile,
@@ -97,6 +99,7 @@ function formatRelativeTime(dateString: string): string {
 interface VocabItem {
     word: string;
     add_date: string;
+    note?: string;
 }
 interface User {
     id: number;
@@ -137,7 +140,13 @@ function App() {
     // Admin-related state
     const [users, setUsers] = useState<User[]>([]);
     const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null);
-    const [customInstructions, setCustomInstructions] = useState('');
+
+    // Notes modal state
+    const [notesModal, setNotesModal] = useState<{
+        show: boolean;
+        word: string;
+        note: string;
+    }>({ show: false, word: '', note: '' });
 
     // Avatar dropdown state
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -203,7 +212,6 @@ function App() {
         try {
             const data = await fetchUserDetails(userId);
             setSelectedUser(data.user);
-            setCustomInstructions(data.user.custom_instructions || '');
             setView('user-settings');
         } catch (error) {
             console.error('Error loading user details:', error);
@@ -221,18 +229,17 @@ function App() {
 
             if (isOwnProfile) {
                 // Use own profile API
-                await updateOwnProfile(customInstructions);
+                await updateOwnProfile(selectedUser.custom_instructions);
             } else {
                 // Use admin API for managing other users
                 await updateUserInstructions(
                     selectedUser.id.toString(),
-                    customInstructions,
+                    selectedUser.custom_instructions,
                 );
             }
 
             setView(isAdmin() ? 'admin' : 'vocab');
             setSelectedUser(null);
-            setCustomInstructions('');
         } catch (error) {
             console.error('Error saving user instructions:', error);
         }
@@ -254,7 +261,8 @@ function App() {
                 username: data.user.username,
                 custom_instructions: data.user.custom_instructions || '',
             });
-            setCustomInstructions(data.user.custom_instructions || '');
+
+            // Navigate to user settings view
             setView('user-settings');
         } catch (error) {
             console.error('Error loading own profile:', error);
@@ -341,6 +349,27 @@ function App() {
         if (s.has(word)) s.delete(word);
         else s.add(word);
         setSelected(s);
+    }
+
+    function closeNotesModal() {
+        setNotesModal({ show: false, word: '', note: '' });
+    }
+
+    async function handleSaveNote() {
+        try {
+            const noteText = notesModal.note.trim();
+            if (noteText) {
+                // Save the note
+                await saveNote(notesModal.word, noteText);
+            } else {
+                // Clear the note by saving an empty string (this will delete it on backend)
+                await saveNote(notesModal.word, '');
+            }
+            closeNotesModal();
+            loadVocab(); // Reload to get updated notes
+        } catch (error) {
+            console.error('Error saving note:', error);
+        }
     }
 
     async function openDefinition(e: React.MouseEvent, word: string) {
@@ -601,9 +630,12 @@ Example:
 Define the word '{word}' in a simple way:
 **Meaning:** [simple definition]
 **Example:** [example sentence]"
-                            value={customInstructions}
+                            value={selectedUser?.custom_instructions}
                             onChange={(e) =>
-                                setCustomInstructions(e.target.value)
+                                setSelectedUser((prev) => ({
+                                    ...prev!,
+                                    custom_instructions: e.target.value,
+                                }))
                             }
                             rows={10}
                             style={{
@@ -718,6 +750,7 @@ Define the word '{word}' in a simple way:
                         <tr>
                             <th></th>
                             <th>Word</th>
+                            <th>Notes</th>
                             <th></th>
                             <th></th>
                             <th>Added</th>
@@ -742,6 +775,53 @@ Define the word '{word}' in a simple way:
                                     >
                                         {r.word}
                                     </span>
+                                </td>
+                                <td>
+                                    <div className="notes-cell">
+                                        <span
+                                            className="notes-preview"
+                                            onClick={() =>
+                                                setNotesModal({
+                                                    show: true,
+                                                    word: r.word,
+                                                    note: r.note || '',
+                                                })
+                                            }
+                                        >
+                                            {r.note ? (
+                                                r.note.length > 50 ? (
+                                                    `${r.note.substring(0, 50)}...`
+                                                ) : (
+                                                    r.note
+                                                )
+                                            ) : (
+                                                <span className="no-note-text">
+                                                    Click to add note
+                                                </span>
+                                            )}
+                                        </span>
+                                        <button
+                                            className="notes-btn"
+                                            onClick={() =>
+                                                setNotesModal({
+                                                    show: true,
+                                                    word: r.word,
+                                                    note: r.note || '',
+                                                })
+                                            }
+                                            title="Add/Edit Note"
+                                        >
+                                            {r.note ? (
+                                                <span className="has-note">
+                                                    📝
+                                                </span>
+                                            ) : (
+                                                <span className="no-note">
+                                                    ➕
+                                                </span>
+                                            )}
+                                        </button>
+                                    </div>
                                 </td>
                                 <td>
                                     <button
@@ -815,6 +895,55 @@ Define the word '{word}' in a simple way:
                     }}
                     dangerouslySetInnerHTML={{ __html: marked(hover.content) }}
                 />
+            )}
+            {notesModal.show && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <span
+                            className="close modal-close"
+                            onClick={() =>
+                                setNotesModal((prev) => ({
+                                    ...prev,
+                                    show: false,
+                                }))
+                            }
+                        >
+                            &times;
+                        </span>
+                        <h2>Notes for "{notesModal.word}"</h2>
+                        <textarea
+                            value={notesModal.note}
+                            onChange={(e) =>
+                                setNotesModal((prev) => ({
+                                    ...prev,
+                                    note: e.target.value,
+                                }))
+                            }
+                            placeholder="Enter your note here..."
+                            rows={6}
+                            style={{
+                                width: '100%',
+                                padding: '0.75rem',
+                                border: '2px solid #e5e7eb',
+                                borderRadius: 'var(--radius-lg)',
+                                fontSize: 'var(--font-sm)',
+                                fontFamily:
+                                    'Monaco, Menlo, Ubuntu Mono, monospace',
+                                resize: 'vertical',
+                                minHeight: '120px',
+                                boxSizing: 'border-box',
+                            }}
+                        />
+                        <div className="modal-buttons">
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleSaveNote}
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

@@ -311,34 +311,47 @@ tbody tr:hover {
 /* Table column sizing and alignment */
 th:nth-child(1),
 td:nth-child(1) {
-    /* Checkbox */
-    width: 40px;
+    /* Checkbox - as narrow as possible */
+    width: 30px;
     text-align: center;
 }
 
 th:nth-child(2),
 td:nth-child(2) {
-    /* Word */
+    /* Word - wide enough for longest words */
+    width: 180px;
     min-width: 150px;
 }
 
 th:nth-child(3),
-td:nth-child(3),
+td:nth-child(3) {
+    /* Notes - widest column for note preview */
+    width: auto;
+    min-width: 200px;
+    max-width: 400px;
+    text-align: left;
+    padding-left: var(--space-sm);
+    padding-right: var(--space-sm);
+}
+
 th:nth-child(4),
-td:nth-child(4) {
-    /* Dictionary buttons */
-    width: 50px;
+td:nth-child(4),
+th:nth-child(5),
+td:nth-child(5) {
+    /* Dictionary buttons - as narrow as possible for icons */
+    width: 35px;
     text-align: center;
 }
 
-th:nth-child(5),
-td:nth-child(5) {
-    /* Date */
-    width: 100px;
+th:nth-child(6),
+td:nth-child(6) {
+    /* Date - just wide enough for day count */
+    width: 80px;
     font-size: var(--font-xs);
+    text-align: right;
 }
 
-td:nth-child(5) {
+td:nth-child(6) {
     /* Date data cells only */
     color: var(--auth-text-medium);
 }
@@ -412,7 +425,8 @@ input[type='checkbox']:checked::after {
 
 /* Dictionary buttons modernization */
 .dict-btn,
-.mw-btn {
+.mw-btn,
+.notes-btn {
     padding: 0.25rem;
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid var(--vocab-border);
@@ -426,7 +440,8 @@ input[type='checkbox']:checked::after {
 }
 
 .dict-btn:hover,
-.mw-btn:hover {
+.mw-btn:hover,
+.notes-btn:hover {
     background: var(--vocab-surface-hover);
     border-color: var(--vocab-primary);
     transform: translateY(-1px);
@@ -435,9 +450,36 @@ input[type='checkbox']:checked::after {
 
 .dict-btn img,
 .mw-btn img {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     vertical-align: middle;
+}
+
+/* Dictionary buttons in narrow columns */
+.dict-btn,
+.mw-btn {
+    min-width: 28px;
+    height: 28px;
+    padding: 0.2rem;
+}
+
+/* Notes button specific styling */
+.notes-btn {
+    min-width: 24px;
+    height: 24px;
+    font-size: 12px;
+}
+
+.notes-btn .has-note {
+    color: #059669; /* Green for existing notes */
+}
+
+.notes-btn .no-note {
+    color: #6b7280; /* Gray for no notes */
+}
+
+.notes-btn:hover .no-note {
+    color: var(--vocab-primary);
 }
 
 /* Popup menu modernization */
@@ -908,6 +950,24 @@ input[type='checkbox']:checked::after {
         font-size: var(--font-sm);
         margin: var(--space-xs);
     }
+
+    th:nth-child(2),
+    td:nth-child(2) {
+        /* Word column - slightly smaller on mobile */
+        width: 140px;
+        min-width: 120px;
+    }
+
+    th:nth-child(3),
+    td:nth-child(3) {
+        /* Notes column - still flexible but with smaller min-width */
+        min-width: 150px;
+        max-width: 300px;
+    }
+
+    .notes-preview {
+        font-size: var(--font-xs);
+    }
 }
 
 @media (max-width: 480px) {
@@ -958,4 +1018,164 @@ input[type='checkbox']:checked::after {
         font-size: var(--font-sm);
         margin: 0 1px;
     }
+}
+
+/* Modal styling for notes */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: var(--vocab-surface);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    min-width: 450px;
+    max-width: 550px;
+    width: 80%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--auth-text-medium);
+    transition: color 0.2s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+}
+
+.modal-close:hover {
+    color: var(--auth-text-dark);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: var(--space-sm);
+    margin-top: var(--space-lg);
+    justify-content: flex-end;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    font-weight: 500;
+    font-size: var(--font-sm);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: var(--gradient-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--auth-text-dark);
+    border: 1px solid var(--vocab-border);
+}
+
+.btn-secondary:hover {
+    background: var(--vocab-surface-hover);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+}
+
+/* Notes cell layout */
+.notes-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    width: 100%;
+}
+
+.notes-preview {
+    flex: 1;
+    cursor: pointer;
+    font-size: var(--font-sm);
+    line-height: 1.4;
+    color: var(--auth-text-dark);
+    transition: color 0.2s ease;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.notes-preview:hover {
+    color: var(--vocab-primary);
+}
+
+.no-note-text {
+    color: var(--auth-text-medium);
+    font-style: italic;
+    font-size: var(--font-xs);
+}
+
+.no-note-text:hover {
+    color: var(--vocab-primary);
+}
+
+/* Notes button in the cell */
+.notes-cell .notes-btn {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    padding: 2px;
+    font-size: 12px;
 }

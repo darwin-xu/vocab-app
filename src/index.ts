@@ -8,6 +8,8 @@ import {
     VocabRequestBody,
     DeleteVocabRequestBody,
     UpdateUserRequestBody,
+    NoteRequestBody,
+    DeleteNoteRequestBody,
 } from './types.js';
 
 import cachedSchema from './schemas/english_dictionary.schema.json';
@@ -136,7 +138,14 @@ export default {
 
                 const total = totalRow?.count ?? 0;
                 const { results } = await env.DB.prepare(
-                    'SELECT * FROM vocab WHERE user_id = ? AND word LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?',
+                    `
+                    SELECT v.*, n.note 
+                    FROM vocab v 
+                    LEFT JOIN notes n ON v.user_id = n.user_id AND v.word = n.word 
+                    WHERE v.user_id = ? AND v.word LIKE ? 
+                    ORDER BY v.id DESC 
+                    LIMIT ? OFFSET ?
+                `,
                 )
                     .bind(userId, `%${q}%`, pageSize, offset)
                     .all();
@@ -414,7 +423,9 @@ export default {
                     }
                 } catch {
                     // If parsing fails, return the original content
-                    console.log('Could not parse OpenAI response as JSON, returning original content');
+                    console.log(
+                        'Could not parse OpenAI response as JSON, returning original content',
+                    );
                 }
             }
 
@@ -464,6 +475,99 @@ export default {
             return new Response(JSON.stringify({ audio: audioBase64 }), {
                 headers: { 'Content-Type': 'application/json' },
             });
+        }
+
+        if (url.pathname === '/notes') {
+            const userId = await getUserIdFromRequest(request);
+            if (!userId) return new Response('Unauthorized', { status: 401 });
+
+            if (request.method === 'GET') {
+                const word = url.searchParams.get('word');
+                if (!word) {
+                    return new Response('Missing word parameter', {
+                        status: 400,
+                    });
+                }
+
+                const note = (await env.DB.prepare(
+                    'SELECT note FROM notes WHERE user_id = ? AND word = ?',
+                )
+                    .bind(userId, word)
+                    .first()) as { note: string } | null;
+
+                return new Response(
+                    JSON.stringify({ note: note?.note || null }),
+                    { headers: { 'Content-Type': 'application/json' } },
+                );
+            }
+
+            if (request.method === 'POST') {
+                try {
+                    const body = (await request.json()) as NoteRequestBody;
+                    if (!body.word) {
+                        return new Response('Missing word', { status: 400 });
+                    }
+
+                    // If note is empty or just whitespace, delete the note
+                    if (!body.note || !body.note.trim()) {
+                        await env.DB.prepare(
+                            'DELETE FROM notes WHERE user_id = ? AND word = ?',
+                        )
+                            .bind(userId, body.word)
+                            .run();
+                        return new Response('OK');
+                    }
+
+                    // Check if note already exists for this word
+                    const exists = await env.DB.prepare(
+                        'SELECT 1 FROM notes WHERE user_id = ? AND word = ?',
+                    )
+                        .bind(userId, body.word)
+                        .first();
+
+                    const now = new Date().toISOString();
+
+                    if (exists) {
+                        // Update existing note
+                        await env.DB.prepare(
+                            'UPDATE notes SET note = ?, updated_at = ? WHERE user_id = ? AND word = ?',
+                        )
+                            .bind(body.note, now, userId, body.word)
+                            .run();
+                    } else {
+                        // Insert new note
+                        await env.DB.prepare(
+                            'INSERT INTO notes (user_id, word, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+                        )
+                            .bind(userId, body.word, body.note, now, now)
+                            .run();
+                    }
+
+                    return new Response('OK');
+                } catch {
+                    return new Response('Invalid JSON', { status: 400 });
+                }
+            }
+
+            if (request.method === 'DELETE') {
+                try {
+                    const body =
+                        (await request.json()) as DeleteNoteRequestBody;
+                    if (!body.word) {
+                        return new Response('Missing word', { status: 400 });
+                    }
+
+                    await env.DB.prepare(
+                        'DELETE FROM notes WHERE user_id = ? AND word = ?',
+                    )
+                        .bind(userId, body.word)
+                        .run();
+
+                    return new Response('OK');
+                } catch {
+                    return new Response('Invalid JSON', { status: 400 });
+                }
+            }
         }
 
         return env.ASSETS.fetch(request);

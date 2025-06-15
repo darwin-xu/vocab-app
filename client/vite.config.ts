@@ -35,6 +35,10 @@ export default defineConfig({
                 target: 'http://localhost:8787',
                 changeOrigin: true,
             },
+            '/notes': {
+                target: 'http://localhost:8787',
+                changeOrigin: true,
+            },
             '/tts': {
                 target: 'http://localhost:8787',
                 changeOrigin: true,

@@ -176,6 +176,45 @@ describe('Vocabulary endpoints', () => {
             expect(data.items).toHaveLength(3);
             expect(data.items.map((item) => item.word)).not.toContain('other');
         });
+
+        it('should include notes in vocabulary response', async () => {
+            // Add a note for one of the words
+            await env.DB.prepare(
+                'INSERT INTO notes (user_id, word, note, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+            )
+                .bind(
+                    userId,
+                    'hello',
+                    'Test note for hello',
+                    '2025-01-01',
+                    '2025-01-01',
+                )
+                .run();
+
+            const request = createAuthenticatedRequest(
+                'http://example.com/vocab',
+                userToken,
+            );
+
+            const response = await worker.fetch(request, env);
+
+            expect(response.status).toBe(200);
+
+            const data = (await response.json()) as {
+                items: Array<{ word: string; note: string | null }>;
+            };
+            expect(data.items).toHaveLength(3);
+
+            const helloItem = data.items.find((item) => item.word === 'hello');
+            const worldItem = data.items.find((item) => item.word === 'world');
+            const vocabItem = data.items.find(
+                (item) => item.word === 'vocabulary',
+            );
+
+            expect(helloItem?.note).toBe('Test note for hello');
+            expect(worldItem?.note).toBeNull();
+            expect(vocabItem?.note).toBeNull();
+        });
     });
 
     describe('POST /vocab', () => {

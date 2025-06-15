@@ -11,16 +11,19 @@ The OpenAI API was returning structured JSON data based on the English dictionar
 ## Solution
 
 ### 1. **Hover Window Rendering**
+
 - Location: `client/src/app.tsx` (lines 805-817)
 - The hover window already supports Markdown rendering using the `marked` library
 - Uses `dangerouslySetInnerHTML={{ __html: marked(hover.content) }}` to convert Markdown to HTML
 
 ### 2. **Server-Side Conversion**
+
 - Added `src/utils/jsonToMarkdown.ts` - utility function to convert dictionary JSON to Markdown
 - Modified `src/index.ts` to parse OpenAI JSON responses and convert them to Markdown format
 - Installed `json2md` package for future extensibility (though we use a custom function for dictionary-specific formatting)
 
 ### 3. **Dictionary Schema**
+
 The OpenAI API returns JSON data structured according to `src/schemas/english_dictionary.schema.json`:
 
 ```json
@@ -30,7 +33,7 @@ The OpenAI API returns JSON data structured according to `src/schemas/english_di
     "meanings": [
         {
             "part_of_speech": "string",
-            "definition": "string", 
+            "definition": "string",
             "examples": ["string"]
         }
     ],
@@ -39,20 +42,25 @@ The OpenAI API returns JSON data structured according to `src/schemas/english_di
 ```
 
 ### 4. **Markdown Output Format**
+
 The conversion produces Markdown in this format:
 
 ```markdown
 # word
+
 **Pronunciation:** /pronunciation/
 
 ## Part of Speech
+
 **Definition:** definition text
 
 **Examples:**
+
 - example sentence 1
 - example sentence 2
 
 ## Synonyms
+
 - synonym 1
 - synonym 2
 ```
@@ -60,12 +68,14 @@ The conversion produces Markdown in this format:
 ## Implementation Details
 
 ### Key Files Modified:
+
 1. `src/index.ts` - Added JSON parsing and Markdown conversion in OpenAI endpoint
 2. `src/utils/jsonToMarkdown.ts` - New utility function for conversion
 3. `test/jsonToMarkdown.spec.ts` - Tests for the conversion functionality
 4. `package.json` - Added `json2md` dependency
 
 ### Error Handling
+
 - If JSON parsing fails, the system falls back to returning the original content
 - Graceful handling of empty or malformed data
 
