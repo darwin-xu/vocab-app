@@ -135,6 +135,7 @@ function App() {
     }>({ show: false, x: 0, y: 0, content: '' });
     const [isLoading, setIsLoading] = useState(false);
     const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // Admin-related state
     const [users, setUsers] = useState<User[]>([]);
@@ -888,9 +889,19 @@ Define the word '{word}' in a simple way:
                     style={{ left: hover.x, top: hover.y }}
                     onClick={(e) => {
                         e.stopPropagation();
-                        ttsCall(hover.content).then((b64) =>
-                            new Audio(`data:audio/wav;base64,${b64}`).play(),
-                        );
+                        // Stop any currently playing audio
+                        if (audioRef.current) {
+                            audioRef.current.pause();
+                            audioRef.current.currentTime = 0;
+                        }
+                        // Play new audio
+                        ttsCall(hover.content)
+                            .then((b64) => {
+                                const audio = new Audio(`data:audio/wav;base64,${b64}`);
+                                audioRef.current = audio;
+                                audio.play();
+                            })
+                            .catch((err) => console.error('Error playing audio:', err));
                     }}
                     dangerouslySetInnerHTML={{ __html: marked(hover.content) }}
                 />
