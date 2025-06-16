@@ -9,7 +9,6 @@ import {
     addWord,
     removeWords,
     openaiCall,
-    ttsCall,
     logout,
     isAdmin,
     fetchUsers,
@@ -19,6 +18,7 @@ import {
     fetchOwnProfile,
     updateOwnProfile,
 } from './api';
+import TTSControls from './components/TTSControls';
 
 // Custom hook to track window size
 function useWindowSize() {
@@ -889,22 +889,13 @@ Define the word '{word}' in a simple way:
                     style={{ left: hover.x, top: hover.y }}
                     onClick={(e) => {
                         e.stopPropagation();
-                        // Stop any currently playing audio
-                        if (audioRef.current) {
-                            audioRef.current.pause();
-                            audioRef.current.currentTime = 0;
-                        }
-                        // Play new audio
-                        ttsCall(hover.content)
-                            .then((b64) => {
-                                const audio = new Audio(`data:audio/wav;base64,${b64}`);
-                                audioRef.current = audio;
-                                audio.play();
-                            })
-                            .catch((err) => console.error('Error playing audio:', err));
                     }}
-                    dangerouslySetInnerHTML={{ __html: marked(hover.content) }}
-                />
+                >
+                    <TTSControls 
+                        content={hover.content} 
+                        audioRef={audioRef}
+                    />
+                </div>
             )}
             {notesModal.show && (
                 <div className="modal-overlay">

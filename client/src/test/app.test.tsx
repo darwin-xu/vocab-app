@@ -473,7 +473,32 @@ describe('App Component', () => {
         it('should handle TTS functionality', async () => {
             const mockAudioData = 'base64audiodata';
             vi.mocked(api.ttsCall).mockResolvedValue(mockAudioData);
-            vi.mocked(api.openaiCall).mockResolvedValue('AI response');
+            // Mock a properly formatted AI response with markdown structure
+            const mockAIResponse = `# hello
+
+**Pronunciation:** /həˈloʊ/
+
+## Noun
+
+**Definition:** An expression or gesture of greeting.
+
+**Examples:**
+- She gave a friendly hello to her neighbor.
+- His hello was warm and welcoming.
+
+## Interjection
+
+**Definition:** Used as a greeting or to begin a phone conversation.
+
+**Examples:**
+- Hello! How are you today?
+- Hello, is anyone there?
+
+## Synonyms
+
+hi, greetings, salutation, welcome`;
+
+            vi.mocked(api.openaiCall).mockResolvedValue(mockAIResponse);
 
             vi.mocked(api.fetchVocab).mockResolvedValue({
                 items: [{ word: 'hello', add_date: '2025-01-01' }],
@@ -505,8 +530,10 @@ describe('App Component', () => {
             await waitFor(() => {
                 expect(api.openaiCall).toHaveBeenCalledWith('hello', 'define');
             });
-            const hoverWindow = await screen.findByText('AI response');
-            await user.click(hoverWindow);
+            
+            // Find an inline TTS button in the hover window (should be next to the word title)
+            const ttsButton = await screen.findByRole('button', { name: 'Listen to full definition' });
+            await user.click(ttsButton);
 
             await waitFor(() => {
                 expect(api.ttsCall).toHaveBeenCalled();
