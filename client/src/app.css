@@ -869,7 +869,7 @@ input[type='checkbox']:checked::after {
     .container {
         padding: var(--space-md);
         min-height: calc(100vh - 140px);
-        padding-bottom: 100px;
+        padding-bottom: 35px;
         /* Adjust bottom padding for mobile */
     }
 
@@ -1039,7 +1039,7 @@ input[type='checkbox']:checked::after {
 @media (max-width: 480px) {
     .container {
         padding: var(--space-sm);
-        padding-bottom: 90px;
+        padding-bottom: 30px;
         /* Adjust bottom padding for smallest screens */
     }
 

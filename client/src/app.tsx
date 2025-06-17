@@ -68,8 +68,9 @@ function calculatePageSize(windowHeight: number): number {
     const rowHeight = 50;
     const estimatedRows = Math.floor(availableHeight / rowHeight);
 
-    // Clamp between reasonable bounds
-    return Math.max(5, Math.min(50, estimatedRows));
+    // Clamp between reasonable bounds and double the size
+    const baseSize = Math.max(5, Math.min(50, estimatedRows));
+    return baseSize * 2;
 }
 
 // Utility function to format relative time
