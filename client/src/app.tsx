@@ -371,14 +371,52 @@ function App() {
         }
     }
 
+    // Helper function to calculate hover window position
+    function calculateHoverPosition(e: React.MouseEvent) {
+        const isMobile = window.innerWidth <= 768;
+
+        if (isMobile) {
+            // On mobile, position will be handled by CSS (centered)
+            return { x: 0, y: 0 };
+        } else {
+            // On desktop, use mouse position with adjustments to keep window on screen
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const hoverWidth = 400; // min-width from CSS
+            const hoverHeight = 300; // estimated height
+
+            let x = e.pageX;
+            let y = e.pageY;
+
+            // Adjust if window would go off right edge
+            if (x + hoverWidth > windowWidth) {
+                x = windowWidth - hoverWidth - 20;
+            }
+
+            // Adjust if window would go off bottom edge
+            if (y + hoverHeight > windowHeight) {
+                y = windowHeight - hoverHeight - 20;
+            }
+
+            // Ensure minimum margins
+            x = Math.max(20, x);
+            y = Math.max(20, y);
+
+            return { x, y };
+        }
+    }
+
     async function openDefinition(e: React.MouseEvent, word: string) {
         e.stopPropagation();
+
+        // Calculate position based on device type
+        const { x, y } = calculateHoverPosition(e);
 
         // Show loading window immediately
         setHover({
             show: true,
-            x: e.pageX,
-            y: e.pageY,
+            x,
+            y,
             content: 'Loading.',
             isLoading: true,
         });
@@ -400,10 +438,11 @@ function App() {
                 clearInterval(loadingIntervalRef.current);
                 loadingIntervalRef.current = null;
             }
+            const { x, y } = calculateHoverPosition(e);
             setHover({
                 show: true,
-                x: e.pageX,
-                y: e.pageY,
+                x,
+                y,
                 content: text,
                 isLoading: false,
             });
@@ -413,10 +452,11 @@ function App() {
                 clearInterval(loadingIntervalRef.current);
                 loadingIntervalRef.current = null;
             }
+            const { x, y } = calculateHoverPosition(e);
             setHover({
                 show: true,
-                x: e.pageX,
-                y: e.pageY,
+                x,
+                y,
                 content: 'Error loading definition. Please try again.',
                 isLoading: false,
             });
@@ -890,10 +930,7 @@ Define the word '{word}' in a simple way:
                         e.stopPropagation();
                     }}
                 >
-                    <TTSControls 
-                        content={hover.content} 
-                        audioRef={audioRef}
-                    />
+                    <TTSControls content={hover.content} audioRef={audioRef} />
                 </div>
             )}
             {notesModal.show && (

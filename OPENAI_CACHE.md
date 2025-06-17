@@ -19,10 +19,12 @@ This implementation adds browser-side caching for both OpenAI API requests and T
 ### Cache Keys
 
 **OpenAI Cache Keys:**
+
 - Format: `${word.toLowerCase()}-${action}`
 - Examples: `hello-define`, `hello-example`, `world-define`
 
 **TTS Cache Keys:**
+
 - Format: `tts-${text.toLowerCase()}`
 - Examples: `tts-hello world`, `tts-how are you today`
 
@@ -36,6 +38,7 @@ This implementation adds browser-side caching for both OpenAI API requests and T
 ### Example Usage Flow
 
 **OpenAI Caching:**
+
 ```javascript
 // First call - API request made
 const result1 = await openaiCall('hello', 'define');
@@ -56,6 +59,7 @@ const result4 = await openaiCall('HELLO', 'define');
 ```
 
 **TTS Caching:**
+
 ```javascript
 // First call - API request made
 const audio1 = await ttsCall('hello world');
@@ -96,17 +100,17 @@ class OpenAICache {
     private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
     // OpenAI methods
-    get(word: string, action: string): string | null
-    set(word: string, action: string, data: string): void
-    
+    get(word: string, action: string): string | null;
+    set(word: string, action: string, data: string): void;
+
     // TTS methods
-    getTTS(text: string): string | null
-    setTTS(text: string, data: string): void
-    
+    getTTS(text: string): string | null;
+    setTTS(text: string, data: string): void;
+
     // Shared methods
-    clear(): void
-    cleanup(): void
-    getStats(): CacheStats
+    clear(): void;
+    cleanup(): void;
+    getStats(): CacheStats;
 }
 ```
 
@@ -121,6 +125,7 @@ class OpenAICache {
 The implementation includes comprehensive tests covering:
 
 **OpenAI Cache Tests:**
+
 - Basic caching functionality
 - Cache expiration after 5 minutes
 - Case-insensitive word matching
@@ -129,6 +134,7 @@ The implementation includes comprehensive tests covering:
 - Cache clearing on logout
 
 **TTS Cache Tests:**
+
 - Basic TTS caching functionality
 - Cache expiration after 5 minutes
 - Case-insensitive text matching
@@ -138,6 +144,7 @@ The implementation includes comprehensive tests covering:
 - Independence from OpenAI cache
 
 Run tests:
+
 ```bash
 cd client && npm test openai-cache.test.ts tts-cache.test.ts
 ```
@@ -147,16 +154,19 @@ cd client && npm test openai-cache.test.ts tts-cache.test.ts
 During development, the console will show cache activity:
 
 **OpenAI Cache:**
+
 - `🌐 Cache miss` - API call made
 - `🎯 Cache hit` - Served from cache
 - `💾 Cached response` - Response stored in cache
 
 **TTS Cache:**
+
 - `🌐 TTS Cache miss` - TTS API call made
 - `🎯 TTS Cache hit` - Audio served from cache
 - `💾 Cached TTS response` - Audio stored in cache
 
 Get cache statistics in browser console:
+
 ```javascript
 import { _getCacheStats } from './api';
 console.log(_getCacheStats()); // { totalEntries: 5, validEntries: 4, expiredEntries: 1 }
@@ -165,6 +175,7 @@ console.log(_getCacheStats()); // { totalEntries: 5, validEntries: 4, expiredEnt
 ## Future Enhancements
 
 Potential improvements for future versions:
+
 - Persistent storage (localStorage/IndexedDB) for cross-session caching
 - Configurable cache duration per user or content type
 - Cache warming for common words and phrases

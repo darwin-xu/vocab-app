@@ -540,7 +540,7 @@ input[type='checkbox']:checked::after {
 /* Hover window modernization */
 #hover-window {
     display: none;
-    position: absolute;
+    position: fixed;
     left: var(--hover-x, 0);
     top: var(--hover-y, 0);
     background: var(--vocab-surface);
@@ -559,6 +559,35 @@ input[type='checkbox']:checked::after {
     max-width: 900px;
     min-width: 400px;
     animation: hoverFadeIn 0.3s ease-out;
+}
+
+/* Mobile responsive hover window */
+@media (max-width: 768px) {
+    #hover-window {
+        position: fixed;
+        left: 16px !important;
+        right: 16px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        max-width: none !important;
+        min-width: auto !important;
+        width: calc(100vw - 32px) !important;
+        max-height: 70vh;
+        overflow-y: auto;
+        animation: hoverFadeInMobile 0.3s ease-out;
+    }
+}
+
+@keyframes hoverFadeInMobile {
+    from {
+        opacity: 0;
+        transform: translateY(-50%) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
 }
 
 @keyframes hoverFadeIn {
@@ -1310,7 +1339,7 @@ input[type='checkbox']:checked::after {
         padding: 1px 4px;
         margin-left: var(--space-xs);
     }
-    
+
     .word-title-with-tts,
     .pronunciation-with-tts,
     .definition-with-tts,

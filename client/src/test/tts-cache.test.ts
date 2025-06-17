@@ -134,7 +134,7 @@ describe('TTS Cache', () => {
         // Error responses should not be cached
         await expect(api.ttsCall('hello')).rejects.toThrow('TTS API Error');
         await expect(api.ttsCall('hello')).rejects.toThrow('TTS API Error');
-        
+
         expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 

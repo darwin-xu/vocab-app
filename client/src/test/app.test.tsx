@@ -530,9 +530,11 @@ hi, greetings, salutation, welcome`;
             await waitFor(() => {
                 expect(api.openaiCall).toHaveBeenCalledWith('hello', 'define');
             });
-            
+
             // Find an inline TTS button in the hover window (should be next to the word title)
-            const ttsButton = await screen.findByRole('button', { name: 'Listen to full definition' });
+            const ttsButton = await screen.findByRole('button', {
+                name: 'Listen to full definition',
+            });
             await user.click(ttsButton);
 
             await waitFor(() => {

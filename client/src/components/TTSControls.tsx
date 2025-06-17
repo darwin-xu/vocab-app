@@ -2,7 +2,11 @@
 import React from 'react';
 import { marked } from 'marked';
 import { ttsCall } from '../api';
-import { parseMarkdownForTTS, cleanTextForTTS, getSectionsByType } from '../utils/ttsParser';
+import {
+    parseMarkdownForTTS,
+    cleanTextForTTS,
+    getSectionsByType,
+} from '../utils/ttsParser';
 
 interface TTSControlsProps {
     content: string;
@@ -30,7 +34,10 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
         }
     };
 
-    const TTSSpeakerIcon: React.FC<{ onClick: () => void; title: string }> = ({ onClick, title }) => (
+    const TTSSpeakerIcon: React.FC<{ onClick: () => void; title: string }> = ({
+        onClick,
+        title,
+    }) => (
         <button
             className="tts-inline-btn"
             onClick={(e) => {
@@ -48,23 +55,23 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
     const renderContentWithTTS = () => {
         const lines = content.split('\n');
         const renderedLines: React.ReactNode[] = [];
-        
+
         // Get sections for quick lookup
         const pronunciations = getSectionsByType(sections, 'pronunciation');
         const definitions = getSectionsByType(sections, 'definition');
         const examples = getSectionsByType(sections, 'examples');
         const synonyms = getSectionsByType(sections, 'synonyms');
-        
+
         let currentPartOfSpeech = '';
-        
+
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
-            
+
             if (!line) {
                 renderedLines.push(<br key={`br-${i}`} />);
                 continue;
             }
-            
+
             // Word title
             if (line.startsWith('# ')) {
                 const wordTitle = line.replace('# ', '');
@@ -75,106 +82,131 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
                             onClick={() => playTTS(content)}
                             title="Listen to full definition"
                         />
-                    </h1>
+                    </h1>,
                 );
                 continue;
             }
-            
+
             // Pronunciation
             if (line.startsWith('**Pronunciation:**')) {
                 const pronunciation = pronunciations[0];
                 const htmlContent = marked.parseInline(line);
                 renderedLines.push(
-                    <p key={`pronunciation-${i}`} className="pronunciation-with-tts">
-                        <span dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                    <p
+                        key={`pronunciation-${i}`}
+                        className="pronunciation-with-tts"
+                    >
+                        <span
+                            dangerouslySetInnerHTML={{ __html: htmlContent }}
+                        />
                         {pronunciation && (
                             <TTSSpeakerIcon
                                 onClick={() => playTTS(pronunciation.content)}
                                 title="Listen to pronunciation"
                             />
                         )}
-                    </p>
+                    </p>,
                 );
                 continue;
             }
-            
+
             // Part of speech headers
             if (line.startsWith('## ') && !line.includes('Synonyms')) {
                 currentPartOfSpeech = line.replace('## ', '').trim();
                 const htmlContent = marked.parseInline(line);
                 renderedLines.push(
-                    <h2 key={`h2-${i}`} dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                    <h2
+                        key={`h2-${i}`}
+                        dangerouslySetInnerHTML={{ __html: htmlContent }}
+                    />,
                 );
                 continue;
             }
-            
+
             // Synonyms header
             if (line.startsWith('## Synonyms')) {
                 const htmlContent = marked.parseInline(line);
                 renderedLines.push(
-                    <h2 key={`synonyms-header-${i}`} className="synonyms-header-with-tts">
-                        <span dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                    <h2
+                        key={`synonyms-header-${i}`}
+                        className="synonyms-header-with-tts"
+                    >
+                        <span
+                            dangerouslySetInnerHTML={{ __html: htmlContent }}
+                        />
                         {synonyms.length > 0 && (
                             <TTSSpeakerIcon
                                 onClick={() => playTTS(synonyms[0].content)}
                                 title="Listen to synonyms"
                             />
                         )}
-                    </h2>
+                    </h2>,
                 );
                 continue;
             }
-            
+
             // Definition
             if (line.startsWith('**Definition:**')) {
-                const definition = definitions.find(def => def.partOfSpeech === currentPartOfSpeech);
+                const definition = definitions.find(
+                    (def) => def.partOfSpeech === currentPartOfSpeech,
+                );
                 const htmlContent = marked.parseInline(line);
                 renderedLines.push(
                     <p key={`definition-${i}`} className="definition-with-tts">
-                        <span dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                        <span
+                            dangerouslySetInnerHTML={{ __html: htmlContent }}
+                        />
                         {definition && (
                             <TTSSpeakerIcon
                                 onClick={() => playTTS(definition.content)}
                                 title={`Listen to ${currentPartOfSpeech.toLowerCase()} definition`}
                             />
                         )}
-                    </p>
+                    </p>,
                 );
                 continue;
             }
-            
+
             // Examples header
             if (line.startsWith('**Examples:**')) {
-                const example = examples.find(ex => ex.partOfSpeech === currentPartOfSpeech);
+                const example = examples.find(
+                    (ex) => ex.partOfSpeech === currentPartOfSpeech,
+                );
                 const htmlContent = marked.parseInline(line);
                 renderedLines.push(
-                    <p key={`examples-header-${i}`} className="examples-header-with-tts">
-                        <span dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                    <p
+                        key={`examples-header-${i}`}
+                        className="examples-header-with-tts"
+                    >
+                        <span
+                            dangerouslySetInnerHTML={{ __html: htmlContent }}
+                        />
                         {example && (
                             <TTSSpeakerIcon
                                 onClick={() => playTTS(example.content)}
                                 title={`Listen to ${currentPartOfSpeech.toLowerCase()} examples`}
                             />
                         )}
-                    </p>
+                    </p>,
                 );
                 continue;
             }
-            
+
             // Regular content (bullet points, etc.)
             const htmlContent = marked.parseInline(line);
             renderedLines.push(
-                <p key={`content-${i}`} dangerouslySetInnerHTML={{ __html: htmlContent }} />
+                <p
+                    key={`content-${i}`}
+                    dangerouslySetInnerHTML={{ __html: htmlContent }}
+                />,
             );
         }
-        
+
         return renderedLines;
     };
 
     return (
-        <div className="hover-content-with-tts">
-            {renderContentWithTTS()}
-        </div>
+        <div className="hover-content-with-tts">{renderContentWithTTS()}</div>
     );
 };
 

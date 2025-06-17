@@ -74,6 +74,7 @@ If you encounter issues:
 The following files have been identified as unnecessary and can be safely deleted:
 
 #### 1. Unused Test Setup Files
+
 ```bash
 # Remove duplicate/unused test setup files
 rm client/src/test/setup-new.ts
@@ -83,6 +84,7 @@ rm client/src/test/global-setup.ts
 These files are not referenced in any configuration and duplicate functionality in the main `setup.ts` file.
 
 #### 2. Unused Schema Test Data
+
 ```bash
 # Remove unused test schema file
 rm src/schemas/test.json
@@ -91,6 +93,7 @@ rm src/schemas/test.json
 This file contains test data but is not imported or used anywhere in the codebase.
 
 #### 3. Generic Template Files
+
 ```bash
 # Remove default Vite template README
 rm client/README.md
@@ -101,6 +104,7 @@ This is the default Vite + React template README that doesn't apply to our proje
 ### Files to Consider for Cleanup
 
 #### 4. Minimal Documentation Files
+
 ```bash
 # Consider consolidating AGENTS.md into DEVELOPMENT.md
 cat AGENTS.md >> DEVELOPMENT.md  # Review content first
@@ -110,6 +114,7 @@ rm AGENTS.md
 The AGENTS.md file only contains 6 lines of basic guidelines that could be merged here.
 
 #### 5. Generic Security Policy
+
 ```bash
 # Remove if not maintaining active security policy
 rm SECURITY.md
@@ -118,6 +123,7 @@ rm SECURITY.md
 Contains generic GitHub template content that doesn't match the project.
 
 #### 6. Development-Only Test Files
+
 ```bash
 # Consider removing comparison test if no longer needed
 rm test/json2md-comparison.spec.ts

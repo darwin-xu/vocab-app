@@ -24,7 +24,7 @@ class OpenAICache {
     get(word: string, action: string): string | null {
         const key = this.getCacheKey(word, action);
         const entry = this.cache.get(key);
-        
+
         if (!entry) {
             return null;
         }
@@ -41,7 +41,7 @@ class OpenAICache {
     getTTS(text: string): string | null {
         const key = this.getTTSCacheKey(text);
         const entry = this.cache.get(key);
-        
+
         if (!entry) {
             return null;
         }
@@ -59,7 +59,7 @@ class OpenAICache {
         const key = this.getCacheKey(word, action);
         this.cache.set(key, {
             data,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         });
     }
 
@@ -67,7 +67,7 @@ class OpenAICache {
         const key = this.getTTSCacheKey(text);
         this.cache.set(key, {
             data,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         });
     }
 
@@ -86,7 +86,11 @@ class OpenAICache {
     }
 
     // Get cache statistics for debugging
-    getStats(): { totalEntries: number; validEntries: number; expiredEntries: number } {
+    getStats(): {
+        totalEntries: number;
+        validEntries: number;
+        expiredEntries: number;
+    } {
         const now = Date.now();
         let validEntries = 0;
         let expiredEntries = 0;
@@ -102,7 +106,7 @@ class OpenAICache {
         return {
             totalEntries: this.cache.size,
             validEntries,
-            expiredEntries
+            expiredEntries,
         };
     }
 }
@@ -110,9 +114,12 @@ class OpenAICache {
 const openaiCache = new OpenAICache();
 
 // Set up periodic cleanup of expired cache entries (every 10 minutes)
-setInterval(() => {
-    openaiCache.cleanup();
-}, 10 * 60 * 1000);
+setInterval(
+    () => {
+        openaiCache.cleanup();
+    },
+    10 * 60 * 1000,
+);
 
 function getToken() {
     return localStorage.getItem(SESSION_TOKEN_KEY) || '';
@@ -196,7 +203,9 @@ export async function openaiCall(word: string, action: string) {
     }
 
     if (process.env.NODE_ENV === 'development') {
-        console.log(`🌐 Cache miss for "${word}" (${action}) - fetching from API`);
+        console.log(
+            `🌐 Cache miss for "${word}" (${action}) - fetching from API`,
+        );
     }
     const res = await authFetch(
         `/openai?word=${encodeURIComponent(word)}&action=${action}`,
@@ -218,13 +227,17 @@ export async function ttsCall(text: string) {
     const cachedResponse = openaiCache.getTTS(text);
     if (cachedResponse) {
         if (process.env.NODE_ENV === 'development') {
-            console.log(`🎯 TTS Cache hit for "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`);
+            console.log(
+                `🎯 TTS Cache hit for "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`,
+            );
         }
         return cachedResponse;
     }
 
     if (process.env.NODE_ENV === 'development') {
-        console.log(`🌐 TTS Cache miss for "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}" - fetching from API`);
+        console.log(
+            `🌐 TTS Cache miss for "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}" - fetching from API`,
+        );
     }
     const res = await authFetch(`/tts?text=${encodeURIComponent(text)}`);
     if (!res.ok) throw new Error(await res.text());
@@ -234,7 +247,9 @@ export async function ttsCall(text: string) {
     // Store in cache
     openaiCache.setTTS(text, audioData);
     if (process.env.NODE_ENV === 'development') {
-        console.log(`💾 Cached TTS response for "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`);
+        console.log(
+            `💾 Cached TTS response for "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`,
+        );
     }
 
     return audioData;

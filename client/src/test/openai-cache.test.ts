@@ -140,9 +140,13 @@ describe('OpenAI Cache', () => {
         mockFetch.mockResolvedValue(mockErrorResponse);
 
         // Error responses should not be cached
-        await expect(api.openaiCall('hello', 'define')).rejects.toThrow('API Error');
-        await expect(api.openaiCall('hello', 'define')).rejects.toThrow('API Error');
-        
+        await expect(api.openaiCall('hello', 'define')).rejects.toThrow(
+            'API Error',
+        );
+        await expect(api.openaiCall('hello', 'define')).rejects.toThrow(
+            'API Error',
+        );
+
         expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 

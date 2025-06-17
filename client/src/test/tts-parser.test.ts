@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { parseMarkdownForTTS, cleanTextForTTS, getSectionsByType, type TTSSection } from '../utils/ttsParser';
+import {
+    parseMarkdownForTTS,
+    cleanTextForTTS,
+    getSectionsByType,
+    type TTSSection,
+} from '../utils/ttsParser';
 
 describe('TTS Parser Utilities', () => {
     const sampleMarkdown = `# example
@@ -30,29 +35,33 @@ describe('TTS Parser Utilities', () => {
     describe('parseMarkdownForTTS', () => {
         it('should parse markdown content into TTS sections', () => {
             const sections = parseMarkdownForTTS(sampleMarkdown);
-            
+
             expect(sections).toHaveLength(6); // pronunciation, 2 definitions, 2 examples, 1 synonyms
-            
+
             // Check pronunciation
             const pronunciations = getSectionsByType(sections, 'pronunciation');
             expect(pronunciations).toHaveLength(1);
             expect(pronunciations[0].content).toBe('/ɪɡˈzæmpəl/');
-            
+
             // Check definitions
             const definitions = getSectionsByType(sections, 'definition');
             expect(definitions).toHaveLength(2);
             expect(definitions[0].partOfSpeech).toBe('Noun');
             expect(definitions[1].partOfSpeech).toBe('Verb');
-            
+
             // Check examples
             const examples = getSectionsByType(sections, 'examples');
             expect(examples).toHaveLength(2);
-            expect(examples[0].content).toContain('This is a good example of his work');
-            
+            expect(examples[0].content).toContain(
+                'This is a good example of his work',
+            );
+
             // Check synonyms
             const synonyms = getSectionsByType(sections, 'synonyms');
             expect(synonyms).toHaveLength(1);
-            expect(synonyms[0].content).toBe('Synonyms: instance, illustration, case');
+            expect(synonyms[0].content).toBe(
+                'Synonyms: instance, illustration, case',
+            );
         });
 
         it('should handle empty markdown gracefully', () => {
@@ -89,13 +98,21 @@ describe('TTS Parser Utilities', () => {
     describe('getSectionsByType', () => {
         it('should filter sections by type correctly', () => {
             const sections = parseMarkdownForTTS(sampleMarkdown);
-            
+
             const definitions = getSectionsByType(sections, 'definition');
-            expect(definitions.every((section: TTSSection) => section.type === 'definition')).toBe(true);
-            
+            expect(
+                definitions.every(
+                    (section: TTSSection) => section.type === 'definition',
+                ),
+            ).toBe(true);
+
             const examples = getSectionsByType(sections, 'examples');
-            expect(examples.every((section: TTSSection) => section.type === 'examples')).toBe(true);
-            
+            expect(
+                examples.every(
+                    (section: TTSSection) => section.type === 'examples',
+                ),
+            ).toBe(true);
+
             const nonExistent = getSectionsByType(sections, 'pronunciation');
             expect(nonExistent).toHaveLength(1);
         });
