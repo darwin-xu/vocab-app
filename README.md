@@ -30,6 +30,12 @@ Our application includes comprehensive testing:
 3. Set up your environment variables
 4. Run development server: `npm run dev`
 
+## Styling
+
+The React client uses **Tailwind CSS** for utility-first styles configured via
+`postcss.config.js` and `tailwind.config.js`. Global Tailwind directives are in
+`src/index.css`.
+
 ## Testing
 
 Run all tests:
