@@ -39,7 +39,7 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
         title,
     }) => (
         <button
-            className="inline-flex items-center justify-center min-w-[20px] h-4 ml-1 align-middle rounded-sm bg-gradient-to-tr from-indigo-500 to-purple-700 text-xs text-white opacity-80 shadow transition hover:-translate-y-px hover:shadow-md hover:opacity-100 active:translate-y-0"
+            className="inline-flex items-center justify-center min-w-5 h-4 ml-1 align-middle rounded-xs bg-gradient-primary text-xs text-white opacity-80 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md hover:opacity-100 active:translate-y-0"
             onClick={(e) => {
                 e.stopPropagation();
                 onClick();

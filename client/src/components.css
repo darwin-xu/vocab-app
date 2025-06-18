@@ -1,0 +1,139 @@
+/* Component-specific styles that complement Tailwind */
+/* These are temporary styles while we complete the Tailwind migration */
+
+/* Custom scrollbar for modals and hover windows */
+.modal-content::-webkit-scrollbar,
+#hover-window::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track,
+#hover-window::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb,
+#hover-window::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.3);
+    border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover,
+#hover-window::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.5);
+}
+
+/* Custom checkbox styling */
+input[type='checkbox']:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* Focus ring for accessibility */
+button:focus,
+input:focus,
+textarea:focus {
+    outline: 2px solid rgba(102, 126, 234, 0.5);
+    outline-offset: 2px;
+}
+
+/* Responsive table adjustments for mobile */
+@media (max-width: 768px) {
+    /* Hide dictionary buttons (4th and 5th columns) on mobile for cleaner look */
+    table thead th:nth-child(4),
+    table thead th:nth-child(5),
+    table tbody td:nth-child(4),
+    table tbody td:nth-child(5) {
+        display: none;
+    }
+    
+    /* Adjust table column widths for mobile */
+    table th:nth-child(1),
+    table td:nth-child(1) {
+        width: 40px;
+        min-width: 40px;
+    }
+    
+    table th:nth-child(2),
+    table td:nth-child(2) {
+        width: 25%;
+        min-width: 120px;
+        max-width: 180px;
+    }
+    
+    table th:nth-child(3),
+    table td:nth-child(3) {
+        width: auto;
+        min-width: 0;
+    }
+    
+    table th:nth-child(6),
+    table td:nth-child(6) {
+        width: 60px;
+        min-width: 50px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small mobile adjustments */
+    table th:nth-child(1),
+    table td:nth-child(1) {
+        width: 35px;
+        min-width: 35px;
+    }
+    
+    table th:nth-child(2),
+    table td:nth-child(2) {
+        width: 30%;
+        min-width: 100px;
+        max-width: 140px;
+    }
+    
+    table th:nth-child(6),
+    table td:nth-child(6) {
+        width: 50px;
+        min-width: 45px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .user-avatar,
+    .pagination,
+    button {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+    }
+    
+    table {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+    }
+}
+
+/* Test selectors for notes functionality */
+.notes-btn {
+    /* This class is used by tests to identify notes buttons */
+    position: relative;
+}
+
+.has-note {
+    /* This class is used by tests to identify buttons for words that have notes */
+    position: relative;
+}
+
+.no-note {
+    /* This class is used by tests to identify buttons for words that don't have notes */
+    position: relative;
+}
