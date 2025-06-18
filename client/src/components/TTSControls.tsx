@@ -39,7 +39,7 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
         title,
     }) => (
         <button
-            className="tts-inline-btn"
+            className="inline-flex items-center justify-center min-w-[20px] h-4 ml-1 align-middle rounded-sm bg-gradient-to-tr from-indigo-500 to-purple-700 text-xs text-white opacity-80 shadow transition hover:-translate-y-px hover:shadow-md hover:opacity-100 active:translate-y-0"
             onClick={(e) => {
                 e.stopPropagation();
                 onClick();
@@ -76,7 +76,7 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
             if (line.startsWith('# ')) {
                 const wordTitle = line.replace('# ', '');
                 renderedLines.push(
-                    <h1 key={`h1-${i}`} className="word-title-with-tts">
+                    <h1 key={`h1-${i}`} className="flex items-center gap-1">
                         {wordTitle}
                         <TTSSpeakerIcon
                             onClick={() => playTTS(content)}
@@ -94,7 +94,7 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
                 renderedLines.push(
                     <p
                         key={`pronunciation-${i}`}
-                        className="pronunciation-with-tts"
+                        className="flex items-center justify-between"
                     >
                         <span
                             dangerouslySetInnerHTML={{ __html: htmlContent }}
@@ -129,7 +129,7 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
                 renderedLines.push(
                     <h2
                         key={`synonyms-header-${i}`}
-                        className="synonyms-header-with-tts"
+                        className="flex items-center gap-1"
                     >
                         <span
                             dangerouslySetInnerHTML={{ __html: htmlContent }}
@@ -152,7 +152,10 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
                 );
                 const htmlContent = marked.parseInline(line);
                 renderedLines.push(
-                    <p key={`definition-${i}`} className="definition-with-tts">
+                    <p
+                        key={`definition-${i}`}
+                        className="flex items-center justify-between"
+                    >
                         <span
                             dangerouslySetInnerHTML={{ __html: htmlContent }}
                         />
@@ -176,7 +179,7 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
                 renderedLines.push(
                     <p
                         key={`examples-header-${i}`}
-                        className="examples-header-with-tts"
+                        className="flex items-center justify-between"
                     >
                         <span
                             dangerouslySetInnerHTML={{ __html: htmlContent }}
@@ -205,9 +208,7 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
         return renderedLines;
     };
 
-    return (
-        <div className="hover-content-with-tts">{renderContentWithTTS()}</div>
-    );
+    return <div className="space-y-2">{renderContentWithTTS()}</div>;
 };
 
 export default TTSControls;
