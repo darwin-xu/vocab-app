@@ -3,6 +3,12 @@
 const SESSION_TOKEN_KEY = 'sessionToken';
 const USERNAME_KEY = 'username';
 
+function log(...args: unknown[]): void {
+    if (process.env.NODE_ENV !== 'production') {
+        console.log('[api]', ...args);
+    }
+}
+
 // Cache for OpenAI responses with 5-minute timeout
 interface CacheEntry {
     data: string;
@@ -145,6 +151,7 @@ function authFetch(path: string, options: RequestInit = {}) {
 }
 
 export async function login(username: string, password: string) {
+    log('login', username);
     const res = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -155,44 +162,55 @@ export async function login(username: string, password: string) {
     setToken(data.token);
     localStorage.setItem(USERNAME_KEY, username);
     localStorage.setItem('isAdmin', data.is_admin ? 'true' : 'false');
+    log('login success', username);
 }
 
 export async function register(username: string, password: string) {
+    log('register', username);
     const res = await fetch('/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
     });
     if (!res.ok) throw new Error(await res.text());
+    log('register success', username);
 }
 
 export async function fetchVocab(q = '', page = 1, pageSize = 20) {
+    log('fetch vocab', { q, page, pageSize });
     const res = await authFetch(
         `/vocab?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}`,
     );
     if (res.status === 401) throw new Error('Unauthorized');
-    return res.json();
+    const data = await res.json();
+    log('fetch vocab done', data.items?.length ?? 0);
+    return data;
 }
 
 export async function addWord(word: string) {
+    log('add word', word);
     const res = await authFetch('/vocab', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word }),
     });
     if (!res.ok) throw new Error(await res.text());
+    log('add word success', word);
 }
 
 export async function removeWords(words: string[]) {
+    log('remove words', words.length);
     const res = await authFetch('/vocab', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ words }),
     });
     if (!res.ok) throw new Error(await res.text());
+    log('remove words success', words.length);
 }
 
 export async function openaiCall(word: string, action: string) {
+    log('openai call', { word, action });
     // Check cache first
     const cachedResponse = openaiCache.get(word, action);
     if (cachedResponse) {
@@ -219,10 +237,13 @@ export async function openaiCall(word: string, action: string) {
         console.log(`💾 Cached response for "${word}" (${action})`);
     }
 
+    log('openai call done', { word, action });
+
     return responseData;
 }
 
 export async function ttsCall(text: string) {
+    log('tts call');
     // Check cache first
     const cachedResponse = openaiCache.getTTS(text);
     if (cachedResponse) {
@@ -252,19 +273,25 @@ export async function ttsCall(text: string) {
         );
     }
 
+    log('tts call done');
     return audioData;
 }
 
 export async function fetchUsers() {
+    log('fetch users');
     const res = await authFetch('/admin/users');
     if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    const data = await res.json();
+    log('fetch users done', data.length);
+    return data;
 }
 
 export async function fetchUserDetails(userId: string) {
+    log('fetch user details', userId);
     const res = await authFetch(`/admin/users/${userId}`);
     if (!res.ok) throw new Error(await res.text());
     const userData = await res.json();
+    log('fetch user details done', userId);
     return { user: userData }; // Wrap to match fetchOwnProfile format
 }
 
@@ -272,60 +299,76 @@ export async function updateUserInstructions(
     userId: string,
     customInstructions: string,
 ) {
+    log('update user instructions', userId);
     const res = await authFetch(`/admin/users/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ custom_instructions: customInstructions }),
     });
     if (!res.ok) throw new Error(await res.text());
+    log('update user instructions done', userId);
 }
 
 export async function fetchOwnProfile() {
+    log('fetch own profile');
     const res = await authFetch('/profile');
     if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    const data = await res.json();
+    log('fetch own profile done');
+    return data;
 }
 
 export async function updateOwnProfile(customInstructions: string) {
+    log('update own profile');
     const res = await authFetch('/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ custom_instructions: customInstructions }),
     });
     if (!res.ok) throw new Error(await res.text());
+    log('update own profile done');
 }
 
 export async function updateUserProfile(customInstructions: string | null) {
+    log('update user profile');
     const res = await authFetch('/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ custom_instructions: customInstructions }),
     });
     if (!res.ok) throw new Error(await res.text());
+    log('update user profile done');
 }
 
 export async function getNote(word: string) {
+    log('get note', word);
     const res = await authFetch(`/notes?word=${encodeURIComponent(word)}`);
     if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    const data = await res.json();
+    log('get note done', word);
+    return data;
 }
 
 export async function saveNote(word: string, note: string) {
+    log('save note', word);
     const res = await authFetch('/notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word, note }),
     });
     if (!res.ok) throw new Error(await res.text());
+    log('save note done', word);
 }
 
 export async function deleteNote(word: string) {
+    log('delete note', word);
     const res = await authFetch('/notes', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ word }),
     });
     if (!res.ok) throw new Error(await res.text());
+    log('delete note done', word);
 }
 
 export function isAdmin() {
@@ -333,6 +376,7 @@ export function isAdmin() {
 }
 
 export function logout() {
+    log('logout');
     clearToken();
     localStorage.removeItem('isAdmin');
     openaiCache.clear(); // Clear OpenAI cache on logout

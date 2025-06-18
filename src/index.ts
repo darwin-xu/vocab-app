@@ -15,6 +15,10 @@ import {
 import cachedSchema from './schemas/english_dictionary.schema.json';
 import { convertDictionaryToMarkdown } from './utils/jsonToMarkdown.js';
 
+function log(...args: unknown[]): void {
+    console.log('[backend]', ...args);
+}
+
 function randomId(): string {
     return Array.from(crypto.getRandomValues(new Uint8Array(16)))
         .map((b) => b.toString(16).padStart(2, '0'))
@@ -49,10 +53,12 @@ async function getSessionFromRequest(
 export default {
     async fetch(request: Request, env: Env): Promise<Response> {
         const url = new URL(request.url);
+        log(`${request.method} ${url.pathname}`);
 
         if (url.pathname === '/register' && request.method === 'POST') {
             try {
                 const body = (await request.json()) as RegisterRequestBody;
+                log('Register user', body.username);
                 if (!body.username || !body.password) {
                     return new Response('Missing username or password', {
                         status: 400,
@@ -76,8 +82,11 @@ export default {
                     .bind(body.username, body.password)
                     .run();
 
+                log('Registered user', body.username);
+
                 return new Response('OK');
-            } catch {
+            } catch (err) {
+                console.error('Register error:', err);
                 return new Response('Invalid JSON', { status: 400 });
             }
         }
@@ -85,6 +94,7 @@ export default {
         if (url.pathname === '/login' && request.method === 'POST') {
             try {
                 const body = (await request.json()) as LoginRequestBody;
+                log('Login attempt', body.username);
                 if (!body.username || !body.password) {
                     return new Response('Missing username or password', {
                         status: 400,
@@ -106,13 +116,15 @@ export default {
                     user_id: user.id,
                     is_admin: user.is_admin,
                 });
+                log('Login success', body.username);
                 return new Response(
                     JSON.stringify({ token, is_admin: user.is_admin }),
                     {
                         headers: { 'Content-Type': 'application/json' },
                     },
                 );
-            } catch {
+            } catch (err) {
+                console.error('Login error:', err);
                 return new Response('Invalid JSON', { status: 400 });
             }
         }
@@ -123,6 +135,7 @@ export default {
 
             if (request.method === 'GET') {
                 const q = url.searchParams.get('q') ?? '';
+                log('Fetch vocab list', { q });
                 const page = parseInt(url.searchParams.get('page') ?? '1', 10);
                 const pageSize = parseInt(
                     url.searchParams.get('pageSize') ?? '20',
@@ -151,7 +164,7 @@ export default {
                     .all();
 
                 const totalPages = Math.ceil(total / pageSize);
-                return new Response(
+                const response = new Response(
                     JSON.stringify({
                         items: results,
                         currentPage: page,
@@ -159,11 +172,14 @@ export default {
                     }),
                     { headers: { 'Content-Type': 'application/json' } },
                 );
+                log('Fetched vocab items', results.length);
+                return response;
             }
 
             if (request.method === 'POST') {
                 try {
                     const body = (await request.json()) as VocabRequestBody;
+                    log('Add word', body.word);
                     if (!body.word) {
                         return new Response('Missing word', { status: 400 });
                     }
@@ -184,8 +200,10 @@ export default {
                     )
                         .bind(userId, body.word, new Date().toISOString())
                         .run();
+                    log('Added word', body.word);
                     return new Response('OK');
-                } catch {
+                } catch (err) {
+                    console.error('Add word error:', err);
                     return new Response('Invalid JSON', { status: 400 });
                 }
             }
@@ -194,6 +212,7 @@ export default {
                 try {
                     const body =
                         (await request.json()) as DeleteVocabRequestBody;
+                    log('Remove words', body.words);
                     if (!Array.isArray(body.words) || body.words.length === 0) {
                         return new Response('No words provided', {
                             status: 400,
@@ -207,8 +226,10 @@ export default {
                             .bind(userId, word)
                             .run();
                     }
+                    log('Removed words', body.words.length);
                     return new Response('OK');
-                } catch {
+                } catch (err) {
+                    console.error('Delete word error:', err);
                     return new Response('Invalid JSON', { status: 400 });
                 }
             }
@@ -220,6 +241,7 @@ export default {
             if (!session.is_admin)
                 return new Response('Admin access required', { status: 403 });
 
+            log('List users');
             const { results } = await env.DB.prepare(
                 'SELECT id, username, created_at FROM users ORDER BY created_at DESC',
             ).all();
@@ -247,6 +269,7 @@ export default {
             }
 
             if (request.method === 'GET') {
+                log('Get user details', userId);
                 const user = (await env.DB.prepare(
                     'SELECT id, username, created_at, custom_instructions FROM users WHERE id = ?',
                 )
@@ -271,6 +294,7 @@ export default {
                 try {
                     const body =
                         (await request.json()) as UpdateUserRequestBody;
+                    log('Update user instructions', userId);
                     if (!('custom_instructions' in body)) {
                         return new Response('Missing custom_instructions', {
                             status: 400,
@@ -296,8 +320,10 @@ export default {
                         .bind(instructionsValue, userId)
                         .run();
 
+                    log('Updated instructions', userId);
                     return new Response('OK');
-                } catch {
+                } catch (err) {
+                    console.error('Update user error:', err);
                     return new Response('Invalid JSON', { status: 400 });
                 }
             }
@@ -308,6 +334,7 @@ export default {
             if (!userId) return new Response('Unauthorized', { status: 401 });
 
             if (request.method === 'GET') {
+                log('Get own profile', userId);
                 const user = (await env.DB.prepare(
                     'SELECT id, username, custom_instructions FROM users WHERE id = ?',
                 )
@@ -333,6 +360,7 @@ export default {
                 try {
                     const body =
                         (await request.json()) as UpdateUserRequestBody;
+                    log('Update profile instructions', userId);
                     if (!('custom_instructions' in body)) {
                         return new Response('Missing custom_instructions', {
                             status: 400,
@@ -347,8 +375,10 @@ export default {
                         .bind(instructionsValue, userId)
                         .run();
 
+                    log('Updated own profile', userId);
                     return new Response('OK');
-                } catch {
+                } catch (err) {
+                    console.error('Profile update error:', err);
                     return new Response('Invalid JSON', { status: 400 });
                 }
             }
@@ -358,6 +388,8 @@ export default {
             const { searchParams } = new URL(request.url);
             const word = searchParams.get('word') ?? 'Say hi!';
             const action = searchParams.get('action') ?? 'define';
+
+            log('OpenAI request', { word, action });
 
             const userId = await getUserIdFromRequest(request);
             let customInstructions: string | null = null;
@@ -409,6 +441,8 @@ export default {
                 return new Response('OpenAI API error', { status: 500 });
             }
 
+            log('OpenAI response received');
+
             const data = (await openaiRes.json()) as OpenAIResponse;
             const content = data.output?.[0].content?.[0]?.text;
 
@@ -429,6 +463,8 @@ export default {
                 }
             }
 
+            log('OpenAI processed');
+
             return new Response(responseText);
         }
 
@@ -440,6 +476,8 @@ export default {
                     { status: 400 },
                 );
             }
+
+            log('TTS request', text.slice(0, 20));
 
             const ttsRes = await fetch(
                 `${getApiEndpoints(env)}/v1/audio/speech`,
@@ -465,6 +503,8 @@ export default {
                 );
             }
 
+            log('TTS response received');
+
             const audioBuffer = await ttsRes.arrayBuffer();
             const uint8Array = new Uint8Array(audioBuffer);
             const binary = Array.from(uint8Array)
@@ -472,6 +512,7 @@ export default {
                 .join('');
             const audioBase64 = btoa(binary);
 
+            log('TTS processed');
             return new Response(JSON.stringify({ audio: audioBase64 }), {
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -489,21 +530,26 @@ export default {
                     });
                 }
 
+                log('Get note', word);
+
                 const note = (await env.DB.prepare(
                     'SELECT note FROM notes WHERE user_id = ? AND word = ?',
                 )
                     .bind(userId, word)
                     .first()) as { note: string } | null;
 
-                return new Response(
+                const response = new Response(
                     JSON.stringify({ note: note?.note || null }),
                     { headers: { 'Content-Type': 'application/json' } },
                 );
+                log('Got note', word);
+                return response;
             }
 
             if (request.method === 'POST') {
                 try {
                     const body = (await request.json()) as NoteRequestBody;
+                    log('Save note', body.word);
                     if (!body.word) {
                         return new Response('Missing word', { status: 400 });
                     }
@@ -515,6 +561,7 @@ export default {
                         )
                             .bind(userId, body.word)
                             .run();
+                        log('Deleted empty note', body.word);
                         return new Response('OK');
                     }
 
@@ -543,8 +590,10 @@ export default {
                             .run();
                     }
 
+                    log('Saved note', body.word);
                     return new Response('OK');
-                } catch {
+                } catch (err) {
+                    console.error('Save note error:', err);
                     return new Response('Invalid JSON', { status: 400 });
                 }
             }
@@ -553,6 +602,7 @@ export default {
                 try {
                     const body =
                         (await request.json()) as DeleteNoteRequestBody;
+                    log('Delete note', body.word);
                     if (!body.word) {
                         return new Response('Missing word', { status: 400 });
                     }
@@ -563,8 +613,10 @@ export default {
                         .bind(userId, body.word)
                         .run();
 
+                    log('Deleted note', body.word);
                     return new Response('OK');
-                } catch {
+                } catch (err) {
+                    console.error('Delete note error:', err);
                     return new Response('Invalid JSON', { status: 400 });
                 }
             }
