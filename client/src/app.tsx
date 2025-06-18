@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import './app.css';
-import './auth.css';
 import './components.css';
 import {
     login,

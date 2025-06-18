@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import component-specific styles */
-@import './components.css';
-
 /* Global base styles */
 @layer base {
     html,
