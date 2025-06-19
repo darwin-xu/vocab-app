@@ -18,124 +18,31 @@ import {
 } from './api';
 import TTSControls from './components/TTSControls';
 
-// Custom hook to track window size
-function useWindowSize() {
-    const [windowSize, setWindowSize] = useState({
-        width: typeof window !== 'undefined' ? window.innerWidth : 1200,
-        height: typeof window !== 'undefined' ? window.innerHeight : 800,
-    });
-
-    useEffect(() => {
-        let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-        function handleResize() {
-            // Debounce resize events to improve performance
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-
-            timeoutId = setTimeout(() => {
-                setWindowSize({
-                    width: window.innerWidth,
-                    height: window.innerHeight,
-                });
-            }, 150); // 150ms debounce delay
-        }
-
-        window.addEventListener('resize', handleResize);
-        handleResize(); // Call handler right away so state gets updated with initial window size
-
-        return () => {
-            window.removeEventListener('resize', handleResize);
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-        };
-    }, []);
-
-    return windowSize;
-}
-
-// Function to calculate dynamic page size based on window height
-function calculatePageSize(windowHeight: number): number {
-    // Estimate available height for table content
-    // Account for header (~120px), input area (~120px), pagination (~80px), margins (~100px)
-    const overhead = 420;
-    const availableHeight = Math.max(300, windowHeight - overhead);
-
-    // Assume each table row is approximately 50px
-    const rowHeight = 50;
-    const estimatedRows = Math.floor(availableHeight / rowHeight);
-
-    // Clamp between reasonable bounds and double the size
-    const baseSize = Math.max(5, Math.min(50, estimatedRows));
-    return baseSize * 2;
-}
-
-// Utility function to format relative time
-function formatRelativeTime(dateString: string): string {
-    const now = new Date();
-    const addedDate = new Date(dateString);
-    const diffMs = now.getTime() - addedDate.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) {
-        return 'today';
-    } else if (diffDays === 1) {
-        return '1 day';
-    } else if (diffDays < 30) {
-        return `${diffDays} days`;
-    } else if (diffDays < 365) {
-        const months = Math.floor(diffDays / 30);
-        return months === 1 ? '1 month' : `${months} months`;
-    } else {
-        const years = Math.floor(diffDays / 365);
-        return years === 1 ? '1 year' : `${years} years`;
-    }
-}
-
-interface VocabItem {
-    word: string;
-    add_date: string;
-    note?: string;
-}
-interface User {
-    id: number;
-    username: string;
-    created_at: string;
-}
-interface UserDetails {
-    id: number;
-    username: string;
-    custom_instructions: string;
-}
+// Import new components and hooks
+import { useWindowSize } from './hooks/useWindowSize';
+import { useVocabulary } from './hooks/useVocabulary';
+import { calculatePageSize, formatRelativeTime } from './utils/helpers';
+import type { User, UserDetails, HoverState, NotesModalState, ViewType, VocabItem } from './types';
+import { AuthForm } from './components/Auth/AuthForm';
+import { AddWordForm } from './components/Vocabulary/AddWordForm';
+import { VocabTable } from './components/Vocabulary/VocabTable';
+import { NotesModal } from './components/Vocabulary/NotesModal';
+import { Pagination } from './components/Vocabulary/Pagination';
 
 function App() {
     const { width: windowWidth, height: windowHeight } = useWindowSize();
     const pageSize = calculatePageSize(windowHeight);
 
-    const [view, setView] = useState<
-        'auth' | 'vocab' | 'admin' | 'user-settings'
-    >('auth');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [view, setView] = useState<ViewType>('auth');
     const [authMsg, setAuthMsg] = useState('');
     const [q, setQ] = useState('');
     const [vocab, setVocab] = useState<VocabItem[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [selected, setSelected] = useState<Set<string>>(new Set());
-    const [hover, setHover] = useState<{
-        show: boolean;
-        x: number;
-        y: number;
-        content: string;
-        isLoading?: boolean;
-    }>({ show: false, x: 0, y: 0, content: '' });
+    const [hover, setHover] = useState<HoverState>({ show: false, x: 0, y: 0, content: '' });
     const [isLoading, setIsLoading] = useState(false);
-    const loadingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
-        null,
-    );
+    const loadingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // Admin-related state
@@ -143,11 +50,7 @@ function App() {
     const [selectedUser, setSelectedUser] = useState<UserDetails | null>(null);
 
     // Notes modal state
-    const [notesModal, setNotesModal] = useState<{
-        show: boolean;
-        word: string;
-        note: string;
-    }>({ show: false, word: '', note: '' });
+    const [notesModal, setNotesModal] = useState<NotesModalState>({ show: false, word: '', note: '' });
 
     // Avatar dropdown state
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -293,7 +196,7 @@ function App() {
         };
     }, []);
 
-    async function handleAuth(isRegister = false) {
+    async function handleAuth(username: string, password: string, isRegister = false) {
         setIsLoading(true);
         try {
             if (isRegister) await register(username, password);
@@ -313,12 +216,6 @@ function App() {
             setAuthMsg((e as Error).message);
         } finally {
             setIsLoading(false);
-        }
-    }
-
-    function handleKeyPress(e: React.KeyboardEvent) {
-        if (e.key === 'Enter' && username && password && !isLoading) {
-            handleAuth(false); // Default to login on Enter
         }
     }
 
@@ -496,96 +393,11 @@ function App() {
     }
 
     return view === 'auth' ? (
-        <div className="min-h-screen box-border p-8 overflow-hidden flex items-center justify-center bg-gradient-auth relative">
-            {/* Animated background pattern */}
-            <div
-                className="fixed inset-0 opacity-10 animate-float -z-10 pointer-events-none"
-                style={{
-                    backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="30" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>')`,
-                }}
-            />
-
-            <div className="bg-white/95 backdrop-blur-xl rounded-2xl p-12 max-w-md w-full shadow-xl border border-white/20 relative animate-slideIn">
-                <div className="text-center mb-10">
-                    <div className="flex flex-col items-center gap-2 mb-4">
-                        <div className="text-5xl bg-gradient-primary bg-clip-text text-transparent">
-                            📚
-                        </div>
-                        <h1 className="m-0 text-4xl font-bold bg-gradient-text bg-clip-text text-transparent tracking-tight">
-                            Vocabulary Builder
-                        </h1>
-                    </div>
-                    <p className="m-0 text-auth-text-medium text-base font-normal leading-relaxed">
-                        Build your vocabulary, one word at a time
-                    </p>
-                </div>
-
-                <div className="flex flex-col gap-10">
-                    <div className="flex flex-col gap-3.5">
-                        <label
-                            htmlFor="username"
-                            className="text-sm font-semibold text-auth-text-dark ml-0.5"
-                        >
-                            Username
-                        </label>
-                        <input
-                            id="username"
-                            type="text"
-                            placeholder="Enter your username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                            autoComplete="username"
-                            className="px-7 py-5 border-2 border-gray-200 rounded-lg text-lg transition-all duration-200 bg-gray-50 text-gray-800 focus:outline-none focus:border-auth-primary focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1),0_4px_12px_rgba(0,0,0,0.08)] focus:bg-white focus:-translate-y-px placeholder:text-auth-text-light"
-                        />
-                    </div>
-
-                    <div className="flex flex-col gap-3.5">
-                        <label
-                            htmlFor="password"
-                            className="text-sm font-semibold text-auth-text-dark ml-0.5"
-                        >
-                            Password
-                        </label>
-                        <input
-                            id="password"
-                            type="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                            autoComplete="current-password"
-                            className="px-7 py-5 border-2 border-gray-200 rounded-lg text-lg transition-all duration-200 bg-gray-50 text-gray-800 focus:outline-none focus:border-auth-primary focus:shadow-[0_0_0_3px_rgba(102,126,234,0.1),0_4px_12px_rgba(0,0,0,0.08)] focus:bg-white focus:-translate-y-px placeholder:text-auth-text-light"
-                        />
-                    </div>
-
-                    <div className="flex flex-col gap-3 mt-2">
-                        <button
-                            className={`px-9 py-5 border-none rounded-lg text-lg font-semibold cursor-pointer transition-all duration-200 relative overflow-hidden bg-gradient-primary text-white shadow-vocab-lg ${!username || !password || isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(102,126,234,0.4)] active:translate-y-0'} ${isLoading ? 'before:content-[""] before:inline-block before:w-3.5 before:h-3.5 before:border-2 before:border-transparent before:border-t-current before:rounded-full before:animate-spin before:mr-2 before:opacity-80' : ''}`}
-                            onClick={() => handleAuth(false)}
-                            disabled={!username || !password || isLoading}
-                        >
-                            {isLoading ? 'Signing In...' : 'Sign In'}
-                        </button>
-                        <button
-                            className={`px-9 py-5 border-2 border-slate-200 rounded-lg text-lg font-semibold cursor-pointer transition-all duration-200 bg-slate-50 text-slate-600 shadow-sm ${!username || !password || isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-slate-100 hover:border-slate-300 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0'} ${isLoading ? 'before:content-[""] before:inline-block before:w-3.5 before:h-3.5 before:border-2 before:border-transparent before:border-t-current before:rounded-full before:animate-spin before:mr-2 before:opacity-80' : ''}`}
-                            onClick={() => handleAuth(true)}
-                            disabled={!username || !password || isLoading}
-                        >
-                            {isLoading
-                                ? 'Creating Account...'
-                                : 'Create Account'}
-                        </button>
-                    </div>
-
-                    <div
-                        className={`px-4 py-3 rounded-sm text-sm font-medium text-center mt-2 min-h-10 flex items-center justify-center animate-slideDown ${authMsg ? (authMsg.includes('already exists') || authMsg.includes('Invalid') ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-600 border border-green-200') : 'opacity-0 bg-transparent border border-transparent'}`}
-                    >
-                        {authMsg || '\u00A0'}
-                    </div>
-                </div>
-            </div>
-        </div>
+        <AuthForm 
+            onSubmit={handleAuth}
+            isLoading={isLoading}
+            errorMessage={authMsg}
+        />
     ) : view === 'admin' ? (
         // Admin user management interface
         <div
