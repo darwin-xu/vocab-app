@@ -133,7 +133,9 @@ function App() {
         isLoading?: boolean;
     }>({ show: false, x: 0, y: 0, content: '' });
     const [isLoading, setIsLoading] = useState(false);
-    const loadingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const loadingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+        null,
+    );
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // Admin-related state
@@ -496,13 +498,13 @@ function App() {
     return view === 'auth' ? (
         <div className="min-h-screen box-border p-8 overflow-hidden flex items-center justify-center bg-gradient-auth relative">
             {/* Animated background pattern */}
-            <div 
+            <div
                 className="fixed inset-0 opacity-10 animate-float -z-10 pointer-events-none"
                 style={{
-                    backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="30" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>')`
+                    backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="30" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>')`,
                 }}
             />
-            
+
             <div className="bg-white/95 backdrop-blur-xl rounded-2xl p-12 max-w-md w-full shadow-xl border border-white/20 relative animate-slideIn">
                 <div className="text-center mb-10">
                     <div className="flex flex-col items-center gap-2 mb-4">
@@ -520,7 +522,10 @@ function App() {
 
                 <div className="flex flex-col gap-10">
                     <div className="flex flex-col gap-3.5">
-                        <label htmlFor="username" className="text-sm font-semibold text-auth-text-dark ml-0.5">
+                        <label
+                            htmlFor="username"
+                            className="text-sm font-semibold text-auth-text-dark ml-0.5"
+                        >
                             Username
                         </label>
                         <input
@@ -536,7 +541,10 @@ function App() {
                     </div>
 
                     <div className="flex flex-col gap-3.5">
-                        <label htmlFor="password" className="text-sm font-semibold text-auth-text-dark ml-0.5">
+                        <label
+                            htmlFor="password"
+                            className="text-sm font-semibold text-auth-text-dark ml-0.5"
+                        >
                             Password
                         </label>
                         <input
@@ -564,7 +572,9 @@ function App() {
                             onClick={() => handleAuth(true)}
                             disabled={!username || !password || isLoading}
                         >
-                            {isLoading ? 'Creating Account...' : 'Create Account'}
+                            {isLoading
+                                ? 'Creating Account...'
+                                : 'Create Account'}
                         </button>
                     </div>
 
@@ -585,21 +595,26 @@ function App() {
             }}
         >
             {/* Animated background pattern */}
-            <div 
+            <div
                 className="fixed inset-0 opacity-10 animate-float -z-10 pointer-events-none"
                 style={{
-                    backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="30" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>')`
+                    backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="30" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>')`,
                 }}
             />
             {/* Admin User Avatar and Dropdown */}
-            <div className="fixed top-lg right-xl z-[2000] font-inter" ref={dropdownRef}>
+            <div
+                className="fixed top-lg right-xl z-[2000] font-inter"
+                ref={dropdownRef}
+            >
                 <div
                     className={`w-12 h-12 rounded-full bg-gradient-primary border-3 border-white/20 cursor-pointer flex items-center justify-center text-lg font-semibold text-white shadow-lg transition-all duration-200 backdrop-blur-xl relative ${dropdownOpen ? 'scale-105 shadow-[0_8px_25px_rgba(102,126,234,0.4)] border-white/40' : 'hover:scale-105 hover:shadow-[0_8px_25px_rgba(102,126,234,0.4)] hover:border-white/40'}`}
                     onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
                     {getUserInitials()}
                 </div>
-                <div className={`absolute top-15 right-0 bg-vocab-surface backdrop-blur-xl border border-white/20 rounded-lg shadow-xl min-w-45 z-[3000] transition-all duration-200 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible -translate-y-2.5 scale-95'}`}>
+                <div
+                    className={`absolute top-15 right-0 bg-vocab-surface backdrop-blur-xl border border-white/20 rounded-lg shadow-xl min-w-45 z-[3000] transition-all duration-200 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible -translate-y-2.5 scale-95'}`}
+                >
                     <div className="px-md py-sm border-b border-black/10 text-auth-text-medium text-sm font-medium">
                         {localStorage.getItem('username')} (Admin)
                     </div>
@@ -654,11 +669,11 @@ function App() {
                     </thead>
                     <tbody>
                         {users.map((user, index) => (
-                            <tr 
+                            <tr
                                 key={user.id}
                                 className={`transition-all duration-200 ${
-                                    index % 2 === 0 
-                                        ? 'bg-white/70' 
+                                    index % 2 === 0
+                                        ? 'bg-white/70'
                                         : 'bg-vocab-bg/80'
                                 } hover:bg-vocab-surface-hover hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(102,126,234,0.1)]`}
                             >
@@ -707,7 +722,10 @@ function App() {
                 </div>
                 <div className="flex flex-col gap-10">
                     <div className="flex flex-col gap-3.5">
-                        <label htmlFor="instructions" className="text-sm font-semibold text-auth-text-dark ml-0.5">
+                        <label
+                            htmlFor="instructions"
+                            className="text-sm font-semibold text-auth-text-dark ml-0.5"
+                        >
                             Custom Word Definition Instructions
                         </label>
                         <textarea
@@ -757,21 +775,26 @@ Define the word '{word}' in a simple way:
             }}
         >
             {/* Animated background pattern */}
-            <div 
+            <div
                 className="fixed inset-0 opacity-10 animate-float -z-10 pointer-events-none"
                 style={{
-                    backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="30" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>')`
+                    backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="30" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>')`,
                 }}
             />
             {/* User Avatar and Dropdown */}
-            <div className="fixed top-lg right-xl z-[2000] font-inter" ref={dropdownRef}>
+            <div
+                className="fixed top-lg right-xl z-[2000] font-inter"
+                ref={dropdownRef}
+            >
                 <div
                     className={`w-12 h-12 rounded-full bg-gradient-primary border-3 border-white/20 cursor-pointer flex items-center justify-center text-lg font-semibold text-white shadow-lg transition-all duration-200 backdrop-blur-xl relative ${dropdownOpen ? 'scale-105 shadow-[0_8px_25px_rgba(102,126,234,0.4)] border-white/40' : 'hover:scale-105 hover:shadow-[0_8px_25px_rgba(102,126,234,0.4)] hover:border-white/40'}`}
                     onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
                     {getUserInitials()}
                 </div>
-                <div className={`absolute top-15 right-0 bg-vocab-surface backdrop-blur-xl border border-white/20 rounded-lg shadow-xl min-w-45 z-[3000] transition-all duration-200 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible -translate-y-2.5 scale-95'}`}>
+                <div
+                    className={`absolute top-15 right-0 bg-vocab-surface backdrop-blur-xl border border-white/20 rounded-lg shadow-xl min-w-45 z-[3000] transition-all duration-200 ${dropdownOpen ? 'opacity-100 visible translate-y-0 scale-100' : 'opacity-0 invisible -translate-y-2.5 scale-95'}`}
+                >
                     <div className="px-md py-sm border-b border-black/10 text-auth-text-medium text-sm font-medium">
                         {localStorage.getItem('username')}
                     </div>
@@ -812,7 +835,7 @@ Define the word '{word}' in a simple way:
                     </button>
                 </div>
             </div>
-            
+
             {/* Main Container */}
             <div className="w-full max-w-6xl mx-auto px-xl py-xl relative min-h-[calc(100vh-80px)] pb-32">
                 {/* Header */}
@@ -833,8 +856,8 @@ Define the word '{word}' in a simple way:
                     <button
                         id="addBtn"
                         className={`px-7 py-3.5 border-none rounded-lg text-lg font-semibold cursor-pointer transition-all duration-200 shadow-lg whitespace-nowrap ${
-                            selected.size > 0 
-                                ? 'bg-gradient-danger text-white hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(239,68,68,0.4)] active:translate-y-0' 
+                            selected.size > 0
+                                ? 'bg-gradient-danger text-white hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(239,68,68,0.4)] active:translate-y-0'
                                 : 'bg-gradient-primary text-white hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(102,126,234,0.4)] active:translate-y-0'
                         } ${(selected.size > 0 ? false : !q.trim()) ? 'opacity-60 cursor-not-allowed' : ''}`}
                         onClick={selected.size > 0 ? handleRemove : handleAdd}
@@ -872,11 +895,11 @@ Define the word '{word}' in a simple way:
                     </thead>
                     <tbody>
                         {(vocab || []).map((r, index) => (
-                            <tr 
+                            <tr
                                 key={r.word}
                                 className={`transition-all duration-200 ${
-                                    index % 2 === 0 
-                                        ? 'bg-white/70' 
+                                    index % 2 === 0
+                                        ? 'bg-white/70'
                                         : 'bg-vocab-bg/80'
                                 } hover:bg-vocab-surface-hover hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(102,126,234,0.1)]`}
                             >
@@ -891,7 +914,9 @@ Define the word '{word}' in a simple way:
                                 <td className="w-45 min-w-37.5 py-2 px-4 border-b border-vocab-border-light">
                                     <span
                                         className="font-montserrat font-semibold text-auth-text-dark cursor-pointer py-1 px-2 rounded-sm transition-all duration-200 inline-block text-base leading-tight hover:bg-gradient-primary hover:text-white hover:-translate-y-px hover:shadow-sm"
-                                        onClick={(e) => openDefinition(e, r.word)}
+                                        onClick={(e) =>
+                                            openDefinition(e, r.word)
+                                        }
                                     >
                                         {r.word}
                                     </span>
@@ -983,7 +1008,7 @@ Define the word '{word}' in a simple way:
                     </tbody>
                 </table>
             </div>
-            
+
             {/* Pagination */}
             <div className="fixed left-1/2 transform -translate-x-1/2 bottom-lg z-[1000] flex justify-center items-center gap-xs px-sm py-sm bg-vocab-surface backdrop-blur-xl border border-white/20 rounded-lg shadow-lg font-inter text-auth-text-dark">
                 <button
@@ -997,8 +1022,8 @@ Define the word '{word}' in a simple way:
                     <span
                         key={pageNum}
                         className={`mx-xs px-xs py-xs text-sm cursor-pointer rounded-sm transition-all duration-200 font-medium min-w-7 text-center pointer-events-auto relative z-10 ${
-                            page === pageNum 
-                                ? 'font-bold bg-gradient-primary text-white shadow-sm' 
+                            page === pageNum
+                                ? 'font-bold bg-gradient-primary text-white shadow-sm'
                                 : 'hover:bg-black/10 hover:text-vocab-primary'
                         }`}
                         onClick={() => setPage(pageNum)}
@@ -1019,13 +1044,17 @@ Define the word '{word}' in a simple way:
             {hover.show && (
                 <div
                     className="fixed bg-vocab-surface backdrop-blur-xl text-auth-text-dark border border-white/20 rounded-lg shadow-xl p-lg z-[3000] text-base font-inter break-words leading-relaxed cursor-pointer max-w-screen-md min-w-96 animate-hoverFadeIn md:max-w-none md:min-w-auto md:w-auto md:left-auto md:right-auto md:top-auto md:transform-none md:max-h-none md:overflow-visible md:animate-hoverFadeIn"
-                    style={{ 
-                        left: window.innerWidth <= 768 ? 16 : hover.x, 
+                    style={{
+                        left: window.innerWidth <= 768 ? 16 : hover.x,
                         top: window.innerWidth <= 768 ? '50%' : hover.y,
                         right: window.innerWidth <= 768 ? 16 : 'auto',
-                        transform: window.innerWidth <= 768 ? 'translateY(-50%)' : 'none',
+                        transform:
+                            window.innerWidth <= 768
+                                ? 'translateY(-50%)'
+                                : 'none',
                         maxHeight: window.innerWidth <= 768 ? '70vh' : 'none',
-                        overflowY: window.innerWidth <= 768 ? 'auto' : 'visible'
+                        overflowY:
+                            window.innerWidth <= 768 ? 'auto' : 'visible',
                     }}
                     onClick={(e) => {
                         e.stopPropagation();
