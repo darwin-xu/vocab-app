@@ -850,7 +850,7 @@ Define the word '{word}' in a simple way:
                 <table className="w-full border-collapse mb-2xl bg-vocab-surface backdrop-blur-xl rounded-xl overflow-hidden shadow-lg border border-white/20">
                     <thead className="bg-gradient-secondary text-white uppercase text-sm font-bold tracking-wider">
                         <tr>
-                            <th className="w-7.5 text-center py-3 px-4 border-b border-vocab-border-light">
+                            <th className="w-6 text-center py-3 px-1 border-b border-vocab-border-light">
                                 {/* Checkbox column */}
                             </th>
                             <th className="w-45 min-w-37.5 py-3 px-4 text-left border-b border-vocab-border-light">
@@ -880,12 +880,12 @@ Define the word '{word}' in a simple way:
                                         : 'bg-vocab-bg/80'
                                 } hover:bg-vocab-surface-hover hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(102,126,234,0.1)]`}
                             >
-                                <td className="w-7.5 text-center py-2 px-4 border-b border-vocab-border-light">
+                                <td className="w-6 text-center py-2 px-1 border-b border-vocab-border-light">
                                     <input
                                         type="checkbox"
                                         checked={selected.has(r.word)}
                                         onChange={() => toggleSelect(r.word)}
-                                        className="appearance-none w-4 h-4 border-2 border-vocab-border rounded-xs bg-white/90 cursor-pointer transition-all duration-200 relative m-0 hover:border-vocab-primary hover:bg-white hover:scale-105 checked:bg-gradient-primary checked:border-vocab-primary after:checked:content-['✓'] after:checked:absolute after:checked:top-1/2 after:checked:left-1/2 after:checked:transform after:checked:-translate-x-1/2 after:checked:-translate-y-1/2 after:checked:text-white after:checked:text-xs after:checked:font-bold"
+                                        className="appearance-none w-3 h-3 border-2 border-vocab-border rounded-xs bg-white/90 cursor-pointer transition-all duration-200 relative m-0 hover:border-vocab-primary hover:bg-white hover:scale-105 checked:bg-gradient-primary checked:border-vocab-primary after:checked:content-['✓'] after:checked:absolute after:checked:top-1/2 after:checked:left-1/2 after:checked:transform after:checked:-translate-x-1/2 after:checked:-translate-y-1/2 after:checked:text-white after:checked:text-xs after:checked:font-bold"
                                     />
                                 </td>
                                 <td className="w-45 min-w-37.5 py-2 px-4 border-b border-vocab-border-light">
