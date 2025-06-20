@@ -30,16 +30,16 @@ export function VocabTable({
                     <th className="w-6 text-center py-3 px-1 border-b border-vocab-border-light">
                         {/* Checkbox column */}
                     </th>
-                    <th className="w-45 min-w-37.5 py-3 px-4 text-left border-b border-vocab-border-light">
+                    <th className="w-45 min-w-37.5 py-3 px-1 text-left border-b border-vocab-border-light">
                         Word
                     </th>
                     <th className="w-auto min-w-50 max-w-100 py-3 px-4 text-left border-b border-vocab-border-light">
                         Notes
                     </th>
-                    <th className="w-8.75 text-center py-3 px-4 border-b border-vocab-border-light">
+                    <th className="w-2 text-center py-3 px-2 border-b border-vocab-border-light">
                         {/* Dictionary button 1 */}
                     </th>
-                    <th className="w-8.75 text-center py-3 px-4 border-b border-vocab-border-light">
+                    <th className="w-2 text-center py-3 px-2 border-b border-vocab-border-light">
                         {/* Dictionary button 2 */}
                     </th>
                     <th className="w-20 text-right py-3 px-4 border-b border-vocab-border-light">
@@ -63,7 +63,7 @@ export function VocabTable({
                                 className="appearance-none w-3 h-3 border-2 border-vocab-border rounded-xs bg-white/90 cursor-pointer transition-all duration-200 relative m-0 hover:border-vocab-primary hover:bg-white hover:scale-105 checked:bg-gradient-primary checked:border-vocab-primary after:checked:content-['✓'] after:checked:absolute after:checked:top-1/2 after:checked:left-1/2 after:checked:transform after:checked:-translate-x-1/2 after:checked:-translate-y-1/2 after:checked:text-white after:checked:text-xs after:checked:font-bold"
                             />
                         </td>
-                        <td className="w-45 min-w-37.5 py-2 px-4 border-b border-vocab-border-light">
+                        <td className="w-45 min-w-37.5 py-2 px-0 border-b border-vocab-border-light">
                             <span
                                 className="font-montserrat font-semibold text-auth-text-dark cursor-pointer py-1 px-2 rounded-sm transition-all duration-200 inline-block text-base leading-tight hover:bg-gradient-primary hover:text-white hover:-translate-y-px hover:shadow-sm"
                                 onClick={(e) => onWordClick(e, item.word)}
@@ -102,7 +102,7 @@ export function VocabTable({
                                 </button>
                             </div>
                         </td>
-                        <td className="w-8.75 text-center py-2 px-4 border-b border-vocab-border-light">
+                        <td className="w-2 text-center py-2 px-2 border-b border-vocab-border-light">
                             <button
                                 className="w-7 h-7 p-1 bg-white/90 border border-vocab-border rounded-sm cursor-pointer transition-all duration-200 inline-flex items-center justify-center shadow-xs text-xs hover:bg-vocab-surface-hover hover:border-vocab-primary hover:-translate-y-px hover:shadow-sm"
                                 onClick={(e) =>
@@ -113,7 +113,7 @@ export function VocabTable({
                                 🔍
                             </button>
                         </td>
-                        <td className="w-8.75 text-center py-2 px-4 border-b border-vocab-border-light">
+                        <td className="w-2 text-center py-2 px-2 border-b border-vocab-border-light">
                             <button
                                 className="w-7 h-7 p-1 bg-white/90 border border-vocab-border rounded-sm cursor-pointer transition-all duration-200 inline-flex items-center justify-center shadow-xs text-xs hover:bg-vocab-surface-hover hover:border-vocab-primary hover:-translate-y-px hover:shadow-sm"
                                 onClick={(e) =>
