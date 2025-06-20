@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import {
     fetchVocab,
     addWord,
@@ -9,12 +9,13 @@ import {
 } from '../api';
 import type { VocabItem, HoverState, NotesModalState } from '../types';
 
-export function useVocabulary(pageSize: number) {
+export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
     const [q, setQ] = useState('');
     const [vocab, setVocab] = useState<VocabItem[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [selected, setSelected] = useState<Set<string>>(new Set());
+    const [refreshCounter, setRefreshCounter] = useState(0);
     const [hover, setHover] = useState<HoverState>({
         show: false,
         x: 0,
@@ -37,10 +38,18 @@ export function useVocabulary(pageSize: number) {
             setVocab(data.items || []);
             setTotalPages(Math.max(1, data.totalPages || 1));
             setSelected(new Set());
-        } catch {
+        } catch (error) {
+            console.error('Error in loadVocab:', error);
             logout();
         }
     }, [q, page, pageSize]);
+
+    // Auto-load vocabulary when dependencies change
+    useEffect(() => {
+        if (shouldLoad) {
+            loadVocab();
+        }
+    }, [shouldLoad, q, page, pageSize, refreshCounter, loadVocab]);
 
     // Add word
     const handleAdd = useCallback(async () => {
@@ -48,24 +57,26 @@ export function useVocabulary(pageSize: number) {
             try {
                 await addWord(q.trim());
                 setQ('');
-                loadVocab();
+                // Reset to page 1 and trigger reload
+                setPage(1);
             } catch (error) {
                 console.error('Error adding word:', error);
             }
         }
-    }, [q, loadVocab]);
+    }, [q]);
 
     // Remove selected words
     const handleRemove = useCallback(async () => {
         if (selected.size > 0) {
             try {
                 await removeWords(Array.from(selected));
-                loadVocab();
+                // Trigger reload by incrementing refresh counter
+                setRefreshCounter(prev => prev + 1);
             } catch (error) {
                 console.error('Error removing words:', error);
             }
         }
-    }, [selected, loadVocab]);
+    }, [selected]);
 
     // Toggle word selection
     const toggleSelect = useCallback((word: string) => {
@@ -193,11 +204,11 @@ export function useVocabulary(pageSize: number) {
                 await saveNote(notesModal.word, '');
             }
             closeNotesModal();
-            loadVocab();
+            setRefreshCounter(prev => prev + 1);
         } catch (error) {
             console.error('Error saving note:', error);
         }
-    }, [notesModal.word, notesModal.note, closeNotesModal, loadVocab]);
+    }, [notesModal.word, notesModal.note, closeNotesModal]);
 
     // Handle dictionary clicks
     const handleDictionaryClick = useCallback(
@@ -216,6 +227,10 @@ export function useVocabulary(pageSize: number) {
         [],
     );
 
+    const handlePageChange = useCallback((newPage: number) => {
+        setPage(newPage);
+    }, []);
+
     return {
         // State
         q,
@@ -228,9 +243,8 @@ export function useVocabulary(pageSize: number) {
 
         // Actions
         setQ,
-        setPage,
+        setPage: handlePageChange,
         setNotesModal,
-        loadVocab,
         handleAdd,
         handleRemove,
         toggleSelect,

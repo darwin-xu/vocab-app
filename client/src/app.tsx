@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './components.css';
 import { login, register, isAdmin } from './api';
 
@@ -22,6 +22,12 @@ import { LayoutWithBackground } from './components/UI/LayoutWithBackground';
 function App() {
     const { height: windowHeight } = useWindowSize();
     const pageSize = calculatePageSize(windowHeight);
+    const prevPageSizeRef = useRef(pageSize);
+
+    // State declarations first
+    const [view, setView] = useState<ViewType>('auth');
+    const [authMsg, setAuthMsg] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     // Use vocabulary hook for vocabulary-related state and functions
     const {
@@ -35,7 +41,6 @@ function App() {
         setQ,
         setPage,
         setNotesModal,
-        loadVocab,
         handleAdd,
         handleRemove,
         toggleSelect,
@@ -45,7 +50,7 @@ function App() {
         closeNotesModal,
         handleSaveNote,
         handleDictionaryClick,
-    } = useVocabulary(pageSize);
+    } = useVocabulary(pageSize, view === 'vocab');
 
     // Use admin hook for admin-related state and functions
     const {
@@ -57,9 +62,6 @@ function App() {
         loadOwnProfile,
         saveUserInstructions,
     } = useAdmin();
-    const [view, setView] = useState<ViewType>('auth');
-    const [authMsg, setAuthMsg] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
 
     // Avatar dropdown state
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -77,16 +79,18 @@ function App() {
 
     // Reset to page 1 when page size changes due to window resize
     useEffect(() => {
-        if (view === 'vocab' && page > 1) {
-            setPage(1);
+        if (prevPageSizeRef.current !== pageSize) {
+            prevPageSizeRef.current = pageSize;
+            if (view === 'vocab' && page > 1) {
+                setPage(1);
+            }
         }
     }, [pageSize, view, page, setPage]);
 
     // Load data based on current view and dependencies
     useEffect(() => {
-        if (view === 'vocab') loadVocab();
         if (view === 'admin') loadUsers();
-    }, [view, page, q, pageSize, loadVocab, loadUsers]);
+    }, [view, loadUsers]);
 
     // Handle loading user details for admin panel
     async function handleUserDetailsClick(userId: string) {

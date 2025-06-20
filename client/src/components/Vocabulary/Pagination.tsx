@@ -63,22 +63,22 @@ export function Pagination({
                 {'<'}
             </button>
 
-            {getPageNumbers().map((page, index) => (
+            {getPageNumbers().map((pageNum, index) => (
                 <button
                     key={index}
                     onClick={() =>
-                        typeof page === 'number' && onPageChange(page)
+                        typeof pageNum === 'number' && onPageChange(pageNum)
                     }
-                    disabled={page === '...' || page === currentPage}
+                    disabled={pageNum === '...' || pageNum === currentPage}
                     className={`px-3 py-2 rounded-lg transition-all duration-200 ${
-                        page === currentPage
+                        pageNum === currentPage
                             ? 'bg-gradient-primary text-white shadow-md'
-                            : page === '...'
+                            : pageNum === '...'
                               ? 'cursor-default text-auth-text-medium'
                               : 'border border-vocab-border text-auth-text-dark hover:bg-vocab-surface-hover'
                     }`}
                 >
-                    {page}
+                    {pageNum}
                 </button>
             ))}
 
