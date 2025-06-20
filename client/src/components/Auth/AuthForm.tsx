@@ -3,7 +3,11 @@ import { Button } from '../UI/Button';
 import { Input } from '../UI/Input';
 
 interface AuthFormProps {
-    onSubmit: (username: string, password: string, isRegister: boolean) => Promise<void>;
+    onSubmit: (
+        username: string,
+        password: string,
+        isRegister: boolean,
+    ) => Promise<void>;
     isLoading: boolean;
     errorMessage: string;
 }
@@ -30,7 +34,7 @@ export function AuthForm({ onSubmit, isLoading, errorMessage }: AuthFormProps) {
                 <h1 className="text-3xl font-bold text-center text-auth-text-dark mb-8 bg-gradient-text bg-clip-text text-transparent">
                     Vocabulary App
                 </h1>
-                
+
                 <div className="space-y-6">
                     <div>
                         <Input
@@ -42,7 +46,7 @@ export function AuthForm({ onSubmit, isLoading, errorMessage }: AuthFormProps) {
                             onKeyDown={handleKeyPress}
                         />
                     </div>
-                    
+
                     <div>
                         <Input
                             type="password"
@@ -68,13 +72,15 @@ export function AuthForm({ onSubmit, isLoading, errorMessage }: AuthFormProps) {
                         >
                             {isLoading ? 'Signing In...' : 'Sign In'}
                         </Button>
-                        
+
                         <button
                             onClick={() => handleSubmit(true)}
                             disabled={!username || !password || isLoading}
                             className={`w-full px-6 py-2 border-2 border-slate-200 rounded-lg font-montserrat font-semibold cursor-pointer transition-all duration-200 bg-slate-50 text-slate-600 shadow-sm ${!username || !password || isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-slate-100 hover:border-slate-300 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0'}`}
                         >
-                            {isLoading ? 'Creating Account...' : 'Create Account'}
+                            {isLoading
+                                ? 'Creating Account...'
+                                : 'Create Account'}
                         </button>
                     </div>
                 </div>

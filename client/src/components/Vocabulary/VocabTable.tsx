@@ -8,7 +8,11 @@ interface VocabTableProps {
     onToggleSelect: (word: string) => void;
     onWordClick: (e: React.MouseEvent, word: string) => void;
     onNotesClick: (word: string, note: string) => void;
-    onDictionaryClick: (e: React.MouseEvent, word: string, dictType: 1 | 2) => void;
+    onDictionaryClick: (
+        e: React.MouseEvent,
+        word: string,
+        dictType: 1 | 2,
+    ) => void;
 }
 
 export function VocabTable({
@@ -17,7 +21,7 @@ export function VocabTable({
     onToggleSelect,
     onWordClick,
     onNotesClick,
-    onDictionaryClick
+    onDictionaryClick,
 }: VocabTableProps) {
     return (
         <table className="w-full border-collapse mb-2xl bg-vocab-surface backdrop-blur-xl rounded-xl overflow-hidden shadow-lg border border-white/20">
@@ -48,9 +52,7 @@ export function VocabTable({
                     <tr
                         key={item.word}
                         className={`transition-all duration-200 ${
-                            index % 2 === 0
-                                ? 'bg-white/70'
-                                : 'bg-vocab-bg/80'
+                            index % 2 === 0 ? 'bg-white/70' : 'bg-vocab-bg/80'
                         } hover:bg-vocab-surface-hover hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(102,126,234,0.1)]`}
                     >
                         <td className="w-6 text-center py-2 px-1 border-b border-vocab-border-light">
@@ -73,7 +75,9 @@ export function VocabTable({
                             <div className="flex items-center gap-xs w-full">
                                 <span
                                     className="flex-1 cursor-pointer text-sm leading-relaxed text-auth-text-dark transition-colors duration-200 break-words hover:text-vocab-primary"
-                                    onClick={() => onNotesClick(item.word, item.note || '')}
+                                    onClick={() =>
+                                        onNotesClick(item.word, item.note || '')
+                                    }
                                 >
                                     {item.note ? (
                                         item.note.length > 50 ? (
@@ -89,8 +93,10 @@ export function VocabTable({
                                 </span>
                                 <button
                                     className={`notes-btn flex-shrink-0 w-6 h-6 min-w-6 p-1 bg-white/90 border border-vocab-border rounded-sm cursor-pointer transition-all duration-200 inline-flex items-center justify-center shadow-xs text-xs hover:bg-vocab-surface-hover hover:border-vocab-primary hover:-translate-y-px hover:shadow-sm ${item.note ? 'has-note' : 'no-note'}`}
-                                    onClick={() => onNotesClick(item.word, item.note || '')}
-                                    title="Add or edit note"
+                                    onClick={() =>
+                                        onNotesClick(item.word, item.note || '')
+                                    }
+                                    title="Add/Edit Note"
                                 >
                                     📝
                                 </button>
@@ -99,7 +105,9 @@ export function VocabTable({
                         <td className="w-8.75 text-center py-2 px-4 border-b border-vocab-border-light">
                             <button
                                 className="w-7 h-7 p-1 bg-white/90 border border-vocab-border rounded-sm cursor-pointer transition-all duration-200 inline-flex items-center justify-center shadow-xs text-xs hover:bg-vocab-surface-hover hover:border-vocab-primary hover:-translate-y-px hover:shadow-sm"
-                                onClick={(e) => onDictionaryClick(e, item.word, 1)}
+                                onClick={(e) =>
+                                    onDictionaryClick(e, item.word, 1)
+                                }
                                 title="Merriam-Webster Dictionary"
                             >
                                 🔍
@@ -108,7 +116,9 @@ export function VocabTable({
                         <td className="w-8.75 text-center py-2 px-4 border-b border-vocab-border-light">
                             <button
                                 className="w-7 h-7 p-1 bg-white/90 border border-vocab-border rounded-sm cursor-pointer transition-all duration-200 inline-flex items-center justify-center shadow-xs text-xs hover:bg-vocab-surface-hover hover:border-vocab-primary hover:-translate-y-px hover:shadow-sm"
-                                onClick={(e) => onDictionaryClick(e, item.word, 2)}
+                                onClick={(e) =>
+                                    onDictionaryClick(e, item.word, 2)
+                                }
                                 title="Cambridge Dictionary"
                             >
                                 📖
