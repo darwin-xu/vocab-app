@@ -55,7 +55,7 @@ export function VocabTable({
                             index % 2 === 0 ? 'bg-white/70' : 'bg-vocab-bg/80'
                         } hover:bg-vocab-surface-hover hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(102,126,234,0.1)]`}
                     >
-                        <td className="w-6 text-center py-2 px-1 border-b border-vocab-border-light">
+                        <td className="w-6 text-center py-2 px-3 border-b border-vocab-border-light">
                             <input
                                 type="checkbox"
                                 checked={selected.has(item.word)}
