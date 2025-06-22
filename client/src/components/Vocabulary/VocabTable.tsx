@@ -60,7 +60,7 @@ export function VocabTable({
                                 type="checkbox"
                                 checked={selected.has(item.word)}
                                 onChange={() => onToggleSelect(item.word)}
-                                className="appearance-none w-3 h-3 border-2 border-vocab-border rounded-xs bg-white/90 cursor-pointer transition-all duration-200 relative m-0 hover:border-vocab-primary hover:bg-white hover:scale-105 checked:bg-gradient-primary checked:border-vocab-primary after:checked:content-['✓'] after:checked:absolute after:checked:top-1/2 after:checked:left-1/2 after:checked:transform after:checked:-translate-x-1/2 after:checked:-translate-y-1/2 after:checked:text-white after:checked:text-xs after:checked:font-bold"
+                                className="appearance-none w-3 h-3 border-2 border-vocab-border rounded-none bg-white/90 cursor-pointer transition-all duration-200 relative m-0 hover:border-vocab-primary hover:bg-white hover:scale-105 checked:bg-gradient-primary checked:border-vocab-primary after:checked:content-['✓'] after:checked:absolute after:checked:top-1/2 after:checked:left-1/2 after:checked:transform after:checked:-translate-x-1/2 after:checked:-translate-y-1/2 after:checked:text-white after:checked:text-xs after:checked:font-bold"
                             />
                         </td>
                         <td className="w-45 min-w-37.5 py-2 px-0 border-b border-vocab-border-light">
