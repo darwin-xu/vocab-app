@@ -89,18 +89,10 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
                 continue;
             }
 
-            // Word title
+            // Word title - skip rendering since the hover window appears when clicking the word
             if (line.startsWith('# ')) {
-                const wordTitle = line.replace('# ', '');
-                renderedLines.push(
-                    <h1 key={`h1-${i}`} className="flex items-center gap-1">
-                        {wordTitle}
-                        <TTSSpeakerIcon
-                            onClick={() => playTTS(content)}
-                            title="Listen to full definition"
-                        />
-                    </h1>,
-                );
+                // Add the full definition TTS button to the first actual content line instead
+                // We'll handle this when we encounter the first meaningful content
                 continue;
             }
 

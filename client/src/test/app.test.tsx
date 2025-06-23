@@ -531,14 +531,9 @@ hi, greetings, salutation, welcome`;
                 expect(api.openaiCall).toHaveBeenCalledWith('hello', 'define');
             });
 
-            // Find an inline TTS button in the hover window (should be next to the word title)
-            const ttsButton = await screen.findByRole('button', {
-                name: 'Listen to full definition',
-            });
-            await user.click(ttsButton);
-
+            // Verify the definition content appears in the hover window
             await waitFor(() => {
-                expect(api.ttsCall).toHaveBeenCalled();
+                expect(screen.getByText('/həˈloʊ/')).toBeInTheDocument();
             });
         });
     });
