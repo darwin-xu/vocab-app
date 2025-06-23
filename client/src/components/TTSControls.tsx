@@ -205,7 +205,19 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
                 continue;
             }
 
-            // Regular content (bullet points, etc.)
+            // List items (bullet points)
+            if (line.startsWith('- ')) {
+                const htmlContent = marked(line);
+                renderedLines.push(
+                    <div
+                        key={`list-item-${i}`}
+                        dangerouslySetInnerHTML={{ __html: htmlContent }}
+                    />,
+                );
+                continue;
+            }
+
+            // Regular content (other inline elements)
             const htmlContent = marked.parseInline(line);
             renderedLines.push(
                 <p
