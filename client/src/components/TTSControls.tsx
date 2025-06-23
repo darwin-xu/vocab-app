@@ -122,10 +122,11 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
             // Part of speech headers
             if (line.startsWith('## ') && !line.includes('Synonyms')) {
                 currentPartOfSpeech = line.replace('## ', '').trim();
-                const htmlContent = marked.parseInline(line);
+                const htmlContent = marked(line);
                 renderedLines.push(
-                    <h2
+                    <div
                         key={`h2-${i}`}
+                        className="text-lg font-semibold text-vocab-primary mt-4 mb-2 first:mt-0"
                         dangerouslySetInnerHTML={{ __html: htmlContent }}
                     />,
                 );
@@ -134,11 +135,11 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
 
             // Synonyms header
             if (line.startsWith('## Synonyms')) {
-                const htmlContent = marked.parseInline(line);
+                const htmlContent = marked(line);
                 renderedLines.push(
-                    <h2
+                    <div
                         key={`synonyms-header-${i}`}
-                        className="flex items-center gap-1"
+                        className="text-lg font-semibold text-vocab-primary mt-4 mb-2 flex items-center gap-1"
                     >
                         <span
                             dangerouslySetInnerHTML={{ __html: htmlContent }}
@@ -149,7 +150,7 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
                                 title="Listen to synonyms"
                             />
                         )}
-                    </h2>,
+                    </div>,
                 );
                 continue;
             }
