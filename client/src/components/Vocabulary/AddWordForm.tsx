@@ -26,8 +26,8 @@ export function AddWordForm({
     };
 
     return (
-        <div className="bg-vocab-surface backdrop-blur-xl p-6 rounded-xl shadow-lg border border-white/20 mb-xl">
-            <div className="flex gap-4 items-end">
+        <div className="sm:bg-vocab-surface sm:backdrop-blur-xl sm:p-6 sm:rounded-xl sm:shadow-lg sm:border sm:border-white/20 mb-xl">
+            <div className="add-word-form-layout flex flex-col sm:flex-row gap-0 sm:gap-4 sm:items-end">
                 <div className="flex-1">
                     <Input
                         value={query}
@@ -35,6 +35,7 @@ export function AddWordForm({
                         placeholder="Search or enter a word to add..."
                         disabled={disabled}
                         onKeyDown={handleKeyPress}
+                        className="rounded-t-lg rounded-b-none sm:rounded-lg"
                     />
                 </div>
                 <Button
@@ -42,11 +43,11 @@ export function AddWordForm({
                     disabled={
                         selectedCount > 0 ? false : !query.trim() || disabled
                     }
-                    className={
+                    className={`py-3 rounded-t-none rounded-b-lg sm:rounded-lg ${
                         selectedCount > 0
                             ? 'bg-gradient-danger hover:bg-red-600'
                             : ''
-                    }
+                    }`}
                 >
                     {selectedCount > 0
                         ? `Remove (${selectedCount})`

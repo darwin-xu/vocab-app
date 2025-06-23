@@ -33,7 +33,7 @@ export function VocabTable({
                     <th className="w-45 min-w-37.5 py-3 px-1 text-left border-b border-vocab-border-light">
                         Word
                     </th>
-                    <th className="w-auto min-w-50 max-w-100 py-3 px-4 text-left border-b border-vocab-border-light">
+                    <th className="w-auto min-w-50 max-w-100 py-3 px-2 sm:px-4 text-left border-b border-vocab-border-light">
                         Notes
                     </th>
                     <th className="w-2 text-center py-3 px-2 border-b border-vocab-border-light">
@@ -42,7 +42,7 @@ export function VocabTable({
                     <th className="w-2 text-center py-3 px-2 border-b border-vocab-border-light">
                         {/* Dictionary button 2 */}
                     </th>
-                    <th className="w-20 text-right py-3 px-4 border-b border-vocab-border-light">
+                    <th className="w-20 text-right py-3 px-2 sm:px-4 border-b border-vocab-border-light">
                         Added
                     </th>
                 </tr>
@@ -55,7 +55,7 @@ export function VocabTable({
                             index % 2 === 0 ? 'bg-white/70' : 'bg-vocab-bg/80'
                         } hover:bg-vocab-surface-hover hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(102,126,234,0.1)]`}
                     >
-                        <td className="w-6 text-center py-2 px-3 border-b border-vocab-border-light">
+                        <td className="w-6 text-center py-2 px-1 sm:px-3 border-b border-vocab-border-light">
                             <input
                                 type="checkbox"
                                 checked={selected.has(item.word)}
@@ -71,7 +71,7 @@ export function VocabTable({
                                 {item.word}
                             </span>
                         </td>
-                        <td className="w-auto min-w-50 py-2 px-4 border-b border-vocab-border-light">
+                        <td className="w-auto min-w-50 py-2 px-2 sm:px-4 border-b border-vocab-border-light">
                             <div className="flex items-center gap-xs w-full">
                                 <span
                                     className="flex-1 cursor-pointer text-sm leading-relaxed text-auth-text-dark transition-colors duration-200 break-words hover:text-vocab-primary"
@@ -124,7 +124,7 @@ export function VocabTable({
                                 📖
                             </button>
                         </td>
-                        <td className="w-20 text-right py-2 px-4 border-b border-vocab-border-light">
+                        <td className="w-20 text-right py-2 px-2 sm:px-4 border-b border-vocab-border-light">
                             <span className="text-xs font-medium text-auth-text-medium tabular-nums">
                                 {formatRelativeTime(item.add_date)}
                             </span>

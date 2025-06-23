@@ -194,9 +194,9 @@ function App() {
             />
 
             {/* Main Container */}
-            <div className="w-full max-w-6xl mx-auto px-xl py-xl relative min-h-[calc(100vh-80px)] pb-32">
+            <div className="w-full max-w-6xl mx-auto px-sm sm:px-md md:px-lg lg:px-xl py-xl relative min-h-[calc(100vh-80px)] pb-32">
                 {/* Header */}
-                <h1 className="mx-0 my-0 mb-2xl text-6xl font-extrabold text-center text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)] drop-shadow-[0_2px_6px_rgba(102,126,234,0.6)] tracking-tight relative py-sm leading-tight">
+                <h1 className="mx-0 my-0 mb-lg text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-center text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)] drop-shadow-[0_2px_6px_rgba(102,126,234,0.6)] tracking-tight relative py-sm leading-tight">
                     Vocabulary Builder
                     <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-30 h-1 bg-gradient-primary rounded-sm shadow-[0_2px_8px_rgba(102,126,234,0.3)]" />
                 </h1>
