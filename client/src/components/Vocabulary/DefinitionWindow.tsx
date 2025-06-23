@@ -20,7 +20,7 @@ export function DefinitionWindow({
 
     return (
         <div
-            className="fixed bg-vocab-surface backdrop-blur-xl text-auth-text-dark border border-white/20 rounded-lg shadow-xl p-lg z-[3000] text-base font-inter break-words leading-relaxed cursor-pointer max-w-screen-md min-w-96 animate-hoverFadeIn md:max-w-none md:min-w-auto md:w-auto md:left-auto md:right-auto md:top-auto md:transform-none md:max-h-none md:overflow-visible md:animate-hoverFadeIn"
+            className="absolute bg-vocab-surface backdrop-blur-xl text-auth-text-dark border border-white/20 rounded-lg shadow-xl p-lg z-[3000] text-base font-inter break-words leading-relaxed cursor-pointer max-w-screen-md animate-hoverFadeIn md:min-w-auto md:w-auto md:left-auto md:right-auto md:top-auto md:transform-none md:max-h-none md:overflow-visible md:animate-hoverFadeIn"
             style={{
                 left: window.innerWidth <= 768 ? 16 : x,
                 top: window.innerWidth <= 768 ? '50%' : y,

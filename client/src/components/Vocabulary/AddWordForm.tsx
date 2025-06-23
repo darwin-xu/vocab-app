@@ -29,12 +29,6 @@ export function AddWordForm({
         <div className="bg-vocab-surface backdrop-blur-xl p-6 rounded-xl shadow-lg border border-white/20 mb-xl">
             <div className="flex gap-4 items-end">
                 <div className="flex-1">
-                    <label
-                        htmlFor="word-input"
-                        className="block text-sm font-semibold text-auth-text-dark mb-2"
-                    >
-                        Search / Add New Word
-                    </label>
                     <Input
                         value={query}
                         onChange={onQueryChange}

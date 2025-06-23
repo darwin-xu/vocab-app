@@ -54,11 +54,11 @@ export function Pagination({
     };
 
     return (
-        <div className="flex justify-center items-center gap-2 mt-6">
+        <div className="flex justify-center items-center gap-1 mt-6 bg-gray-300/80 rounded-xl p-2 shadow-md">
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage <= 1}
-                className="px-3 py-2 rounded-lg border border-vocab-border text-auth-text-dark hover:bg-vocab-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                className="w-8 h-8 rounded-sm bg-transparent text-gray-700 hover:bg-white/60 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm flex items-center justify-center"
             >
                 {'<'}
             </button>
@@ -70,12 +70,12 @@ export function Pagination({
                         typeof pageNum === 'number' && onPageChange(pageNum)
                     }
                     disabled={pageNum === '...' || pageNum === currentPage}
-                    className={`px-3 py-2 rounded-lg transition-all duration-200 ${
+                    className={`w-8 h-8 rounded-sm transition-all duration-200 text-sm flex items-center justify-center ${
                         pageNum === currentPage
-                            ? 'bg-gradient-primary text-white shadow-md'
+                            ? 'bg-gradient-primary text-white shadow-sm'
                             : pageNum === '...'
-                              ? 'cursor-default text-auth-text-medium'
-                              : 'border border-vocab-border text-auth-text-dark hover:bg-vocab-surface-hover'
+                              ? 'cursor-default text-gray-500 bg-transparent'
+                              : 'bg-transparent text-gray-700 hover:bg-white/60'
                     }`}
                 >
                     {pageNum}
@@ -85,7 +85,7 @@ export function Pagination({
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage >= totalPages}
-                className="px-3 py-2 rounded-lg border border-vocab-border text-auth-text-dark hover:bg-vocab-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                className="w-8 h-8 rounded-sm bg-transparent text-gray-700 hover:bg-white/60 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm flex items-center justify-center"
             >
                 {'>'}
             </button>
