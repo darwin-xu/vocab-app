@@ -1,5 +1,5 @@
 // TTS control component for granular text-to-speech functionality
-import React from 'react';
+import React, { useState } from 'react';
 import { marked } from 'marked';
 import { ttsCall } from '../api';
 import {
@@ -15,9 +15,17 @@ interface TTSControlsProps {
 
 const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
     const sections = parseMarkdownForTTS(content);
+    const [isLoading, setIsLoading] = useState(false);
 
     const playTTS = async (text: string) => {
+        // Prevent multiple simultaneous requests
+        if (isLoading) {
+            return;
+        }
+
         try {
+            setIsLoading(true);
+
             // Stop any currently playing audio
             if (audioRef.current) {
                 audioRef.current.pause();
@@ -31,6 +39,8 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
             await audio.play();
         } catch (err) {
             console.error('Error playing TTS:', err);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -39,15 +49,22 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
         title,
     }) => (
         <button
-            className="inline-flex items-center justify-center min-w-5 h-4 ml-1 align-middle rounded-xs bg-gradient-primary text-xs text-white opacity-80 shadow-sm transition-all duration-200 hover:-translate-y-px hover:shadow-md hover:opacity-100 active:translate-y-0"
+            className={`inline-flex items-center justify-center min-w-5 h-4 ml-1 align-middle rounded-xs bg-gradient-primary text-xs text-white shadow-sm transition-all duration-200 ${
+                isLoading 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'opacity-80 hover:-translate-y-px hover:shadow-md hover:opacity-100 active:translate-y-0'
+            }`}
             onClick={(e) => {
                 e.stopPropagation();
-                onClick();
+                if (!isLoading) {
+                    onClick();
+                }
             }}
-            title={title}
-            aria-label={title}
+            title={isLoading ? 'Loading audio...' : title}
+            aria-label={isLoading ? 'Loading audio...' : title}
+            disabled={isLoading}
         >
-            🔊
+            {isLoading ? '⏳' : '🔊'}
         </button>
     );
 
