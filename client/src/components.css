@@ -129,13 +129,13 @@ textarea:focus {
 }
 
 /* List styling for definition window content */
-.space-y-2 ul {
+.space-y-1 ul {
     list-style-type: disc;
     margin-left: 1.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
-.space-y-2 li {
-    margin-bottom: 0.25rem;
-    line-height: 1.5;
+.space-y-1 li {
+    margin-bottom: 0.125rem;
+    line-height: 1.4;
 }

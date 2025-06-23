@@ -66,14 +66,14 @@ describe('TTSControls Component', () => {
         const { container } = render(<TestWrapper />);
         
         // Just check that the component renders the main div
-        expect(container.querySelector('.space-y-2')).toBeInTheDocument();
+        expect(container.querySelector('.space-y-1')).toBeInTheDocument();
     });
 
     it('should render component container', async () => {
         const { container } = render(<TestWrapper />);
         
-        // Should have the space-y-2 class
-        expect(container.querySelector('.space-y-2')).toBeInTheDocument();
+        // Should have the space-y-1 class
+        expect(container.querySelector('.space-y-1')).toBeInTheDocument();
     });
 
     it('should handle empty content gracefully', async () => {
@@ -85,6 +85,6 @@ describe('TTSControls Component', () => {
         const { container } = render(<EmptyTestWrapper />);
         
         // Should render without errors even with empty content
-        expect(container.querySelector('.space-y-2')).toBeInTheDocument();
+        expect(container.querySelector('.space-y-1')).toBeInTheDocument();
     });
 });

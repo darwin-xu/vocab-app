@@ -126,7 +126,7 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
                 renderedLines.push(
                     <div
                         key={`h2-${i}`}
-                        className="text-lg font-semibold text-vocab-primary mt-4 mb-2 first:mt-0"
+                        className="text-lg font-semibold text-vocab-primary mt-2 mb-1 first:mt-0"
                         dangerouslySetInnerHTML={{ __html: htmlContent }}
                     />,
                 );
@@ -139,7 +139,7 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
                 renderedLines.push(
                     <div
                         key={`synonyms-header-${i}`}
-                        className="text-lg font-semibold text-vocab-primary mt-4 mb-2 flex items-center gap-1"
+                        className="text-lg font-semibold text-vocab-primary mt-2 mb-1 flex items-center gap-1"
                     >
                         <span
                             dangerouslySetInnerHTML={{ __html: htmlContent }}
@@ -230,7 +230,7 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
         return renderedLines;
     };
 
-    return <div className="space-y-2">{renderContentWithTTS()}</div>;
+    return <div className="space-y-1">{renderContentWithTTS()}</div>;
 };
 
 export default TTSControls;
