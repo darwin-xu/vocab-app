@@ -12,6 +12,7 @@ import {
     DeleteNoteRequestBody,
 } from './types.js';
 
+import { SessionManager } from './sessionManager.js';
 import cachedSchema from './schemas/english_dictionary.schema.json';
 import { convertDictionaryToMarkdown } from './utils/jsonToMarkdown.js';
 
@@ -30,20 +31,46 @@ function getApiEndpoints(env: Env): string {
 
 const SESSIONS = new Map<string, { user_id: number; is_admin: boolean }>();
 
-async function getUserIdFromRequest(request: Request): Promise<number | null> {
+async function getUserIdFromRequest(request: Request, env: Env): Promise<number | null> {
     const auth = request.headers.get('Authorization');
     if (!auth) return null;
-    const session = SESSIONS.get(auth.replace('Bearer ', ''));
-    return session?.user_id ?? null;
+    
+    const token = auth.replace('Bearer ', '');
+    
+    // Try to get from database first
+    const sessionManager = new SessionManager(env);
+    const session = await sessionManager.getSession(token);
+    if (session) {
+        return session.user_id;
+    }
+    
+    // Fallback to in-memory (for backwards compatibility during transition)
+    const memorySession = SESSIONS.get(token);
+    return memorySession?.user_id ?? null;
 }
 
 async function getSessionFromRequest(
     request: Request,
+    env: Env
 ): Promise<{ user_id: number; is_admin: boolean } | null> {
     const auth = request.headers.get('Authorization');
     if (!auth) return null;
-    const session = SESSIONS.get(auth.replace('Bearer ', ''));
-    return session ?? null;
+    
+    const token = auth.replace('Bearer ', '');
+    
+    // Try to get from database first
+    const sessionManager = new SessionManager(env);
+    const session = await sessionManager.getSession(token);
+    if (session) {
+        return {
+            user_id: session.user_id,
+            is_admin: Boolean(session.is_admin)
+        };
+    }
+    
+    // Fallback to in-memory (for backwards compatibility during transition)
+    const memorySession = SESSIONS.get(token);
+    return memorySession ?? null;
 }
 
 export default {
@@ -84,6 +111,10 @@ export default {
 
         if (url.pathname === '/login' && request.method === 'POST') {
             try {
+                // Initialize session manager and tables
+                const sessionManager = new SessionManager(env);
+                await sessionManager.initializeTables();
+                
                 const body = (await request.json()) as LoginRequestBody;
                 if (!body.username || !body.password) {
                     return new Response('Missing username or password', {
@@ -102,10 +133,27 @@ export default {
                 }
 
                 const token = randomId();
+                
+                // Store session in database
+                const userAgent = request.headers.get('User-Agent') || undefined;
+                const ipAddress = request.headers.get('CF-Connecting-IP') || 
+                                request.headers.get('X-Forwarded-For') || 
+                                request.headers.get('X-Real-IP') || undefined;
+                
+                await sessionManager.createSession(
+                    token, 
+                    user.id, 
+                    Boolean(user.is_admin),
+                    userAgent,
+                    ipAddress
+                );
+                
+                // Also store in memory for backwards compatibility
                 SESSIONS.set(token, {
                     user_id: user.id,
-                    is_admin: user.is_admin,
+                    is_admin: Boolean(user.is_admin),
                 });
+                
                 return new Response(
                     JSON.stringify({ token, is_admin: user.is_admin }),
                     {
@@ -118,7 +166,7 @@ export default {
         }
 
         if (url.pathname === '/vocab') {
-            const userId = await getUserIdFromRequest(request);
+            const userId = await getUserIdFromRequest(request, env);
             if (!userId) return new Response('Unauthorized', { status: 401 });
 
             if (request.method === 'GET') {
@@ -215,7 +263,7 @@ export default {
         }
 
         if (url.pathname === '/admin/users') {
-            const session = await getSessionFromRequest(request);
+            const session = await getSessionFromRequest(request, env);
             if (!session) return new Response('Unauthorized', { status: 401 });
             if (!session.is_admin)
                 return new Response('Admin access required', { status: 403 });
@@ -234,7 +282,7 @@ export default {
             url.pathname.startsWith('/admin/users/') &&
             url.pathname !== '/admin/users'
         ) {
-            const session = await getSessionFromRequest(request);
+            const session = await getSessionFromRequest(request, env);
             if (!session) return new Response('Unauthorized', { status: 401 });
             if (!session.is_admin)
                 return new Response('Admin access required', { status: 403 });
@@ -304,7 +352,7 @@ export default {
         }
 
         if (url.pathname === '/profile') {
-            const userId = await getUserIdFromRequest(request);
+            const userId = await getUserIdFromRequest(request, env);
             if (!userId) return new Response('Unauthorized', { status: 401 });
 
             if (request.method === 'GET') {
@@ -359,7 +407,7 @@ export default {
             const word = searchParams.get('word') ?? 'Say hi!';
             const action = searchParams.get('action') ?? 'define';
 
-            const userId = await getUserIdFromRequest(request);
+            const userId = await getUserIdFromRequest(request, env);
             let customInstructions: string | null = null;
 
             if (userId) {
@@ -478,7 +526,7 @@ export default {
         }
 
         if (url.pathname === '/notes') {
-            const userId = await getUserIdFromRequest(request);
+            const userId = await getUserIdFromRequest(request, env);
             if (!userId) return new Response('Unauthorized', { status: 401 });
 
             if (request.method === 'GET') {
@@ -568,6 +616,63 @@ export default {
                     return new Response('Invalid JSON', { status: 400 });
                 }
             }
+        }
+
+        // Health check endpoint
+        if (url.pathname === '/health' && request.method === 'GET') {
+            const session = await getSessionFromRequest(request, env);
+            if (!session) {
+                return new Response('Unauthorized', { status: 401 });
+            }
+            return new Response(JSON.stringify({ 
+                status: 'ok', 
+                user_id: session.user_id,
+                timestamp: new Date().toISOString() 
+            }), {
+                headers: { 'Content-Type': 'application/json' },
+            });
+        }
+
+        // Analytics endpoint for logout tracking
+        if (url.pathname === '/analytics/logout' && request.method === 'POST') {
+            try {
+                const session = await getSessionFromRequest(request, env);
+                if (!session) {
+                    return new Response('Unauthorized', { status: 401 });
+                }
+                
+                const logoutEvent = await request.json();
+                console.log('Logout event received:', {
+                    user_id: session.user_id,
+                    event: logoutEvent
+                });
+                
+                // Store in database for analysis (optional)
+                // await env.DB.prepare(
+                //     'INSERT INTO logout_events (user_id, event_data, created_at) VALUES (?, ?, ?)'
+                // ).bind(session.user_id, JSON.stringify(logoutEvent), new Date().toISOString()).run();
+                
+                return new Response('OK');
+            } catch (error) {
+                console.error('Error processing logout analytics:', error);
+                return new Response('Invalid JSON', { status: 400 });
+            }
+        }
+
+        // Logout endpoint
+        if (url.pathname === '/logout' && request.method === 'POST') {
+            const auth = request.headers.get('Authorization');
+            if (auth) {
+                const token = auth.replace('Bearer ', '');
+                const sessionManager = new SessionManager(env);
+                
+                // Remove from database
+                await sessionManager.deleteSession(token);
+                
+                // Remove from memory (backwards compatibility)
+                SESSIONS.delete(token);
+            }
+            return new Response('OK');
         }
 
         return env.ASSETS.fetch(request);

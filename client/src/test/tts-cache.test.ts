@@ -164,7 +164,7 @@ describe('TTS Cache', () => {
 
         // Logout should clear cache (but will throw due to reload, which we'll catch)
         try {
-            api.logout();
+            await api.logout();
         } catch {
             // Expected - logout calls window.location.reload which we can't test properly
         }
@@ -172,7 +172,7 @@ describe('TTS Cache', () => {
         // After logout, same request should make new API call
         const result3 = await api.ttsCall('hello');
         expect(result3).toBe('base64audiodata');
-        expect(mockFetch).toHaveBeenCalledTimes(2); // Now should be 2 calls
+        expect(mockFetch).toHaveBeenCalledTimes(4); // Now should be 4 calls (1 for ttsCall, 1 for logout, 1 for analytics, 1 for ttsCall)
     });
 
     it('should not interfere with OpenAI cache', async () => {

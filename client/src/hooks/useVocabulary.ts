@@ -7,6 +7,8 @@ import {
     saveNote,
     logout,
 } from '../api';
+import { sessionMonitor } from '../utils/sessionMonitor';
+import { sessionAnalytics } from '../utils/sessionAnalytics';
 import type { VocabItem, HoverState, NotesModalState } from '../types';
 
 export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
@@ -35,12 +37,29 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
     const loadVocab = useCallback(async () => {
         try {
             const data = await fetchVocab(q, page, pageSize);
-            setVocab(data.items || []);
-            setTotalPages(Math.max(1, data.totalPages || 1));
+            setVocab(data?.items || []);
+            setTotalPages(Math.max(1, data?.totalPages || 1));
             setSelected(new Set());
         } catch (error) {
             console.error('Error in loadVocab:', error);
-            logout();
+            
+            // Check if this is a session-related error before auto-logout
+            const errorMessage = (error as Error).message.toLowerCase();
+            if (errorMessage.includes('unauthorized') || errorMessage.includes('session')) {
+                // Only logout if we've had multiple failures or this is clearly a session issue
+                if (sessionMonitor.shouldAutoLogout()) {
+                    sessionAnalytics.recordLogout('auto', 'Multiple API failures in loadVocab', {
+                        errorDetails: (error as Error).message,
+                        apiEndpoint: '/vocab'
+                    });
+                    logout();
+                } else {
+                    console.warn('API error detected, but not forcing logout yet:', error);
+                }
+            } else {
+                // For non-session errors, just log but don't logout
+                console.warn('Non-session related error in loadVocab:', error);
+            }
         }
     }, [q, page, pageSize]);
 
@@ -96,24 +115,28 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
         const isMobile = window.innerWidth <= 768;
 
         if (isMobile) {
-            return { x: 0, y: 0 };
+            // On mobile, align hover window top with the clicked word
+            return { x: 0, y: e.pageY };
         } else {
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
             const hoverWidth = 400;
-            const hoverHeight = 300;
 
             let x = e.pageX;
             let y = e.pageY;
 
+            // Ensure hover window doesn't go off screen horizontally
             if (x + hoverWidth > windowWidth) {
                 x = windowWidth - hoverWidth - 20;
             }
 
-            if (y + hoverHeight > windowHeight) {
-                y = windowHeight - hoverHeight - 20;
+            // For vertical positioning, try to keep it visible but don't constrain height
+            // If the click is in the bottom 40% of screen, position above the cursor
+            if (y > windowHeight * 0.6) {
+                y = Math.max(20, y - 100); // Position 100px above cursor
             }
 
+            // Keep some padding from edges
             x = Math.max(20, x);
             y = Math.max(20, y);
 

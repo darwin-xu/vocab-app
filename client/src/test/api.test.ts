@@ -400,8 +400,13 @@ describe('API functions', () => {
         });
 
         describe('logout', () => {
-            it('should clear tokens and reload the page', () => {
-                api.logout();
+            it('should clear tokens and reload the page', async () => {
+                // Mock the fetch call for the logout endpoint
+                mockFetch.mockResolvedValueOnce({
+                    ok: true,
+                });
+
+                await api.logout();
 
                 expect(localStorageMock.removeItem).toHaveBeenCalledWith(
                     'sessionToken',

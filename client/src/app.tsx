@@ -18,6 +18,7 @@ import { AdminPanel } from './components/Admin/AdminPanel';
 import { UserSettings } from './components/Admin/UserSettings';
 import { UserAvatar } from './components/UI/UserAvatar';
 import { LayoutWithBackground } from './components/UI/LayoutWithBackground';
+import { SessionDebugPanel } from './components/Debug/SessionDebugPanel';
 
 function App() {
     const { height: windowHeight } = useWindowSize();
@@ -28,6 +29,7 @@ function App() {
     const [view, setView] = useState<ViewType>('auth');
     const [authMsg, setAuthMsg] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showDebugPanel, setShowDebugPanel] = useState(false);
 
     // Use vocabulary hook for vocabulary-related state and functions
     const {
@@ -168,6 +170,7 @@ function App() {
                 onDropdownToggle={() => setDropdownOpen(!dropdownOpen)}
                 onSettingsClick={handleOwnProfileLoad}
                 onAdminPanelClick={() => setView('admin')}
+                onDebugPanelClick={() => setShowDebugPanel(true)}
             />
             <AdminPanel
                 users={users}
@@ -191,6 +194,7 @@ function App() {
                 onDropdownToggle={() => setDropdownOpen(!dropdownOpen)}
                 onSettingsClick={handleOwnProfileLoad}
                 onAdminPanelClick={() => setView('admin')}
+                onDebugPanelClick={() => setShowDebugPanel(true)}
             />
 
             {/* Main Container */}
@@ -249,6 +253,9 @@ function App() {
                     setNotesModal((prev) => ({ ...prev, note }))
                 }
             />
+
+            {/* Debug Panel - Always show for admin */}
+            {showDebugPanel && <SessionDebugPanel onClose={() => setShowDebugPanel(false)} />}
         </LayoutWithBackground>
     );
 }

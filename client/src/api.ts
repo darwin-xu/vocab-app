@@ -1,4 +1,6 @@
 // client/src/api.ts
+import { sessionAnalytics } from './utils/sessionAnalytics';
+import { sessionMonitor } from './utils/sessionMonitor';
 
 const SESSION_TOKEN_KEY = 'sessionToken';
 const USERNAME_KEY = 'username';
@@ -155,6 +157,10 @@ export async function login(username: string, password: string) {
     setToken(data.token);
     localStorage.setItem(USERNAME_KEY, username);
     localStorage.setItem('isAdmin', data.is_admin ? 'true' : 'false');
+    
+    // Record successful login and start session monitoring
+    sessionAnalytics.setLoginTime();
+    sessionMonitor.startHealthCheck();
 }
 
 export async function register(username: string, password: string) {
@@ -167,11 +173,19 @@ export async function register(username: string, password: string) {
 }
 
 export async function fetchVocab(q = '', page = 1, pageSize = 20) {
-    const res = await authFetch(
-        `/vocab?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}`,
-    );
-    if (res.status === 401) throw new Error('Unauthorized');
-    return res.json();
+    return sessionMonitor.wrapApiCall(async () => {
+        const res = await authFetch(
+            `/vocab?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}`,
+        );
+        if (res.status === 401) {
+            sessionAnalytics.recordLogout('server_error', 'Unauthorized response from fetchVocab', {
+                httpStatus: 401,
+                apiEndpoint: '/vocab'
+            });
+            throw new Error('Unauthorized');
+        }
+        return res.json();
+    }, '/vocab');
 }
 
 export async function addWord(word: string) {
@@ -332,7 +346,21 @@ export function isAdmin() {
     return localStorage.getItem('isAdmin') === 'true';
 }
 
-export function logout() {
+export async function logout() {
+    // Record the logout event
+    sessionAnalytics.recordLogout('manual', 'User initiated logout');
+    
+    // Stop health monitoring
+    sessionMonitor.stopHealthCheck();
+    
+    // Call server logout endpoint to invalidate session
+    try {
+        await authFetch('/logout', { method: 'POST' });
+    } catch (error) {
+        console.warn('Failed to notify server of logout:', error);
+    }
+    
+    // Clear all session data
     clearToken();
     localStorage.removeItem('isAdmin');
     openaiCache.clear(); // Clear OpenAI cache on logout

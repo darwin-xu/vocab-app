@@ -176,7 +176,7 @@ describe('OpenAI Cache', () => {
 
         // Logout should clear cache (but will throw due to reload, which we'll catch)
         try {
-            api.logout();
+            await api.logout();
         } catch {
             // Expected - logout calls window.location.reload which we can't test properly
         }
@@ -184,6 +184,6 @@ describe('OpenAI Cache', () => {
         // After logout, same request should make new API call
         const result3 = await api.openaiCall('hello', 'define');
         expect(result3).toBe('Definition of hello');
-        expect(mockFetch).toHaveBeenCalledTimes(2); // Now should be 2 calls
+        expect(mockFetch).toHaveBeenCalledTimes(4); // Now should be 4 calls (1 for openaiCall, 1 for logout, 1 for analytics, 1 for openaiCall)
     });
 });

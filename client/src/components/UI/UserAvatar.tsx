@@ -6,6 +6,7 @@ interface UserAvatarProps {
     onDropdownToggle: () => void;
     onSettingsClick: () => void;
     onAdminPanelClick: () => void;
+    onDebugPanelClick?: () => void;
 }
 
 export function UserAvatar({
@@ -13,6 +14,7 @@ export function UserAvatar({
     onDropdownToggle,
     onSettingsClick,
     onAdminPanelClick,
+    onDebugPanelClick,
 }: UserAvatarProps) {
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -56,6 +58,13 @@ export function UserAvatar({
         onDropdownToggle();
     };
 
+    const handleDebugPanel = () => {
+        if (onDebugPanelClick) {
+            onDebugPanelClick();
+            onDropdownToggle();
+        }
+    };
+
     return (
         <div
             className="fixed top-lg right-xl z-[2000] font-inter"
@@ -89,6 +98,13 @@ export function UserAvatar({
                         Admin Panel
                     </button>
                 )}
+                <button
+                    className="flex items-center gap-sm px-md py-sm text-auth-text-dark text-sm font-medium cursor-pointer transition-all duration-200 border-none bg-none w-full text-left hover:bg-gradient-primary hover:text-white hover:translate-x-1"
+                    onClick={handleDebugPanel}
+                >
+                    <span className="text-base opacity-80">🔍</span>
+                    Session Debug
+                </button>
                 <button
                     className="flex items-center gap-sm px-md py-sm text-auth-text-dark text-sm font-medium cursor-pointer transition-all duration-200 border-none bg-none w-full text-left rounded-b-lg hover:bg-gradient-primary hover:text-white hover:translate-x-1"
                     onClick={handleLogout}
