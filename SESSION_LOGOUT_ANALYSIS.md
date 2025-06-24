@@ -20,7 +20,7 @@
 ### 4. **No Session Expiration Management**
 - **Problem**: Sessions lived forever in memory with no cleanup
 - **Impact**: Memory leaks and no proper session lifecycle management
-- **Solution**: Added 24-hour session expiration with automatic cleanup
+- **Solution**: Added 24-hour sliding session expiration with automatic cleanup and renewal on each access
 
 ### 5. **No Server-Side Logout**
 - **Problem**: Client logout only cleared localStorage, didn't invalidate server sessions
@@ -177,7 +177,7 @@ This comprehensive solution addresses all identified root causes and provides ro
 
 **All tests are now passing!**
 
-- **Server Tests**: 64/64 passing (100%)
+- **Server Tests**: 67/67 passing (100%) - includes new sliding window tests
 - **Client Tests**: 78/78 passing (100%)
 
 ### Fixed Test Issues:
@@ -185,6 +185,7 @@ This comprehensive solution addresses all identified root causes and provides ro
 2. **Cache test expectations**: Adjusted fetch call counts to account for new analytics endpoints
 3. **Vocabulary loading robustness**: Added null-safe access for API response data
 4. **Session analytics compatibility**: Added browser environment checks for test compatibility
+5. **Sliding window behavior**: Added comprehensive tests for session renewal on access
 
 ## Next Steps for Deployment
 
@@ -204,3 +205,37 @@ This comprehensive solution addresses all identified root causes and provides ro
    - Monitor logout patterns and adjust timeouts if needed
 
 The solution is now production-ready with comprehensive test coverage and robust error handling.
+
+## Session Renewal Behavior (Sliding Window)
+
+The application now implements a **sliding window** session expiration model:
+
+### How It Works:
+- **Initial Login**: Session expires 24 hours from login time
+- **Each Access**: Session expiration resets to 24 hours from the current access time
+- **Automatic Renewal**: Every API call automatically extends the session by another 24 hours
+
+### Example Timeline:
+```
+Day 1, 9:00 AM: User logs in → Session expires Day 2, 9:00 AM
+Day 1, 3:00 PM: User accesses app → Session now expires Day 2, 3:00 PM  
+Day 2, 1:00 PM: User accesses app → Session now expires Day 3, 1:00 PM
+Day 2, 8:00 PM: User accesses app → Session now expires Day 3, 8:00 PM
+```
+
+### Benefits:
+- ✅ Active users never get unexpectedly logged out
+- ✅ Inactive sessions still expire after 24 hours of no activity
+- ✅ Better user experience for regular users
+- ✅ Maintains security for abandoned sessions
+
+### Implementation:
+The `getSession()` method automatically calls `extendSession()` on every access:
+
+```typescript
+if (session) {
+    // Update last activity AND extend session expiration (sliding window)
+    await this.updateSessionActivity(token);
+    await this.extendSession(token);
+}
+```

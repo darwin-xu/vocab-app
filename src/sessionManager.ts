@@ -49,8 +49,9 @@ export class SessionManager {
         `).bind(token).first() as SessionData | null;
 
         if (session) {
-            // Update last activity
+            // Update last activity AND extend session expiration (sliding window)
             await this.updateSessionActivity(token);
+            await this.extendSession(token);
         }
 
         return session;
