@@ -29,7 +29,7 @@
         "format:all": "prettier --write . && cd client && prettier --write ."
     },
     "devDependencies": {
-        "@cloudflare/vitest-pool-workers": "^0.8.36",
+        "@cloudflare/vitest-pool-workers": "^0.8.71",
         "@cloudflare/workers-types": "^4.20250423.0",
         "@eslint/js": "^9.28.0",
         "@types/json2md": "^1.5.4",
