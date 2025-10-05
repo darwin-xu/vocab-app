@@ -13,6 +13,7 @@ import { AddWordForm } from './components/Vocabulary/AddWordForm';
 import { VocabTable } from './components/Vocabulary/VocabTable';
 import { Pagination } from './components/Vocabulary/Pagination';
 import { NotesModal } from './components/Vocabulary/NotesModal';
+import { HistoryModal } from './components/Vocabulary/HistoryModal';
 import { DefinitionWindow } from './components/Vocabulary/DefinitionWindow';
 import { AdminPanel } from './components/Admin/AdminPanel';
 import { UserSettings } from './components/Admin/UserSettings';
@@ -40,6 +41,7 @@ function App() {
         selected,
         hover,
         notesModal,
+        historyModal,
         setQ,
         setPage,
         setNotesModal,
@@ -52,6 +54,8 @@ function App() {
         closeNotesModal,
         handleSaveNote,
         handleDictionaryClick,
+        handleHistoryClick,
+        closeHistoryModal,
     } = useVocabulary(pageSize, view === 'vocab');
 
     // Use admin hook for admin-related state and functions
@@ -222,6 +226,7 @@ function App() {
                     onWordClick={openDefinition}
                     onNotesClick={handleNotesClick}
                     onDictionaryClick={handleDictionaryClick}
+                    onHistoryClick={handleHistoryClick}
                 />
             </div>
 
@@ -253,6 +258,13 @@ function App() {
                 onNoteChange={(note) =>
                     setNotesModal((prev) => ({ ...prev, note }))
                 }
+            />
+
+            {/* History Modal */}
+            <HistoryModal
+                isOpen={historyModal.show}
+                word={historyModal.word}
+                onClose={closeHistoryModal}
             />
 
             {/* Debug Panel - Always show for admin */}

@@ -29,6 +29,13 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
         word: '',
         note: '',
     });
+    const [historyModal, setHistoryModal] = useState<{
+        show: boolean;
+        word: string;
+    }>({
+        show: false,
+        word: '',
+    });
     const loadingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
         null,
     );
@@ -257,6 +264,20 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
         setPage(newPage);
     }, []);
 
+    const handleHistoryClick = useCallback((word: string) => {
+        setHistoryModal({
+            show: true,
+            word,
+        });
+    }, []);
+
+    const closeHistoryModal = useCallback(() => {
+        setHistoryModal({
+            show: false,
+            word: '',
+        });
+    }, []);
+
     return {
         // State
         q,
@@ -266,6 +287,7 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
         selected,
         hover,
         notesModal,
+        historyModal,
 
         // Actions
         setQ,
@@ -280,5 +302,7 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
         closeNotesModal,
         handleSaveNote,
         handleDictionaryClick,
+        handleHistoryClick,
+        closeHistoryModal,
     };
 }
