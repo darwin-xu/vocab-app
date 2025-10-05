@@ -240,6 +240,7 @@ function App() {
                 x={hover.x}
                 y={hover.y}
                 content={hover.content}
+                word={hover.word}
             />
 
             {/* Notes Modal */}

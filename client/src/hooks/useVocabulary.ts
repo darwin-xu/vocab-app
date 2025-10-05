@@ -156,6 +156,7 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
                 x,
                 y,
                 content: 'Loading.',
+                word,
                 isLoading: true,
             });
 
@@ -180,6 +181,7 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
                     x,
                     y,
                     content: text,
+                    word,
                     isLoading: false,
                 });
             } catch {
@@ -193,6 +195,7 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
                     x,
                     y,
                     content: 'Error loading definition. Please try again.',
+                    word,
                     isLoading: false,
                 });
             }

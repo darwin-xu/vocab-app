@@ -213,6 +213,10 @@ export async function openaiCall(word: string, action: string) {
         if (process.env.NODE_ENV === 'development') {
             console.log(`🎯 Cache hit for "${word}" (${action})`);
         }
+        // Record history even for cached responses
+        if (action === 'define') {
+            recordQueryHistory(word, 'definition');
+        }
         return cachedResponse;
     }
 
@@ -231,6 +235,11 @@ export async function openaiCall(word: string, action: string) {
     openaiCache.set(word, action, responseData);
     if (process.env.NODE_ENV === 'development') {
         console.log(`💾 Cached response for "${word}" (${action})`);
+    }
+
+    // Record history for definition queries
+    if (action === 'define') {
+        recordQueryHistory(word, 'definition');
     }
 
     return responseData;
@@ -375,4 +384,30 @@ export function _clearCacheForTesting() {
 // Export for debugging purposes
 export function _getCacheStats() {
     return openaiCache.getStats();
+}
+
+export async function recordQueryHistory(
+    word: string,
+    queryType: 'definition' | 'tts',
+) {
+    try {
+        const res = await authFetch('/query-history', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ word, query_type: queryType }),
+        });
+        if (!res.ok) {
+            console.warn('Failed to record query history:', await res.text());
+        }
+    } catch (error) {
+        console.warn('Error recording query history:', error);
+    }
+}
+
+export async function getQueryHistory(word: string) {
+    const res = await authFetch(
+        `/query-history?word=${encodeURIComponent(word)}`,
+    );
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
 }

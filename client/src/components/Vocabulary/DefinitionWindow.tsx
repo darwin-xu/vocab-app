@@ -6,6 +6,7 @@ interface DefinitionWindowProps {
     x: number;
     y: number;
     content: string;
+    word?: string;
 }
 
 export function DefinitionWindow({
@@ -13,6 +14,7 @@ export function DefinitionWindow({
     x,
     y,
     content,
+    word,
 }: DefinitionWindowProps) {
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -33,7 +35,7 @@ export function DefinitionWindow({
                 e.stopPropagation();
             }}
         >
-            <TTSControls content={content} audioRef={audioRef} />
+            <TTSControls content={content} audioRef={audioRef} word={word} />
         </div>
     );
 }

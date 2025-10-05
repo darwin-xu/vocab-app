@@ -1,7 +1,7 @@
 // TTS control component for granular text-to-speech functionality
 import React, { useState } from 'react';
 import { marked } from 'marked';
-import { ttsCall } from '../api';
+import { ttsCall, recordQueryHistory } from '../api';
 import {
     parseMarkdownForTTS,
     cleanTextForTTS,
@@ -11,9 +11,10 @@ import {
 interface TTSControlsProps {
     content: string;
     audioRef: React.MutableRefObject<HTMLAudioElement | null>;
+    word?: string;
 }
 
-const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
+const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef, word }) => {
     const sections = parseMarkdownForTTS(content);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -34,6 +35,12 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef }) => {
 
             const cleanText = cleanTextForTTS(text);
             const b64 = await ttsCall(cleanText);
+            
+            // Record TTS query history if word is available
+            if (word) {
+                recordQueryHistory(word, 'tts');
+            }
+            
             const audio = new Audio(`data:audio/wav;base64,${b64}`);
             audioRef.current = audio;
             await audio.play();
