@@ -405,9 +405,26 @@ export async function recordQueryHistory(
 }
 
 export async function getQueryHistory(word: string) {
-    const res = await authFetch(
-        `/query-history?word=${encodeURIComponent(word)}`,
-    );
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    try {
+        const res = await authFetch(
+            `/query-history?word=${encodeURIComponent(word)}`,
+        );
+        if (!res.ok) {
+            // Try to get error message from JSON response
+            try {
+                const errorData = await res.json();
+                if (errorData.error) {
+                    throw new Error(errorData.error);
+                }
+            } catch {
+                // If JSON parsing fails, use status text
+                throw new Error(`Failed to fetch history (${res.status})`);
+            }
+        }
+        return res.json();
+    } catch (error) {
+        console.error('Error fetching query history:', error);
+        // Return empty history on error instead of throwing
+        return { history: [] };
+    }
 }

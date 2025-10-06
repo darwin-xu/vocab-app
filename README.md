@@ -11,6 +11,7 @@ A modern vocabulary building application built with Cloudflare Workers, React, a
 - 🎯 AI-powered word definitions and examples
 - 👤 User authentication and profiles
 - 🔊 Text-to-speech functionality
+- 📊 Query history tracking to monitor learning progress
 - ⚙️ Custom instruction settings
 - 👨‍💼 Admin user management
 
@@ -28,7 +29,12 @@ Our application includes comprehensive testing:
 1. Clone the repository
 2. Install dependencies: `npm install`
 3. Set up your environment variables
-4. Run development server: `npm run dev`
+4. Initialize the database (for new features):
+   ```bash
+   # Run schema migrations for query history feature
+   ./setup-query-history.sh
+   ```
+5. Run development server: `npm run dev`
 
 ## Styling
 

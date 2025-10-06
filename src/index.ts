@@ -631,15 +631,29 @@ export default {
                     });
                 }
 
-                const { results } = await env.DB.prepare(
-                    'SELECT query_type, query_time FROM query_history WHERE user_id = ? AND word = ? ORDER BY query_time DESC',
-                )
-                    .bind(userId, word)
-                    .all();
+                try {
+                    const { results } = await env.DB.prepare(
+                        'SELECT query_type, query_time FROM query_history WHERE user_id = ? AND word = ? ORDER BY query_time DESC',
+                    )
+                        .bind(userId, word)
+                        .all();
 
-                return new Response(JSON.stringify({ history: results }), {
-                    headers: { 'Content-Type': 'application/json' },
-                });
+                    return new Response(JSON.stringify({ history: results }), {
+                        headers: { 'Content-Type': 'application/json' },
+                    });
+                } catch (error) {
+                    console.error('Error fetching query history:', error);
+                    return new Response(
+                        JSON.stringify({
+                            error: 'Failed to fetch query history',
+                            history: [],
+                        }),
+                        {
+                            status: 500,
+                            headers: { 'Content-Type': 'application/json' },
+                        },
+                    );
+                }
             }
 
             if (request.method === 'POST') {
@@ -674,8 +688,11 @@ export default {
                         .run();
 
                     return new Response('OK');
-                } catch {
-                    return new Response('Invalid JSON', { status: 400 });
+                } catch (error) {
+                    console.error('Error recording query history:', error);
+                    return new Response('Failed to record query history', {
+                        status: 500,
+                    });
                 }
             }
         }
