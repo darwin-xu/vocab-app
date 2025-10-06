@@ -8,6 +8,7 @@ import {
     isAdmin,
 } from '../api';
 import type { User, UserDetails, ViewType } from '../types';
+import { debugLog } from '../utils/logger';
 
 export function useAdmin() {
     const [users, setUsers] = useState<User[]>([]);
@@ -38,9 +39,9 @@ export function useAdmin() {
     // Load own profile
     const loadOwnProfile = useCallback(async () => {
         try {
-            console.log('Loading own profile...');
+            debugLog('Loading own profile...');
             const data = await fetchOwnProfile();
-            console.log('Own profile data:', data);
+            debugLog('Own profile data:', data);
 
             // Store user ID for comparison
             localStorage.setItem('userId', data.user.id.toString());

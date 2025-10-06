@@ -1,5 +1,6 @@
 // Enhanced API wrapper with session monitoring
 import { sessionAnalytics } from './sessionAnalytics';
+import { warnLog, errorLog } from './logger';
 
 interface ApiError extends Error {
     status?: number;
@@ -67,7 +68,7 @@ export class SessionMonitor {
             }
         } catch (error) {
             this.consecutiveFailures++;
-            console.warn(
+            warnLog(
                 `Health check failed (${this.consecutiveFailures}/${this.MAX_FAILURES}):`,
                 error,
             );
@@ -137,7 +138,7 @@ export class SessionMonitor {
         }
 
         // Log the error for analysis
-        console.error(`API Error [${endpoint}]:`, {
+        errorLog(`API Error [${endpoint}]:`, {
             status: error.status,
             message: error.message,
             type: errorType,

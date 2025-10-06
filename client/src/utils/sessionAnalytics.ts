@@ -1,6 +1,8 @@
 // Session Debug and Analytics System
 // This file helps track logout events and session issues
 
+import { warnLog, debugLog } from './logger';
+
 export interface LogoutEvent {
     timestamp: string;
     type: 'manual' | 'auto' | 'server_error' | 'network_error';
@@ -89,7 +91,7 @@ class SessionAnalytics {
                 JSON.stringify(events),
             );
         } catch (error) {
-            console.warn('Failed to store logout event:', error);
+            warnLog('Failed to store logout event:', error);
         }
     }
 
@@ -112,8 +114,8 @@ class SessionAnalytics {
             ...details,
         };
 
-        this.storeEvent(event);
-        console.warn('Logout recorded:', event);
+    this.storeEvent(event);
+    warnLog('Logout recorded:', event);
 
         // Send to server for analysis (optional)
         this.sendLogoutEvent(event);
@@ -138,7 +140,7 @@ class SessionAnalytics {
             });
         } catch (error) {
             // Silently fail - analytics shouldn't break the app
-            console.debug('Failed to send logout analytics:', error);
+            debugLog('Failed to send logout analytics:', error);
         }
     }
 
