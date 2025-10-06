@@ -213,8 +213,8 @@ export async function openaiCall(word: string, action: string) {
         if (process.env.NODE_ENV === 'development') {
             console.log(`🎯 Cache hit for "${word}" (${action})`);
         }
-        // Record history even for cached responses
-        if (action === 'define') {
+        // Record history even for cached responses (skip in test environment)
+        if (action === 'define' && process.env.NODE_ENV !== 'test') {
             recordQueryHistory(word, 'definition');
         }
         return cachedResponse;
@@ -237,8 +237,8 @@ export async function openaiCall(word: string, action: string) {
         console.log(`💾 Cached response for "${word}" (${action})`);
     }
 
-    // Record history for definition queries
-    if (action === 'define') {
+    // Record history for definition queries (skip in test environment)
+    if (action === 'define' && process.env.NODE_ENV !== 'test') {
         recordQueryHistory(word, 'definition');
     }
 

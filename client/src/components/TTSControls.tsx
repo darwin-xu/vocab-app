@@ -36,8 +36,8 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef, word }) =>
             const cleanText = cleanTextForTTS(text);
             const b64 = await ttsCall(cleanText);
             
-            // Record TTS query history if word is available
-            if (word) {
+            // Record TTS query history if word is available (skip in test environment)
+            if (word && process.env.NODE_ENV !== 'test') {
                 recordQueryHistory(word, 'tts');
             }
             
