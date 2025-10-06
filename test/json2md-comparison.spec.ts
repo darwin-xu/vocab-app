@@ -2,6 +2,20 @@ import { convertDictionaryToMarkdown } from '../src/utils/jsonToMarkdown.js';
 import json2md from 'json2md';
 import { describe, it, expect } from 'vitest';
 
+type GlobalLike = {
+    process?: {
+        env?: Record<string, string | undefined>;
+    };
+};
+
+const globalEnv = (globalThis as GlobalLike).process?.env ?? {};
+const isVerbose = globalEnv.VERBOSE_JSON2MD === 'true';
+const debugLog = (...args: unknown[]) => {
+    if (isVerbose) {
+        console.log(...args);
+    }
+};
+
 describe('json2md vs custom converter comparison', () => {
     const sampleData = {
         word: 'example',
@@ -43,16 +57,16 @@ describe('json2md vs custom converter comparison', () => {
         ];
 
         const json2mdResult = json2md(json2mdData);
-        console.log('json2md result:');
-        console.log(json2mdResult);
+    debugLog('json2md result:');
+    debugLog(json2mdResult);
 
         expect(json2mdResult).toContain('# example');
     });
 
     it('should show what our custom converter produces (dictionary-specific)', () => {
         const customResult = convertDictionaryToMarkdown(sampleData);
-        console.log('Custom converter result:');
-        console.log(customResult);
+    debugLog('Custom converter result:');
+    debugLog(customResult);
 
         expect(customResult).toContain('# example');
         expect(customResult).toContain('## Noun');
@@ -65,8 +79,8 @@ describe('json2md vs custom converter comparison', () => {
             { p: JSON.stringify(sampleData, null, 2) },
         ]);
 
-        console.log('Raw JSON with json2md:');
-        console.log(rawJson2mdResult);
+    debugLog('Raw JSON with json2md:');
+    debugLog(rawJson2mdResult);
 
         const customResult = convertDictionaryToMarkdown(sampleData);
 
