@@ -61,3 +61,16 @@ export interface NoteRequestBody {
 export interface DeleteNoteRequestBody {
     word: string;
 }
+
+export interface QueryHistoryRequestBody {
+    word: string;
+    query_type: 'definition' | 'tts';
+}
+
+export interface QueryHistoryRow {
+    id: number;
+    user_id: number;
+    word: string;
+    query_type: string;
+    query_time: string;
+}

@@ -13,6 +13,7 @@ interface VocabTableProps {
         word: string,
         dictType: 1 | 2,
     ) => void;
+    onHistoryClick: (word: string) => void;
 }
 
 export function VocabTable({
@@ -22,6 +23,7 @@ export function VocabTable({
     onWordClick,
     onNotesClick,
     onDictionaryClick,
+    onHistoryClick,
 }: VocabTableProps) {
     return (
         <table className="w-full border-collapse mb-2xl bg-vocab-surface backdrop-blur-xl rounded-xl overflow-hidden shadow-lg border border-white/20">
@@ -41,6 +43,9 @@ export function VocabTable({
                     </th>
                     <th className="w-2 text-center py-3 px-2 border-b border-vocab-border-light">
                         {/* Dictionary button 2 */}
+                    </th>
+                    <th className="w-2 text-center py-3 px-2 border-b border-vocab-border-light">
+                        {/* History button */}
                     </th>
                     <th className="w-20 text-right py-3 px-2 sm:px-4 border-b border-vocab-border-light">
                         Added
@@ -122,6 +127,15 @@ export function VocabTable({
                                 title="Cambridge Dictionary"
                             >
                                 📖
+                            </button>
+                        </td>
+                        <td className="w-2 text-center py-2 px-2 border-b border-vocab-border-light">
+                            <button
+                                className="w-7 h-7 p-1 bg-white/90 border border-vocab-border rounded-sm cursor-pointer transition-all duration-200 inline-flex items-center justify-center shadow-xs text-xs hover:bg-vocab-surface-hover hover:border-vocab-primary hover:-translate-y-px hover:shadow-sm"
+                                onClick={() => onHistoryClick(item.word)}
+                                title="View Query History"
+                            >
+                                📊
                             </button>
                         </td>
                         <td className="w-20 text-right py-2 px-2 sm:px-4 border-b border-vocab-border-light">

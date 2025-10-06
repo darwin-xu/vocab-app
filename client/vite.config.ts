@@ -43,6 +43,10 @@ export default defineConfig({
                 target: 'http://localhost:8787',
                 changeOrigin: true,
             },
+            '/query-history': {
+                target: 'http://localhost:8787',
+                changeOrigin: true,
+            },
             // Admin endpoints
             '/admin': {
                 target: 'http://localhost:8787',

@@ -42,6 +42,19 @@ export async function setupDatabase(env: Env): Promise<void> {
             )
         `,
         ).run();
+
+        await env.DB.prepare(
+            `
+            CREATE TABLE IF NOT EXISTS query_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                word TEXT NOT NULL,
+                query_type TEXT NOT NULL,
+                query_time TEXT NOT NULL DEFAULT (datetime('now')),
+                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        `,
+        ).run();
     } catch (error) {
         console.warn(
             'Error setting up database:',

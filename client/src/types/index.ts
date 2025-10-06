@@ -23,6 +23,7 @@ export interface HoverState {
     x: number;
     y: number;
     content: string;
+    word?: string;
     isLoading?: boolean;
 }
 

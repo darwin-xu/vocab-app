@@ -10,6 +10,7 @@ import {
     UpdateUserRequestBody,
     NoteRequestBody,
     DeleteNoteRequestBody,
+    QueryHistoryRequestBody,
 } from './types.js';
 
 import { SessionManager } from './sessionManager.js';
@@ -614,6 +615,84 @@ export default {
                     return new Response('OK');
                 } catch {
                     return new Response('Invalid JSON', { status: 400 });
+                }
+            }
+        }
+
+        if (url.pathname === '/query-history') {
+            const userId = await getUserIdFromRequest(request, env);
+            if (!userId) return new Response('Unauthorized', { status: 401 });
+
+            if (request.method === 'GET') {
+                const word = url.searchParams.get('word');
+                if (!word) {
+                    return new Response('Missing word parameter', {
+                        status: 400,
+                    });
+                }
+
+                try {
+                    const { results } = await env.DB.prepare(
+                        'SELECT query_type, query_time FROM query_history WHERE user_id = ? AND word = ? ORDER BY query_time DESC',
+                    )
+                        .bind(userId, word)
+                        .all();
+
+                    return new Response(JSON.stringify({ history: results }), {
+                        headers: { 'Content-Type': 'application/json' },
+                    });
+                } catch (error) {
+                    console.error('Error fetching query history:', error);
+                    return new Response(
+                        JSON.stringify({
+                            error: 'Failed to fetch query history',
+                            history: [],
+                        }),
+                        {
+                            status: 500,
+                            headers: { 'Content-Type': 'application/json' },
+                        },
+                    );
+                }
+            }
+
+            if (request.method === 'POST') {
+                try {
+                    const body =
+                        (await request.json()) as QueryHistoryRequestBody;
+                    if (!body.word || !body.query_type) {
+                        return new Response('Missing word or query_type', {
+                            status: 400,
+                        });
+                    }
+
+                    if (
+                        body.query_type !== 'definition' &&
+                        body.query_type !== 'tts'
+                    ) {
+                        return new Response(
+                            'Invalid query_type. Must be "definition" or "tts"',
+                            { status: 400 },
+                        );
+                    }
+
+                    await env.DB.prepare(
+                        'INSERT INTO query_history (user_id, word, query_type, query_time) VALUES (?, ?, ?, ?)',
+                    )
+                        .bind(
+                            userId,
+                            body.word,
+                            body.query_type,
+                            new Date().toISOString(),
+                        )
+                        .run();
+
+                    return new Response('OK');
+                } catch (error) {
+                    console.error('Error recording query history:', error);
+                    return new Response('Failed to record query history', {
+                        status: 500,
+                    });
                 }
             }
         }

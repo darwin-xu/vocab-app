@@ -213,6 +213,10 @@ export async function openaiCall(word: string, action: string) {
         if (process.env.NODE_ENV === 'development') {
             console.log(`🎯 Cache hit for "${word}" (${action})`);
         }
+        // Record history even for cached responses (skip in test environment)
+        if (action === 'define' && process.env.NODE_ENV !== 'test') {
+            recordQueryHistory(word, 'definition');
+        }
         return cachedResponse;
     }
 
@@ -231,6 +235,11 @@ export async function openaiCall(word: string, action: string) {
     openaiCache.set(word, action, responseData);
     if (process.env.NODE_ENV === 'development') {
         console.log(`💾 Cached response for "${word}" (${action})`);
+    }
+
+    // Record history for definition queries (skip in test environment)
+    if (action === 'define' && process.env.NODE_ENV !== 'test') {
+        recordQueryHistory(word, 'definition');
     }
 
     return responseData;
@@ -375,4 +384,47 @@ export function _clearCacheForTesting() {
 // Export for debugging purposes
 export function _getCacheStats() {
     return openaiCache.getStats();
+}
+
+export async function recordQueryHistory(
+    word: string,
+    queryType: 'definition' | 'tts',
+) {
+    try {
+        const res = await authFetch('/query-history', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ word, query_type: queryType }),
+        });
+        if (!res.ok) {
+            console.warn('Failed to record query history:', await res.text());
+        }
+    } catch (error) {
+        console.warn('Error recording query history:', error);
+    }
+}
+
+export async function getQueryHistory(word: string) {
+    try {
+        const res = await authFetch(
+            `/query-history?word=${encodeURIComponent(word)}`,
+        );
+        if (!res.ok) {
+            // Try to get error message from JSON response
+            try {
+                const errorData = await res.json();
+                if (errorData.error) {
+                    throw new Error(errorData.error);
+                }
+            } catch {
+                // If JSON parsing fails, use status text
+                throw new Error(`Failed to fetch history (${res.status})`);
+            }
+        }
+        return res.json();
+    } catch (error) {
+        console.error('Error fetching query history:', error);
+        // Return empty history on error instead of throwing
+        return { history: [] };
+    }
 }
