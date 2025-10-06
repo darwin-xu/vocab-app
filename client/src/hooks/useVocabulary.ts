@@ -49,19 +49,29 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
             setSelected(new Set());
         } catch (error) {
             console.error('Error in loadVocab:', error);
-            
+
             // Check if this is a session-related error before auto-logout
             const errorMessage = (error as Error).message.toLowerCase();
-            if (errorMessage.includes('unauthorized') || errorMessage.includes('session')) {
+            if (
+                errorMessage.includes('unauthorized') ||
+                errorMessage.includes('session')
+            ) {
                 // Only logout if we've had multiple failures or this is clearly a session issue
                 if (sessionMonitor.shouldAutoLogout()) {
-                    sessionAnalytics.recordLogout('auto', 'Multiple API failures in loadVocab', {
-                        errorDetails: (error as Error).message,
-                        apiEndpoint: '/vocab'
-                    });
+                    sessionAnalytics.recordLogout(
+                        'auto',
+                        'Multiple API failures in loadVocab',
+                        {
+                            errorDetails: (error as Error).message,
+                            apiEndpoint: '/vocab',
+                        },
+                    );
                     logout();
                 } else {
-                    console.warn('API error detected, but not forcing logout yet:', error);
+                    console.warn(
+                        'API error detected, but not forcing logout yet:',
+                        error,
+                    );
                 }
             } else {
                 // For non-session errors, just log but don't logout
@@ -97,7 +107,7 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
             try {
                 await removeWords(Array.from(selected));
                 // Trigger reload by incrementing refresh counter
-                setRefreshCounter(prev => prev + 1);
+                setRefreshCounter((prev) => prev + 1);
             } catch (error) {
                 console.error('Error removing words:', error);
             }
@@ -237,7 +247,7 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
                 await saveNote(notesModal.word, '');
             }
             closeNotesModal();
-            setRefreshCounter(prev => prev + 1);
+            setRefreshCounter((prev) => prev + 1);
         } catch (error) {
             console.error('Error saving note:', error);
         }

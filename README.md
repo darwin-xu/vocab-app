@@ -30,10 +30,10 @@ Our application includes comprehensive testing:
 2. Install dependencies: `npm install`
 3. Set up your environment variables
 4. Initialize the database (for new features):
-   ```bash
-   # Run schema migrations for query history feature
-   ./setup-query-history.sh
-   ```
+    ```bash
+    # Run schema migrations for query history feature
+    ./setup-query-history.sh
+    ```
 5. Run development server: `npm run dev`
 
 ## Styling

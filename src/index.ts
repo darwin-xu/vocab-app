@@ -32,19 +32,22 @@ function getApiEndpoints(env: Env): string {
 
 const SESSIONS = new Map<string, { user_id: number; is_admin: boolean }>();
 
-async function getUserIdFromRequest(request: Request, env: Env): Promise<number | null> {
+async function getUserIdFromRequest(
+    request: Request,
+    env: Env,
+): Promise<number | null> {
     const auth = request.headers.get('Authorization');
     if (!auth) return null;
-    
+
     const token = auth.replace('Bearer ', '');
-    
+
     // Try to get from database first
     const sessionManager = new SessionManager(env);
     const session = await sessionManager.getSession(token);
     if (session) {
         return session.user_id;
     }
-    
+
     // Fallback to in-memory (for backwards compatibility during transition)
     const memorySession = SESSIONS.get(token);
     return memorySession?.user_id ?? null;
@@ -52,23 +55,23 @@ async function getUserIdFromRequest(request: Request, env: Env): Promise<number 
 
 async function getSessionFromRequest(
     request: Request,
-    env: Env
+    env: Env,
 ): Promise<{ user_id: number; is_admin: boolean } | null> {
     const auth = request.headers.get('Authorization');
     if (!auth) return null;
-    
+
     const token = auth.replace('Bearer ', '');
-    
+
     // Try to get from database first
     const sessionManager = new SessionManager(env);
     const session = await sessionManager.getSession(token);
     if (session) {
         return {
             user_id: session.user_id,
-            is_admin: Boolean(session.is_admin)
+            is_admin: Boolean(session.is_admin),
         };
     }
-    
+
     // Fallback to in-memory (for backwards compatibility during transition)
     const memorySession = SESSIONS.get(token);
     return memorySession ?? null;
@@ -115,7 +118,7 @@ export default {
                 // Initialize session manager and tables
                 const sessionManager = new SessionManager(env);
                 await sessionManager.initializeTables();
-                
+
                 const body = (await request.json()) as LoginRequestBody;
                 if (!body.username || !body.password) {
                     return new Response('Missing username or password', {
@@ -134,27 +137,30 @@ export default {
                 }
 
                 const token = randomId();
-                
+
                 // Store session in database
-                const userAgent = request.headers.get('User-Agent') || undefined;
-                const ipAddress = request.headers.get('CF-Connecting-IP') || 
-                                request.headers.get('X-Forwarded-For') || 
-                                request.headers.get('X-Real-IP') || undefined;
-                
+                const userAgent =
+                    request.headers.get('User-Agent') || undefined;
+                const ipAddress =
+                    request.headers.get('CF-Connecting-IP') ||
+                    request.headers.get('X-Forwarded-For') ||
+                    request.headers.get('X-Real-IP') ||
+                    undefined;
+
                 await sessionManager.createSession(
-                    token, 
-                    user.id, 
+                    token,
+                    user.id,
                     Boolean(user.is_admin),
                     userAgent,
-                    ipAddress
+                    ipAddress,
                 );
-                
+
                 // Also store in memory for backwards compatibility
                 SESSIONS.set(token, {
                     user_id: user.id,
                     is_admin: Boolean(user.is_admin),
                 });
-                
+
                 return new Response(
                     JSON.stringify({ token, is_admin: user.is_admin }),
                     {
@@ -703,13 +709,16 @@ export default {
             if (!session) {
                 return new Response('Unauthorized', { status: 401 });
             }
-            return new Response(JSON.stringify({ 
-                status: 'ok', 
-                user_id: session.user_id,
-                timestamp: new Date().toISOString() 
-            }), {
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return new Response(
+                JSON.stringify({
+                    status: 'ok',
+                    user_id: session.user_id,
+                    timestamp: new Date().toISOString(),
+                }),
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                },
+            );
         }
 
         // Analytics endpoint for logout tracking
@@ -719,18 +728,18 @@ export default {
                 if (!session) {
                     return new Response('Unauthorized', { status: 401 });
                 }
-                
+
                 const logoutEvent = await request.json();
                 console.log('Logout event received:', {
                     user_id: session.user_id,
-                    event: logoutEvent
+                    event: logoutEvent,
                 });
-                
+
                 // Store in database for analysis (optional)
                 // await env.DB.prepare(
                 //     'INSERT INTO logout_events (user_id, event_data, created_at) VALUES (?, ?, ?)'
                 // ).bind(session.user_id, JSON.stringify(logoutEvent), new Date().toISOString()).run();
-                
+
                 return new Response('OK');
             } catch (error) {
                 console.error('Error processing logout analytics:', error);
@@ -744,10 +753,10 @@ export default {
             if (auth) {
                 const token = auth.replace('Bearer ', '');
                 const sessionManager = new SessionManager(env);
-                
+
                 // Remove from database
                 await sessionManager.deleteSession(token);
-                
+
                 // Remove from memory (backwards compatibility)
                 SESSIONS.delete(token);
             }

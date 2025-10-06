@@ -23,8 +23,8 @@ vi.mock('../utils/ttsParser', () => ({
         },
     ]),
     cleanTextForTTS: vi.fn((text) => text),
-    getSectionsByType: vi.fn((sections, type) => 
-        sections.filter((s: { type: string }) => s.type === type)
+    getSectionsByType: vi.fn((sections, type) =>
+        sections.filter((s: { type: string }) => s.type === type),
     ),
 }));
 
@@ -64,14 +64,14 @@ describe('TTSControls Component', () => {
 
     it('should render without crashing', async () => {
         const { container } = render(<TestWrapper />);
-        
+
         // Just check that the component renders the main div
         expect(container.querySelector('.space-y-1')).toBeInTheDocument();
     });
 
     it('should render component container', async () => {
         const { container } = render(<TestWrapper />);
-        
+
         // Should have the space-y-1 class
         expect(container.querySelector('.space-y-1')).toBeInTheDocument();
     });
@@ -81,9 +81,9 @@ describe('TTSControls Component', () => {
             const audioRef = useRef<HTMLAudioElement | null>(null);
             return <TTSControls content="" audioRef={audioRef} />;
         };
-        
+
         const { container } = render(<EmptyTestWrapper />);
-        
+
         // Should render without errors even with empty content
         expect(container.querySelector('.space-y-1')).toBeInTheDocument();
     });

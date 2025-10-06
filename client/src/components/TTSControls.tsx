@@ -14,7 +14,11 @@ interface TTSControlsProps {
     word?: string;
 }
 
-const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef, word }) => {
+const TTSControls: React.FC<TTSControlsProps> = ({
+    content,
+    audioRef,
+    word,
+}) => {
     const sections = parseMarkdownForTTS(content);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -35,12 +39,12 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef, word }) =>
 
             const cleanText = cleanTextForTTS(text);
             const b64 = await ttsCall(cleanText);
-            
+
             // Record TTS query history if word is available (skip in test environment)
             if (word && process.env.NODE_ENV !== 'test') {
                 recordQueryHistory(word, 'tts');
             }
-            
+
             const audio = new Audio(`data:audio/wav;base64,${b64}`);
             audioRef.current = audio;
             await audio.play();
@@ -57,8 +61,8 @@ const TTSControls: React.FC<TTSControlsProps> = ({ content, audioRef, word }) =>
     }) => (
         <button
             className={`inline-flex items-center justify-center min-w-5 h-4 ml-1 align-middle rounded-xs bg-gradient-primary text-xs text-white shadow-sm transition-all duration-200 ${
-                isLoading 
-                    ? 'opacity-50 cursor-not-allowed' 
+                isLoading
+                    ? 'opacity-50 cursor-not-allowed'
                     : 'opacity-80 hover:-translate-y-px hover:shadow-md hover:opacity-100 active:translate-y-0'
             }`}
             onClick={(e) => {

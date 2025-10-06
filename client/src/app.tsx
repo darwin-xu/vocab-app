@@ -268,7 +268,9 @@ function App() {
             />
 
             {/* Debug Panel - Always show for admin */}
-            {showDebugPanel && <SessionDebugPanel onClose={() => setShowDebugPanel(false)} />}
+            {showDebugPanel && (
+                <SessionDebugPanel onClose={() => setShowDebugPanel(false)} />
+            )}
         </LayoutWithBackground>
     );
 }

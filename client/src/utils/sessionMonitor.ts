@@ -22,9 +22,12 @@ export class SessionMonitor {
 
     startHealthCheck() {
         // Perform periodic health checks every 5 minutes
-        this.healthCheckInterval = window.setInterval(() => {
-            this.performHealthCheck();
-        }, 5 * 60 * 1000);
+        this.healthCheckInterval = window.setInterval(
+            () => {
+                this.performHealthCheck();
+            },
+            5 * 60 * 1000,
+        );
     }
 
     stopHealthCheck() {
@@ -36,33 +39,47 @@ export class SessionMonitor {
 
     private async performHealthCheck() {
         try {
-            const token = typeof localStorage !== 'undefined' ? localStorage.getItem('sessionToken') : null;
+            const token =
+                typeof localStorage !== 'undefined'
+                    ? localStorage.getItem('sessionToken')
+                    : null;
             if (!token) return;
 
             const response = await fetch('/health', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                    Authorization: `Bearer ${token}`,
+                },
             });
 
             if (response.status === 401) {
-                sessionAnalytics.recordLogout('server_error', 'Session expired during health check', {
-                    httpStatus: 401,
-                    apiEndpoint: '/health'
-                });
+                sessionAnalytics.recordLogout(
+                    'server_error',
+                    'Session expired during health check',
+                    {
+                        httpStatus: 401,
+                        apiEndpoint: '/health',
+                    },
+                );
                 this.handleSessionExpired();
             } else if (response.ok) {
                 this.consecutiveFailures = 0;
             }
         } catch (error) {
             this.consecutiveFailures++;
-            console.warn(`Health check failed (${this.consecutiveFailures}/${this.MAX_FAILURES}):`, error);
-            
+            console.warn(
+                `Health check failed (${this.consecutiveFailures}/${this.MAX_FAILURES}):`,
+                error,
+            );
+
             if (this.consecutiveFailures >= this.MAX_FAILURES) {
-                sessionAnalytics.recordLogout('network_error', 'Multiple health check failures', {
-                    errorDetails: String(error)
-                });
+                sessionAnalytics.recordLogout(
+                    'network_error',
+                    'Multiple health check failures',
+                    {
+                        errorDetails: String(error),
+                    },
+                );
             }
         }
     }
@@ -81,7 +98,7 @@ export class SessionMonitor {
 
     async wrapApiCall<T>(
         apiCall: () => Promise<T>,
-        endpoint: string
+        endpoint: string,
     ): Promise<T> {
         try {
             const result = await apiCall();
@@ -104,13 +121,17 @@ export class SessionMonitor {
             sessionAnalytics.recordLogout('server_error', reason, {
                 httpStatus: 401,
                 apiEndpoint: endpoint,
-                errorDetails: error.message
+                errorDetails: error.message,
             });
         } else if (error.status === 403) {
             reason = 'Forbidden - insufficient permissions';
         } else if (error.status && error.status >= 500) {
             reason = 'Server error';
-        } else if (!error.status || error.message.includes('network') || error.message.includes('fetch')) {
+        } else if (
+            !error.status ||
+            error.message.includes('network') ||
+            error.message.includes('fetch')
+        ) {
             errorType = 'network_error';
             reason = 'Network connectivity issue';
         }
@@ -120,7 +141,7 @@ export class SessionMonitor {
             status: error.status,
             message: error.message,
             type: errorType,
-            reason
+            reason,
         });
 
         // Track consecutive failures
@@ -128,16 +149,25 @@ export class SessionMonitor {
     }
 
     getSessionInfo() {
-        const token = typeof localStorage !== 'undefined' ? localStorage.getItem('sessionToken') : null;
-        const username = typeof localStorage !== 'undefined' ? localStorage.getItem('username') : null;
-        const isAdmin = typeof localStorage !== 'undefined' ? localStorage.getItem('isAdmin') : null;
-        
+        const token =
+            typeof localStorage !== 'undefined'
+                ? localStorage.getItem('sessionToken')
+                : null;
+        const username =
+            typeof localStorage !== 'undefined'
+                ? localStorage.getItem('username')
+                : null;
+        const isAdmin =
+            typeof localStorage !== 'undefined'
+                ? localStorage.getItem('isAdmin')
+                : null;
+
         return {
             hasToken: !!token,
             username,
             isAdmin: isAdmin === 'true',
             consecutiveFailures: this.consecutiveFailures,
-            healthCheckActive: !!this.healthCheckInterval
+            healthCheckActive: !!this.healthCheckInterval,
         };
     }
 

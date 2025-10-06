@@ -57,7 +57,11 @@ export function HistoryModal({ isOpen, word, onClose }: HistoryModalProps) {
     const { definitionHistory, ttsHistory } = groupHistoryByType();
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`History for "${word}"`}>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={`History for "${word}"`}
+        >
             <div className="space-y-4">
                 {isLoading && (
                     <div className="text-center py-4 text-auth-text-medium">
@@ -82,7 +86,8 @@ export function HistoryModal({ isOpen, word, onClose }: HistoryModalProps) {
                         {definitionHistory.length > 0 && (
                             <div>
                                 <h3 className="text-lg font-semibold text-vocab-primary mb-2">
-                                    Definition Queries ({definitionHistory.length})
+                                    Definition Queries (
+                                    {definitionHistory.length})
                                 </h3>
                                 <div className="space-y-1 max-h-48 overflow-y-auto">
                                     {definitionHistory.map((item, index) => (

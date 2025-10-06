@@ -109,17 +109,14 @@ describe('Query History API', () => {
         });
 
         it('should require authentication', async () => {
-            const request = new Request(
-                'http://example.com/query-history',
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        word: 'test',
-                        query_type: 'definition',
-                    }),
-                },
-            );
+            const request = new Request('http://example.com/query-history', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    word: 'test',
+                    query_type: 'definition',
+                }),
+            });
 
             const response = await worker.fetch(request, env);
             expect(response.status).toBe(401);
@@ -207,7 +204,10 @@ describe('Query History API', () => {
 
         it('should only return history for authenticated user', async () => {
             // Create another user
-            const otherUser = await createTestUser(`otheruser${Date.now()}`, 'password');
+            const otherUser = await createTestUser(
+                `otheruser${Date.now()}`,
+                'password',
+            );
 
             // Add history for the other user
             await env.DB.prepare(
@@ -236,7 +236,11 @@ describe('Query History API', () => {
 
             // Should only return the first user's history (3 items), not the other user's
             expect(data.history).toHaveLength(3);
-            expect(data.history.every((h) => h.query_time !== '2025-01-01T13:00:00Z')).toBe(true);
+            expect(
+                data.history.every(
+                    (h) => h.query_time !== '2025-01-01T13:00:00Z',
+                ),
+            ).toBe(true);
         });
     });
 });

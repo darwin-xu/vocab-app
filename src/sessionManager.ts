@@ -27,26 +27,45 @@ export class SessionManager {
         user_id: number,
         is_admin: boolean,
         userAgent?: string,
-        ipAddress?: string
+        ipAddress?: string,
     ): Promise<void> {
         const now = new Date().toISOString();
-        const expiresAt = new Date(Date.now() + this.SESSION_TIMEOUT_HOURS * 60 * 60 * 1000).toISOString();
+        const expiresAt = new Date(
+            Date.now() + this.SESSION_TIMEOUT_HOURS * 60 * 60 * 1000,
+        ).toISOString();
 
-        await this.env.DB.prepare(`
+        await this.env.DB.prepare(
+            `
             INSERT INTO sessions (token, user_id, is_admin, created_at, last_activity, expires_at, user_agent, ip_address)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `).bind(token, user_id, is_admin ? 1 : 0, now, now, expiresAt, userAgent || null, ipAddress || null).run();
+        `,
+        )
+            .bind(
+                token,
+                user_id,
+                is_admin ? 1 : 0,
+                now,
+                now,
+                expiresAt,
+                userAgent || null,
+                ipAddress || null,
+            )
+            .run();
     }
 
     /**
      * Get session data by token
      */
     async getSession(token: string): Promise<SessionData | null> {
-        const session = await this.env.DB.prepare(`
+        const session = (await this.env.DB.prepare(
+            `
             SELECT token, user_id, is_admin, created_at, last_activity, expires_at
             FROM sessions 
             WHERE token = ? AND expires_at > datetime('now')
-        `).bind(token).first() as SessionData | null;
+        `,
+        )
+            .bind(token)
+            .first()) as SessionData | null;
 
         if (session) {
             // Update last activity AND extend session expiration (sliding window)
@@ -61,38 +80,52 @@ export class SessionManager {
      * Update session last activity timestamp
      */
     async updateSessionActivity(token: string): Promise<void> {
-        await this.env.DB.prepare(`
+        await this.env.DB.prepare(
+            `
             UPDATE sessions 
             SET last_activity = datetime('now') 
             WHERE token = ?
-        `).bind(token).run();
+        `,
+        )
+            .bind(token)
+            .run();
     }
 
     /**
      * Delete a specific session (logout)
      */
     async deleteSession(token: string): Promise<void> {
-        await this.env.DB.prepare(`
+        await this.env.DB.prepare(
+            `
             DELETE FROM sessions WHERE token = ?
-        `).bind(token).run();
+        `,
+        )
+            .bind(token)
+            .run();
     }
 
     /**
      * Delete all sessions for a user
      */
     async deleteAllUserSessions(user_id: number): Promise<void> {
-        await this.env.DB.prepare(`
+        await this.env.DB.prepare(
+            `
             DELETE FROM sessions WHERE user_id = ?
-        `).bind(user_id).run();
+        `,
+        )
+            .bind(user_id)
+            .run();
     }
 
     /**
      * Clean up expired sessions
      */
     async cleanupExpiredSessions(): Promise<number> {
-        const result = await this.env.DB.prepare(`
+        const result = await this.env.DB.prepare(
+            `
             DELETE FROM sessions WHERE expires_at <= datetime('now')
-        `).run();
+        `,
+        ).run();
 
         return result.meta?.changes || 0;
     }
@@ -101,11 +134,15 @@ export class SessionManager {
      * Get active session count for a user
      */
     async getUserSessionCount(user_id: number): Promise<number> {
-        const result = await this.env.DB.prepare(`
+        const result = (await this.env.DB.prepare(
+            `
             SELECT COUNT(*) as count 
             FROM sessions 
             WHERE user_id = ? AND expires_at > datetime('now')
-        `).bind(user_id).first() as { count: number } | null;
+        `,
+        )
+            .bind(user_id)
+            .first()) as { count: number } | null;
 
         return result?.count || 0;
     }
@@ -114,13 +151,19 @@ export class SessionManager {
      * Extend session expiration
      */
     async extendSession(token: string): Promise<boolean> {
-        const expiresAt = new Date(Date.now() + this.SESSION_TIMEOUT_HOURS * 60 * 60 * 1000).toISOString();
-        
-        const result = await this.env.DB.prepare(`
+        const expiresAt = new Date(
+            Date.now() + this.SESSION_TIMEOUT_HOURS * 60 * 60 * 1000,
+        ).toISOString();
+
+        const result = await this.env.DB.prepare(
+            `
             UPDATE sessions 
             SET expires_at = ?, last_activity = datetime('now')
             WHERE token = ? AND expires_at > datetime('now')
-        `).bind(expiresAt, token).run();
+        `,
+        )
+            .bind(expiresAt, token)
+            .run();
 
         return (result.meta?.changes || 0) > 0;
     }
@@ -136,23 +179,27 @@ export class SessionManager {
         errorDetails?: string,
         apiEndpoint?: string,
         httpStatus?: number,
-        userAgent?: string
+        userAgent?: string,
     ): Promise<void> {
         try {
-            await this.env.DB.prepare(`
+            await this.env.DB.prepare(
+                `
                 INSERT INTO logout_events 
                 (user_id, event_type, reason, session_duration_ms, error_details, api_endpoint, http_status, user_agent)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            `).bind(
-                user_id,
-                eventType,
-                reason,
-                sessionDurationMs || null,
-                errorDetails || null,
-                apiEndpoint || null,
-                httpStatus || null,
-                userAgent || null
-            ).run();
+            `,
+            )
+                .bind(
+                    user_id,
+                    eventType,
+                    reason,
+                    sessionDurationMs || null,
+                    errorDetails || null,
+                    apiEndpoint || null,
+                    httpStatus || null,
+                    userAgent || null,
+                )
+                .run();
         } catch (error) {
             console.error('Failed to record logout event:', error);
         }
@@ -172,34 +219,48 @@ export class SessionManager {
             user_id: number;
         }>;
     }> {
-        const [activeResult, expiredResult, logoutCountResult, recentLogoutsResult] = await Promise.all([
-            this.env.DB.prepare(`
+        const [
+            activeResult,
+            expiredResult,
+            logoutCountResult,
+            recentLogoutsResult,
+        ] = await Promise.all([
+            this.env.DB.prepare(
+                `
                 SELECT COUNT(*) as count FROM sessions WHERE expires_at > datetime('now')
-            `).first(),
-            this.env.DB.prepare(`
+            `,
+            ).first(),
+            this.env.DB.prepare(
+                `
                 SELECT COUNT(*) as count FROM sessions WHERE expires_at <= datetime('now')
-            `).first(),
-            this.env.DB.prepare(`
+            `,
+            ).first(),
+            this.env.DB.prepare(
+                `
                 SELECT COUNT(*) as count FROM logout_events WHERE created_at > datetime('now', '-7 days')
-            `).first(),
-            this.env.DB.prepare(`
+            `,
+            ).first(),
+            this.env.DB.prepare(
+                `
                 SELECT event_type, reason, created_at, user_id
                 FROM logout_events 
                 ORDER BY created_at DESC 
                 LIMIT 10
-            `).all()
+            `,
+            ).all(),
         ]);
 
         return {
             activeSessions: (activeResult as { count: number })?.count || 0,
             expiredSessions: (expiredResult as { count: number })?.count || 0,
-            totalLogoutEvents: (logoutCountResult as { count: number })?.count || 0,
+            totalLogoutEvents:
+                (logoutCountResult as { count: number })?.count || 0,
             recentLogouts: (recentLogoutsResult?.results || []) as Array<{
                 event_type: string;
                 reason: string;
                 created_at: string;
                 user_id: number;
-            }>
+            }>,
         };
     }
 
@@ -207,7 +268,8 @@ export class SessionManager {
      * Initialize session tables if they don't exist
      */
     async initializeTables(): Promise<void> {
-        await this.env.DB.prepare(`
+        await this.env.DB.prepare(
+            `
             CREATE TABLE IF NOT EXISTS sessions (
                 token TEXT PRIMARY KEY,
                 user_id INTEGER NOT NULL,
@@ -218,17 +280,23 @@ export class SessionManager {
                 user_agent TEXT,
                 ip_address TEXT
             )
-        `).run();
+        `,
+        ).run();
 
-        await this.env.DB.prepare(`
+        await this.env.DB.prepare(
+            `
             CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id)
-        `).run();
+        `,
+        ).run();
 
-        await this.env.DB.prepare(`
+        await this.env.DB.prepare(
+            `
             CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at)
-        `).run();
+        `,
+        ).run();
 
-        await this.env.DB.prepare(`
+        await this.env.DB.prepare(
+            `
             CREATE TABLE IF NOT EXISTS logout_events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER,
@@ -241,14 +309,19 @@ export class SessionManager {
                 user_agent TEXT,
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             )
-        `).run();
+        `,
+        ).run();
 
-        await this.env.DB.prepare(`
+        await this.env.DB.prepare(
+            `
             CREATE INDEX IF NOT EXISTS idx_logout_events_user_id ON logout_events(user_id)
-        `).run();
+        `,
+        ).run();
 
-        await this.env.DB.prepare(`
+        await this.env.DB.prepare(
+            `
             CREATE INDEX IF NOT EXISTS idx_logout_events_created_at ON logout_events(created_at)
-        `).run();
+        `,
+        ).run();
     }
 }

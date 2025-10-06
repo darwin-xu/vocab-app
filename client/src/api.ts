@@ -157,7 +157,7 @@ export async function login(username: string, password: string) {
     setToken(data.token);
     localStorage.setItem(USERNAME_KEY, username);
     localStorage.setItem('isAdmin', data.is_admin ? 'true' : 'false');
-    
+
     // Record successful login and start session monitoring
     sessionAnalytics.setLoginTime();
     sessionMonitor.startHealthCheck();
@@ -178,10 +178,14 @@ export async function fetchVocab(q = '', page = 1, pageSize = 20) {
             `/vocab?q=${encodeURIComponent(q)}&page=${page}&pageSize=${pageSize}`,
         );
         if (res.status === 401) {
-            sessionAnalytics.recordLogout('server_error', 'Unauthorized response from fetchVocab', {
-                httpStatus: 401,
-                apiEndpoint: '/vocab'
-            });
+            sessionAnalytics.recordLogout(
+                'server_error',
+                'Unauthorized response from fetchVocab',
+                {
+                    httpStatus: 401,
+                    apiEndpoint: '/vocab',
+                },
+            );
             throw new Error('Unauthorized');
         }
         return res.json();
@@ -358,17 +362,17 @@ export function isAdmin() {
 export async function logout() {
     // Record the logout event
     sessionAnalytics.recordLogout('manual', 'User initiated logout');
-    
+
     // Stop health monitoring
     sessionMonitor.stopHealthCheck();
-    
+
     // Call server logout endpoint to invalidate session
     try {
         await authFetch('/logout', { method: 'POST' });
     } catch (error) {
         console.warn('Failed to notify server of logout:', error);
     }
-    
+
     // Clear all session data
     clearToken();
     localStorage.removeItem('isAdmin');
