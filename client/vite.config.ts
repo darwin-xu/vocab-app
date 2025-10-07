@@ -1,9 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+const buildTime = new Date().toISOString();
+const packageVersion =
+    (globalThis as { process?: { env?: Record<string, string | undefined> } })
+        .process?.env?.npm_package_version ?? 'dev';
+
 // https://vite.dev/config/
 export default defineConfig({
     plugins: [react()],
+    define: {
+        __APP_VERSION__: JSON.stringify(packageVersion),
+        __APP_BUILD_TIME__: JSON.stringify(buildTime),
+    },
     server: {
         proxy: {
             // Proxy all API endpoints to the Wrangler backend
