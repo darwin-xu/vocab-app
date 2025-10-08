@@ -34,11 +34,13 @@ textarea:focus {
 
 /* Responsive table adjustments for mobile */
 @media (max-width: 768px) {
-    /* Hide dictionary buttons (4th and 5th columns) on mobile for cleaner look */
+    /* Hide dictionary buttons (4th and 5th columns) and history (6th column) on mobile */
     table thead th:nth-child(4),
     table thead th:nth-child(5),
+    table thead th:nth-child(6),
     table tbody td:nth-child(4),
-    table tbody td:nth-child(5) {
+    table tbody td:nth-child(5),
+    table tbody td:nth-child(6) {
         display: none;
     }
 
@@ -62,8 +64,8 @@ textarea:focus {
         min-width: 0;
     }
 
-    table th:nth-child(6),
-    table td:nth-child(6) {
+    table th:nth-child(7),
+    table td:nth-child(7) {
         width: 60px;
         min-width: 50px;
         text-align: center;
@@ -85,8 +87,8 @@ textarea:focus {
         max-width: 140px;
     }
 
-    table th:nth-child(6),
-    table td:nth-child(6) {
+    table th:nth-child(7),
+    table td:nth-child(7) {
         width: 50px;
         min-width: 45px;
     }
