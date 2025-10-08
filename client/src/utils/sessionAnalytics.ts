@@ -114,8 +114,8 @@ class SessionAnalytics {
             ...details,
         };
 
-    this.storeEvent(event);
-    warnLog('Logout recorded:', event);
+        this.storeEvent(event);
+        warnLog('Logout recorded:', event);
 
         // Send to server for analysis (optional)
         this.sendLogoutEvent(event);

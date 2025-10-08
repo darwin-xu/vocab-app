@@ -57,16 +57,16 @@ describe('json2md vs custom converter comparison', () => {
         ];
 
         const json2mdResult = json2md(json2mdData);
-    debugLog('json2md result:');
-    debugLog(json2mdResult);
+        debugLog('json2md result:');
+        debugLog(json2mdResult);
 
         expect(json2mdResult).toContain('# example');
     });
 
     it('should show what our custom converter produces (dictionary-specific)', () => {
         const customResult = convertDictionaryToMarkdown(sampleData);
-    debugLog('Custom converter result:');
-    debugLog(customResult);
+        debugLog('Custom converter result:');
+        debugLog(customResult);
 
         expect(customResult).toContain('# example');
         expect(customResult).toContain('## Noun');
@@ -79,8 +79,8 @@ describe('json2md vs custom converter comparison', () => {
             { p: JSON.stringify(sampleData, null, 2) },
         ]);
 
-    debugLog('Raw JSON with json2md:');
-    debugLog(rawJson2mdResult);
+        debugLog('Raw JSON with json2md:');
+        debugLog(rawJson2mdResult);
 
         const customResult = convertDictionaryToMarkdown(sampleData);
 

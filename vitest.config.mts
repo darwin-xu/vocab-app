@@ -15,7 +15,7 @@ export default defineWorkersConfig({
         unstubGlobals: true,
         forceRerunTriggers: [],
         coverage: {
-            provider: 'v8',
+            provider: 'istanbul',
             reporter: ['text', 'json', 'html'],
             exclude: [
                 'node_modules/**',
