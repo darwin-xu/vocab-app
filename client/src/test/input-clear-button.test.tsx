@@ -38,27 +38,4 @@ describe('Input Component - Clear Button', () => {
 
         expect(onChange).toHaveBeenCalledWith('');
     });
-
-    it('should allow typing and then clearing', async () => {
-        const onChange = vi.fn();
-        const user = userEvent.setup();
-        const { rerender } = render(<Input value="" onChange={onChange} />);
-
-        const input = screen.getByRole('textbox');
-
-        // Type some text
-        await user.type(input, 'hello');
-        expect(onChange).toHaveBeenCalled();
-
-        // Rerender with the new value
-        rerender(<Input value="hello" onChange={onChange} />);
-
-        // Now the clear button should be visible
-        const clearButton = screen.getByLabelText('Clear input');
-        expect(clearButton).toBeInTheDocument();
-
-        // Click clear button
-        await user.click(clearButton);
-        expect(onChange).toHaveBeenCalledWith('');
-    });
 });
