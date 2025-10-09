@@ -20,19 +20,18 @@ export function Input({
     onKeyDown,
 }: InputProps) {
     const baseClasses =
-        'w-full px-4 py-3 border-2 border-vocab-border rounded-lg font-montserrat text-auth-text-dark transition-all duration-200 bg-white/90 backdrop-blur-sm';
+        'w-full py-3 border-2 border-vocab-border rounded-lg font-montserrat text-auth-text-dark transition-all duration-200 bg-white/90 backdrop-blur-sm';
+    const paddingClasses = value && !disabled ? 'pl-4 pr-11' : 'px-4';
     const focusClasses =
         'focus:border-vocab-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-vocab-primary/20';
     const disabledClasses = disabled
         ? 'opacity-50 cursor-not-allowed'
         : 'hover:border-vocab-primary/50';
 
-    const finalClasses = `${baseClasses} ${focusClasses} ${disabledClasses} ${className}`;
+    const finalClasses = `${baseClasses} ${paddingClasses} ${focusClasses} ${disabledClasses} ${className}`;
 
     const handleClear = () => {
-        if (!disabled) {
-            onChange('');
-        }
+        onChange('');
     };
 
     return (
