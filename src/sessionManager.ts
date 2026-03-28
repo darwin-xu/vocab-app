@@ -12,11 +12,15 @@ export interface SessionData {
 
 export class SessionManager {
     private env: Env;
-    private readonly SESSION_TIMEOUT_HOURS = 24; // 24 hours
+    private readonly SESSION_TIMEOUT_MS = 365 * 24 * 60 * 60 * 1000;
     private readonly CLEANUP_INTERVAL_HOURS = 1; // Cleanup expired sessions every hour
 
     constructor(env: Env) {
         this.env = env;
+    }
+
+    private getSessionExpirationTimestamp(): string {
+        return new Date(Date.now() + this.SESSION_TIMEOUT_MS).toISOString();
     }
 
     /**
@@ -30,9 +34,7 @@ export class SessionManager {
         ipAddress?: string,
     ): Promise<void> {
         const now = new Date().toISOString();
-        const expiresAt = new Date(
-            Date.now() + this.SESSION_TIMEOUT_HOURS * 60 * 60 * 1000,
-        ).toISOString();
+        const expiresAt = this.getSessionExpirationTimestamp();
 
         await this.env.DB.prepare(
             `
@@ -61,7 +63,7 @@ export class SessionManager {
             `
             SELECT token, user_id, is_admin, created_at, last_activity, expires_at
             FROM sessions 
-            WHERE token = ? AND expires_at > datetime('now')
+            WHERE token = ? AND datetime(expires_at) > datetime('now')
         `,
         )
             .bind(token)
@@ -123,7 +125,7 @@ export class SessionManager {
     async cleanupExpiredSessions(): Promise<number> {
         const result = await this.env.DB.prepare(
             `
-            DELETE FROM sessions WHERE expires_at <= datetime('now')
+            DELETE FROM sessions WHERE datetime(expires_at) <= datetime('now')
         `,
         ).run();
 
@@ -138,7 +140,7 @@ export class SessionManager {
             `
             SELECT COUNT(*) as count 
             FROM sessions 
-            WHERE user_id = ? AND expires_at > datetime('now')
+            WHERE user_id = ? AND datetime(expires_at) > datetime('now')
         `,
         )
             .bind(user_id)
@@ -151,15 +153,13 @@ export class SessionManager {
      * Extend session expiration
      */
     async extendSession(token: string): Promise<boolean> {
-        const expiresAt = new Date(
-            Date.now() + this.SESSION_TIMEOUT_HOURS * 60 * 60 * 1000,
-        ).toISOString();
+        const expiresAt = this.getSessionExpirationTimestamp();
 
         const result = await this.env.DB.prepare(
             `
             UPDATE sessions 
             SET expires_at = ?, last_activity = datetime('now')
-            WHERE token = ? AND expires_at > datetime('now')
+            WHERE token = ? AND datetime(expires_at) > datetime('now')
         `,
         )
             .bind(expiresAt, token)
@@ -227,12 +227,12 @@ export class SessionManager {
         ] = await Promise.all([
             this.env.DB.prepare(
                 `
-                SELECT COUNT(*) as count FROM sessions WHERE expires_at > datetime('now')
+                SELECT COUNT(*) as count FROM sessions WHERE datetime(expires_at) > datetime('now')
             `,
             ).first(),
             this.env.DB.prepare(
                 `
-                SELECT COUNT(*) as count FROM sessions WHERE expires_at <= datetime('now')
+                SELECT COUNT(*) as count FROM sessions WHERE datetime(expires_at) <= datetime('now')
             `,
             ).first(),
             this.env.DB.prepare(

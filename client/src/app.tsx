@@ -7,6 +7,7 @@ import { useWindowSize } from './hooks/useWindowSize';
 import { useVocabulary } from './hooks/useVocabulary';
 import { useAdmin } from './hooks/useAdmin';
 import { calculatePageSize } from './utils/helpers';
+import { sessionMonitor } from './utils/sessionMonitor';
 import type { ViewType } from './types';
 import { AuthForm } from './components/Auth/AuthForm';
 import { AddWordForm } from './components/Vocabulary/AddWordForm';
@@ -75,6 +76,7 @@ function App() {
     // check login on mount
     useEffect(() => {
         if (localStorage.getItem('sessionToken')) {
+            sessionMonitor.startHealthCheck();
             if (isAdmin()) {
                 setView('admin');
             } else {

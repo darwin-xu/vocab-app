@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SessionManager } from '../src/sessionManager';
 import { Env } from '../src/types';
 
+const SESSION_TIMEOUT_DAYS = 365;
+
 // Mock D1 database
 const mockDB = {
     prepare: vi.fn(),
@@ -70,6 +72,12 @@ describe('Session Sliding Window', () => {
                 'SELECT token, user_id, is_admin, created_at, last_activity, expires_at',
             ),
         );
+        expect(mockDB.prepare).toHaveBeenNthCalledWith(
+            1,
+            expect.stringContaining(
+                "datetime(expires_at) > datetime('now')",
+            ),
+        );
         expect(mockSelectQuery.bind).toHaveBeenCalledWith(mockToken);
 
         // Verify UPDATE last_activity query
@@ -133,9 +141,9 @@ describe('Session Sliding Window', () => {
         const mockNow = new Date('2025-06-24T15:00:00.000Z');
         vi.setSystemTime(mockNow);
 
-        // Expected expiration: 24 hours from now
+        // Expected expiration: long-lived sliding window from now
         const expectedExpiration = new Date(
-            mockNow.getTime() + 24 * 60 * 60 * 1000,
+            mockNow.getTime() + SESSION_TIMEOUT_DAYS * 24 * 60 * 60 * 1000,
         ).toISOString();
 
         const mockUpdateResult = { meta: { changes: 1 } };

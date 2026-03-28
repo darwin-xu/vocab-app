@@ -22,6 +22,10 @@ export class SessionMonitor {
     }
 
     startHealthCheck() {
+        if (this.healthCheckInterval) {
+            return;
+        }
+
         // Perform periodic health checks every 5 minutes
         this.healthCheckInterval = window.setInterval(
             () => {
