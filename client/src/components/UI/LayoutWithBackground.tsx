@@ -9,7 +9,7 @@ export function LayoutWithBackground({
     children,
     onClick,
 }: LayoutWithBackgroundProps) {
-    const versionText = `Version ${__APP_VERSION_DATE__} (${__APP_BUILD_NUMBER__}), developer by darwin and eric, deployed on "${__APP_DEPLOY_DATE__}"`;
+    const versionText = `Version ${__APP_VERSION_DATE__} (${__APP_BUILD_NUMBER__}), developer by darwin and eric, deployed on ${__APP_DEPLOY_DATE__}`;
 
     return (
         <div
