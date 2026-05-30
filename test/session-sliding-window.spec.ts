@@ -12,7 +12,7 @@ const mockDB = {
 const mockEnv: Env = {
     DB: mockDB as unknown as D1Database,
     ASSETS: { fetch: vi.fn() },
-    OPENAI_TOKEN: 'test-token',
+    OPENROUTER_API_KEY: 'test-token',
     ENVIRONMENT: 'test',
 };
 
@@ -74,9 +74,7 @@ describe('Session Sliding Window', () => {
         );
         expect(mockDB.prepare).toHaveBeenNthCalledWith(
             1,
-            expect.stringContaining(
-                "datetime(expires_at) > datetime('now')",
-            ),
+            expect.stringContaining("datetime(expires_at) > datetime('now')"),
         );
         expect(mockSelectQuery.bind).toHaveBeenCalledWith(mockToken);
 

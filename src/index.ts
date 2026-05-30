@@ -2,7 +2,7 @@ import {
     Env,
     UserRow,
     VocabCountResult,
-    OpenAIResponse,
+    OpenRouterChatResponse,
     RegisterRequestBody,
     LoginRequestBody,
     VocabRequestBody,
@@ -23,11 +23,40 @@ function randomId(): string {
         .join('');
 }
 
-function getApiEndpoints(env: Env): string {
-    const isLocal = env.ENVIRONMENT === 'development';
-    console.log('isLocal:', isLocal);
+const DEFAULT_OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
+const DEFAULT_OPENROUTER_MODEL = 'openai/gpt-4.1-nano';
+const DEFAULT_OPENROUTER_TTS_MODEL = 'openai/gpt-4o-mini-tts-2025-12-15';
 
-    return isLocal ? 'http://35.234.22.51:8080' : 'https://api.openai.com';
+function getOpenRouterBaseUrl(env: Env): string {
+    return env.OPENROUTER_BASE_URL ?? DEFAULT_OPENROUTER_BASE_URL;
+}
+
+function getOpenRouterHeaders(env: Env): Record<string, string> {
+    const headers: Record<string, string> = {
+        Authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+    };
+
+    if (env.OPENROUTER_SITE_URL) {
+        headers['HTTP-Referer'] = env.OPENROUTER_SITE_URL;
+    }
+
+    if (env.OPENROUTER_APP_TITLE) {
+        headers['X-OpenRouter-Title'] = env.OPENROUTER_APP_TITLE;
+    }
+
+    return headers;
+}
+
+function getDictionaryResponseFormat() {
+    return {
+        type: cachedSchema.type,
+        json_schema: {
+            name: cachedSchema.name,
+            strict: cachedSchema.strict,
+            schema: cachedSchema.schema,
+        },
+    };
 }
 
 const SESSIONS = new Map<string, { user_id: number; is_admin: boolean }>();
@@ -441,31 +470,35 @@ export default {
                 { role: 'user', content: prompt },
             ];
 
-            const openaiRes = await fetch(
-                `${getApiEndpoints(env)}/v1/responses`,
+            if (!env.OPENROUTER_API_KEY) {
+                return new Response('OpenRouter API key is not configured', {
+                    status: 500,
+                });
+            }
+
+            const openRouterRes = await fetch(
+                `${getOpenRouterBaseUrl(env)}/chat/completions`,
                 {
                     method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${env.OPENAI_TOKEN}`,
-                        'Content-Type': 'application/json',
-                    },
+                    headers: getOpenRouterHeaders(env),
                     body: JSON.stringify({
-                        model: 'gpt-4.1-nano',
-                        input: input,
-                        text: {
-                            format: cachedSchema,
-                        },
+                        model: env.OPENROUTER_MODEL ?? DEFAULT_OPENROUTER_MODEL,
+                        messages: input,
+                        response_format: getDictionaryResponseFormat(),
                     }),
                 },
             );
 
-            if (!openaiRes.ok) {
-                console.error('OpenAI API error:', await openaiRes.text());
-                return new Response('OpenAI API error', { status: 500 });
+            if (!openRouterRes.ok) {
+                console.error(
+                    'OpenRouter API error:',
+                    await openRouterRes.text(),
+                );
+                return new Response('OpenRouter API error', { status: 500 });
             }
 
-            const data = (await openaiRes.json()) as OpenAIResponse;
-            const content = data.output?.[0].content?.[0]?.text;
+            const data = (await openRouterRes.json()) as OpenRouterChatResponse;
+            const content = data.choices?.[0]?.message?.content;
 
             // Try to parse the content as JSON and convert to Markdown
             let responseText = content;
@@ -479,7 +512,7 @@ export default {
                 } catch {
                     // If parsing fails, return the original content
                     console.log(
-                        'Could not parse OpenAI response as JSON, returning original content',
+                        'Could not parse AI response as JSON, returning original content',
                     );
                 }
             }
@@ -496,19 +529,24 @@ export default {
                 );
             }
 
+            if (!env.OPENROUTER_API_KEY) {
+                return new Response('OpenRouter API key is not configured', {
+                    status: 500,
+                });
+            }
+
             const ttsRes = await fetch(
-                `${getApiEndpoints(env)}/v1/audio/speech`,
+                `${getOpenRouterBaseUrl(env)}/audio/speech`,
                 {
                     method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${env.OPENAI_TOKEN}`,
-                        'Content-Type': 'application/json',
-                    },
+                    headers: getOpenRouterHeaders(env),
                     body: JSON.stringify({
-                        model: 'gpt-4o-mini-tts',
+                        model:
+                            env.OPENROUTER_TTS_MODEL ??
+                            DEFAULT_OPENROUTER_TTS_MODEL,
                         input: text,
                         voice: 'alloy',
-                        response_format: 'wav',
+                        response_format: 'mp3',
                     }),
                 },
             );

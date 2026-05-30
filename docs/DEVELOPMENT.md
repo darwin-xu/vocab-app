@@ -7,6 +7,7 @@ This project now has a unified development setup that runs both frontend and bac
 ### Quick Start
 
 ```bash
+export OPENROUTER_API_KEY=...
 npm run dev
 ```
 

@@ -45,7 +45,7 @@ const TTSControls: React.FC<TTSControlsProps> = ({
                 recordQueryHistory(word, 'tts');
             }
 
-            const audio = new Audio(`data:audio/wav;base64,${b64}`);
+            const audio = new Audio(`data:audio/mpeg;base64,${b64}`);
             audioRef.current = audio;
             await audio.play();
         } catch (err) {

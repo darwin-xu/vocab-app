@@ -1,7 +1,12 @@
 export interface Env {
     DB: D1Database;
     ASSETS: { fetch: (request: Request) => Promise<Response> };
-    OPENAI_TOKEN: string;
+    OPENROUTER_API_KEY: string;
+    OPENROUTER_BASE_URL?: string;
+    OPENROUTER_MODEL?: string;
+    OPENROUTER_TTS_MODEL?: string;
+    OPENROUTER_SITE_URL?: string;
+    OPENROUTER_APP_TITLE?: string;
     ENVIRONMENT?: string;
 }
 
@@ -23,11 +28,11 @@ export interface Message {
     content: string;
 }
 
-export interface OpenAIResponse {
-    output?: {
-        content?: {
-            text?: string;
-        }[];
+export interface OpenRouterChatResponse {
+    choices?: {
+        message?: {
+            content?: string;
+        };
     }[];
 }
 
