@@ -101,7 +101,7 @@ describe('OpenRouter gateway', () => {
             };
         };
 
-        expect(body.model).toBe('openai/gpt-4.1-nano');
+        expect(body.model).toBe('openai/gpt-5-nano');
         expect(body.messages).toEqual([
             { role: 'user', content: "Define the word 'lucid'" },
         ]);

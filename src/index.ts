@@ -24,7 +24,7 @@ function randomId(): string {
 }
 
 const DEFAULT_OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
-const DEFAULT_OPENROUTER_MODEL = 'openai/gpt-4.1-nano';
+const DEFAULT_OPENROUTER_MODEL = 'openai/gpt-5-nano';
 const DEFAULT_OPENROUTER_TTS_MODEL = 'openai/gpt-4o-mini-tts-2025-12-15';
 
 function getOpenRouterBaseUrl(env: Env): string {
