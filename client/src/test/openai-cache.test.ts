@@ -90,6 +90,23 @@ describe('OpenAI Cache', () => {
         expect(mockFetch).toHaveBeenCalledTimes(3); // Still only 3 calls
     });
 
+    it('should dedupe concurrent requests for the same word/action', async () => {
+        const mockResponse = {
+            ok: true,
+            text: vi.fn().mockResolvedValue('Definition of hello'),
+        };
+        mockFetch.mockResolvedValue(mockResponse);
+
+        const [result1, result2] = await Promise.all([
+            api.openaiCall('hello', 'define'),
+            api.openaiCall('hello', 'define'),
+        ]);
+
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+        expect(result1).toBe('Definition of hello');
+        expect(result2).toBe('Definition of hello');
+    });
+
     it('should expire cache entries after 5 minutes', async () => {
         const mockResponse = {
             ok: true,

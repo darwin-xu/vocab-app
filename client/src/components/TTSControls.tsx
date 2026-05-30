@@ -1,7 +1,13 @@
 // TTS control component for granular text-to-speech functionality
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { marked } from 'marked';
-import { ttsCall, recordQueryHistory } from '../api';
+import {
+    ttsCall,
+    recordQueryHistory,
+    getWordImage,
+    generateWordImage,
+    type WordImage,
+} from '../api';
 import {
     parseMarkdownForTTS,
     cleanTextForTTS,
@@ -12,15 +18,154 @@ interface TTSControlsProps {
     content: string;
     audioRef: React.MutableRefObject<HTMLAudioElement | null>;
     word?: string;
+    visualReference?: VisualReference;
+}
+
+interface VisualReference {
+    word: string;
+    image_query: string;
+}
+
+const KNOWN_OBJECT_NOUN_IMAGE_QUERIES: Record<string, string> = {
+    airplane: 'passenger airplane',
+    aeroplane: 'passenger airplane',
+    plane: 'passenger airplane',
+    bicycle: 'bicycle',
+    bike: 'bicycle',
+    camera: 'camera',
+    car: 'car',
+    chair: 'chair',
+    cup: 'cup',
+    mug: 'mug',
+    book: 'book',
+    table: 'table',
+    phone: 'smartphone',
+    computer: 'computer',
+    laptop: 'laptop',
+    bottle: 'bottle',
+    apple: 'apple fruit',
+};
+
+function parseVisualReference(line: string): VisualReference | null {
+    const prefix = '<!-- vocab-image:';
+    const suffix = ' -->';
+
+    if (!line.startsWith(prefix) || !line.endsWith(suffix)) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(line.slice(prefix.length, -suffix.length));
+    } catch {
+        return null;
+    }
+}
+
+function getTitleWord(content: string): string | null {
+    return content.match(/^#\s+(.+)$/m)?.[1]?.trim() || null;
+}
+
+function getKnownVisualReference(word: string | null): VisualReference | null {
+    if (!word) return null;
+
+    const imageQuery = KNOWN_OBJECT_NOUN_IMAGE_QUERIES[word.toLowerCase()];
+    if (!imageQuery) return null;
+
+    return {
+        word,
+        image_query: imageQuery,
+    };
+}
+
+function WordImagePanel({ reference }: { reference: VisualReference }) {
+    const [image, setImage] = useState<WordImage | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        let cancelled = false;
+
+        getWordImage(reference.word)
+            .then((cachedImage) => {
+                if (!cancelled) {
+                    setImage(cachedImage);
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setError('Could not check saved image.');
+                }
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [reference.word]);
+
+    const handleGenerate = async (regenerate: boolean) => {
+        try {
+            setIsLoading(true);
+            setError('');
+            const generatedImage = await generateWordImage(
+                reference.word,
+                reference.image_query,
+                regenerate,
+            );
+            setImage(generatedImage);
+        } catch {
+            setError('Could not generate image.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="my-2 max-w-sm">
+            {image && (
+                <img
+                    src={image.image_data}
+                    alt={reference.word}
+                    className="aspect-video w-full rounded-md border border-white/20 object-cover shadow-sm"
+                    decoding="async"
+                    loading="eager"
+                    onError={(event) => {
+                        event.currentTarget.style.display = 'none';
+                    }}
+                />
+            )}
+            <div className="mt-2 flex items-center gap-2">
+                <button
+                    type="button"
+                    className="rounded-sm border border-vocab-border bg-white/90 px-3 py-1 text-xs font-semibold text-auth-text-dark shadow-xs transition-all duration-200 hover:border-vocab-primary hover:bg-vocab-surface-hover disabled:cursor-not-allowed disabled:opacity-60"
+                    onClick={() => handleGenerate(Boolean(image))}
+                    disabled={isLoading}
+                >
+                    {isLoading
+                        ? 'Generating...'
+                        : image
+                          ? 'Regenerate image'
+                          : 'Generate image'}
+                </button>
+                {error && <span className="text-xs text-red-600">{error}</span>}
+            </div>
+        </div>
+    );
 }
 
 const TTSControls: React.FC<TTSControlsProps> = ({
     content,
     audioRef,
     word,
+    visualReference,
 }) => {
     const sections = parseMarkdownForTTS(content);
     const [isLoading, setIsLoading] = useState(false);
+    const visualWord = word?.trim() || getTitleWord(content);
+    const fallbackVisualReference =
+        visualReference ??
+        (content.includes('<!-- vocab-image:')
+            ? null
+            : getKnownVisualReference(visualWord));
 
     const playTTS = async (text: string) => {
         // Prevent multiple simultaneous requests
@@ -84,6 +229,15 @@ const TTSControls: React.FC<TTSControlsProps> = ({
         const lines = content.split('\n');
         const renderedLines: React.ReactNode[] = [];
 
+        if (visualWord && fallbackVisualReference) {
+            renderedLines.push(
+                <WordImagePanel
+                    key="fallback-visual"
+                    reference={fallbackVisualReference}
+                />,
+            );
+        }
+
         // Get sections for quick lookup
         const pronunciations = getSectionsByType(sections, 'pronunciation');
         const definitions = getSectionsByType(sections, 'definition');
@@ -100,19 +254,12 @@ const TTSControls: React.FC<TTSControlsProps> = ({
                 continue;
             }
 
-            const visualMatch = line.match(/^!\[Visual: (.*)\]\((.*)\)$/);
-            if (visualMatch) {
-                const [, altText, imageUrl] = visualMatch;
+            const visualReference = parseVisualReference(line);
+            if (visualReference) {
                 renderedLines.push(
-                    <img
+                    <WordImagePanel
                         key={`visual-${i}`}
-                        src={imageUrl}
-                        alt={altText}
-                        className="my-2 aspect-video w-full max-w-sm rounded-md border border-white/20 object-contain shadow-sm"
-                        loading="eager"
-                        onError={(event) => {
-                            event.currentTarget.style.display = 'none';
-                        }}
+                        reference={visualReference}
                     />,
                 );
                 continue;

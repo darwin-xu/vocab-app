@@ -248,6 +248,7 @@ function App() {
                 y={hover.y}
                 content={hover.content}
                 word={hover.word}
+                isLoading={hover.isLoading}
             />
 
             {/* Notes Modal */}

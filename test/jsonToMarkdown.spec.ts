@@ -46,10 +46,8 @@ describe('JSON to Markdown conversion', () => {
         expect(result).toContain('- illustration');
         expect(result).toContain('- case');
         expect(result).toContain(
-            '![Visual: example](data:image/svg+xml;charset=utf-8,',
+            '<!-- vocab-image:{"word":"example","image_query":"example object"} -->',
         );
-        expect(decodeURIComponent(result)).toContain('example object');
-        expect(result).not.toContain('loremflickr.com');
     });
 
     it('should handle empty arrays gracefully', () => {
@@ -65,5 +63,25 @@ describe('JSON to Markdown conversion', () => {
         expect(result).toContain('# test');
         expect(result).not.toContain('**Pronunciation:**');
         expect(result).not.toContain('## Synonyms');
+    });
+
+    it('should add a visual marker for known object nouns when model metadata is missing', () => {
+        const result = convertDictionaryToMarkdown({
+            word: 'plane',
+            phonetic_symbol: '/pleɪn/',
+            meanings: [
+                {
+                    part_of_speech: 'noun',
+                    definition:
+                        'A powered flying vehicle with wings and engines.',
+                    examples: ['The plane landed safely.'],
+                },
+            ],
+            synonyms: ['airplane'],
+        });
+
+        expect(result).toContain(
+            '<!-- vocab-image:{"word":"plane","image_query":"passenger airplane"} -->',
+        );
     });
 });

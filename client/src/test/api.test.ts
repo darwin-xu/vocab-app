@@ -70,6 +70,7 @@ if (!globalThis.window) {
 describe('API functions', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        api._clearCacheForTesting();
         // grab the mock provided in setup file
         localStorageMock = globalThis.localStorage as LocalStorageMock;
         localStorageMock.getItem.mockReturnValue(null);
@@ -277,6 +278,94 @@ describe('API functions', () => {
                 headers: expect.any(Headers),
             });
             expect(result).toBe('base64audio');
+        });
+    });
+
+    describe('word image functions', () => {
+        beforeEach(() => {
+            localStorageMock.getItem.mockReturnValue('test-token');
+        });
+
+        it('should fetch cached word image', async () => {
+            const mockImage = {
+                word: 'apple',
+                image_query: 'apple fruit',
+                image_data: 'data:image/png;base64,abc',
+                mime_type: 'image/png',
+                model: 'google/gemini-2.5-flash-image',
+                created_at: '2026-01-01T00:00:00.000Z',
+                updated_at: '2026-01-01T00:00:00.000Z',
+            };
+            const mockResponse = {
+                ok: true,
+                json: vi.fn().mockResolvedValue({ image: mockImage }),
+            };
+            mockFetch.mockResolvedValue(mockResponse);
+
+            const result = await api.getWordImage('apple');
+
+            expect(mockFetch).toHaveBeenCalledWith('/word-image?word=apple', {
+                headers: expect.any(Headers),
+            });
+            expect(result).toEqual(mockImage);
+        });
+
+        it('should reuse word image from local cache', async () => {
+            const mockImage = {
+                word: 'apple',
+                image_query: 'apple fruit',
+                image_data: 'data:image/png;base64,abc',
+                mime_type: 'image/png',
+                model: 'google/gemini-2.5-flash-image',
+                created_at: '2026-01-01T00:00:00.000Z',
+                updated_at: '2026-01-01T00:00:00.000Z',
+            };
+            const mockResponse = {
+                ok: true,
+                json: vi.fn().mockResolvedValue({ image: mockImage }),
+            };
+            mockFetch.mockResolvedValue(mockResponse);
+
+            const result1 = await api.getWordImage('apple');
+            const result2 = await api.getWordImage('Apple');
+
+            expect(mockFetch).toHaveBeenCalledTimes(1);
+            expect(result1).toEqual(mockImage);
+            expect(result2).toEqual(mockImage);
+        });
+
+        it('should generate word image', async () => {
+            const mockImage = {
+                word: 'apple',
+                image_query: 'apple fruit',
+                image_data: 'data:image/png;base64,abc',
+                mime_type: 'image/png',
+                model: 'google/gemini-2.5-flash-image',
+                created_at: '2026-01-01T00:00:00.000Z',
+                updated_at: '2026-01-01T00:00:00.000Z',
+            };
+            const mockResponse = {
+                ok: true,
+                json: vi.fn().mockResolvedValue({ image: mockImage }),
+            };
+            mockFetch.mockResolvedValue(mockResponse);
+
+            const result = await api.generateWordImage(
+                'apple',
+                'apple fruit',
+                true,
+            );
+
+            expect(mockFetch).toHaveBeenCalledWith('/word-image', {
+                method: 'POST',
+                headers: expect.any(Headers),
+                body: JSON.stringify({
+                    word: 'apple',
+                    image_query: 'apple fruit',
+                    regenerate: true,
+                }),
+            });
+            expect(result).toEqual(mockImage);
         });
     });
 

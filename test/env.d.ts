@@ -5,6 +5,7 @@ declare module 'cloudflare:test' {
         OPENROUTER_API_KEY: string;
         OPENROUTER_BASE_URL?: string;
         OPENROUTER_MODEL?: string;
+        OPENROUTER_IMAGE_MODEL?: string;
         OPENROUTER_TTS_MODEL?: string;
         OPENROUTER_SITE_URL?: string;
         OPENROUTER_APP_TITLE?: string;

@@ -57,3 +57,17 @@ CREATE INDEX IF NOT EXISTS idx_query_history_user_word ON query_history(user_id,
 
 -- Index on query_time for sorting
 CREATE INDEX IF NOT EXISTS idx_query_history_query_time ON query_history(query_time);
+
+CREATE TABLE IF NOT EXISTS word_images (
+  word TEXT PRIMARY KEY,
+  image_query TEXT NOT NULL,
+  image_data TEXT NOT NULL,
+  mime_type TEXT NOT NULL DEFAULT 'image/png',
+  model TEXT NOT NULL,
+  prompt TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Index on updated_at for future cleanup or inspection
+CREATE INDEX IF NOT EXISTS idx_word_images_updated_at ON word_images(updated_at);

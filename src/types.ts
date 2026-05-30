@@ -4,6 +4,7 @@ export interface Env {
     OPENROUTER_API_KEY: string;
     OPENROUTER_BASE_URL?: string;
     OPENROUTER_MODEL?: string;
+    OPENROUTER_IMAGE_MODEL?: string;
     OPENROUTER_TTS_MODEL?: string;
     OPENROUTER_SITE_URL?: string;
     OPENROUTER_APP_TITLE?: string;
@@ -32,6 +33,21 @@ export interface OpenRouterChatResponse {
     choices?: {
         message?: {
             content?: string;
+        };
+    }[];
+}
+
+export interface OpenRouterImageResponse {
+    choices?: {
+        message?: {
+            images?: {
+                image_url?: {
+                    url?: string;
+                };
+                imageUrl?: {
+                    url?: string;
+                };
+            }[];
         };
     }[];
 }
@@ -70,6 +86,23 @@ export interface DeleteNoteRequestBody {
 export interface QueryHistoryRequestBody {
     word: string;
     query_type: 'definition' | 'tts';
+}
+
+export interface WordImageRequestBody {
+    word: string;
+    image_query: string;
+    regenerate?: boolean;
+}
+
+export interface WordImageRow {
+    word: string;
+    image_query: string;
+    image_data: string;
+    mime_type: string;
+    model: string;
+    prompt: string;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface QueryHistoryRow {

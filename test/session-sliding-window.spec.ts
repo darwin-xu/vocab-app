@@ -42,7 +42,7 @@ describe('Session Sliding Window', () => {
             first: mockFirst,
         };
 
-        // Mock the UPDATE queries (for updateSessionActivity and extendSession)
+        // Mock the UPDATE query for the session extension.
         const mockUpdateResult = { meta: { changes: 1 } };
         const mockRun = vi.fn().mockResolvedValue(mockUpdateResult);
         const mockUpdateQuery = {
@@ -53,8 +53,7 @@ describe('Session Sliding Window', () => {
         // Set up the prepare mock to return appropriate queries
         mockDB.prepare
             .mockReturnValueOnce(mockSelectQuery) // First call: SELECT session
-            .mockReturnValueOnce(mockUpdateQuery) // Second call: UPDATE last_activity
-            .mockReturnValueOnce(mockUpdateQuery); // Third call: UPDATE expires_at (extend session)
+            .mockReturnValueOnce(mockUpdateQuery); // Second call: UPDATE expires_at and last_activity
 
         // Call getSession
         const result = await sessionManager.getSession(mockToken);
@@ -63,7 +62,7 @@ describe('Session Sliding Window', () => {
         expect(result).toEqual(mockSession);
 
         // Verify all queries were called correctly
-        expect(mockDB.prepare).toHaveBeenCalledTimes(3);
+        expect(mockDB.prepare).toHaveBeenCalledTimes(2);
 
         // Verify SELECT query
         expect(mockDB.prepare).toHaveBeenNthCalledWith(
@@ -78,28 +77,20 @@ describe('Session Sliding Window', () => {
         );
         expect(mockSelectQuery.bind).toHaveBeenCalledWith(mockToken);
 
-        // Verify UPDATE last_activity query
-        expect(mockDB.prepare).toHaveBeenNthCalledWith(
-            2,
-            expect.stringContaining('UPDATE sessions'),
-        );
-        expect(mockDB.prepare).toHaveBeenNthCalledWith(
-            2,
-            expect.stringContaining("SET last_activity = datetime('now')"),
-        );
-        expect(mockUpdateQuery.bind).toHaveBeenNthCalledWith(1, mockToken);
-
         // Verify UPDATE expires_at query (session extension)
         expect(mockDB.prepare).toHaveBeenNthCalledWith(
-            3,
+            2,
             expect.stringContaining('UPDATE sessions'),
         );
         expect(mockDB.prepare).toHaveBeenNthCalledWith(
-            3,
+            2,
             expect.stringContaining('SET expires_at = ?'),
         );
-        expect(mockUpdateQuery.bind).toHaveBeenNthCalledWith(
+        expect(mockDB.prepare).toHaveBeenNthCalledWith(
             2,
+            expect.stringContaining("last_activity = datetime('now')"),
+        );
+        expect(mockUpdateQuery.bind).toHaveBeenCalledWith(
             expect.any(String),
             mockToken,
         );
@@ -130,6 +121,34 @@ describe('Session Sliding Window', () => {
                 'SELECT token, user_id, is_admin, created_at, last_activity, expires_at',
             ),
         );
+    });
+
+    it('should not extend session when activity was refreshed recently', async () => {
+        const mockNow = new Date('2025-06-24T15:00:00.000Z');
+        vi.setSystemTime(mockNow);
+
+        const mockToken = 'recent-token';
+        const mockSession = {
+            token: mockToken,
+            user_id: 1,
+            is_admin: 0,
+            created_at: '2025-06-24T10:00:00.000Z',
+            last_activity: '2025-06-24T14:58:00.000Z',
+            expires_at: '2025-06-25T10:00:00.000Z',
+        };
+
+        const mockSelectQuery = {
+            bind: vi.fn().mockReturnThis(),
+            first: vi.fn().mockResolvedValue(mockSession),
+        };
+
+        mockDB.prepare.mockReturnValueOnce(mockSelectQuery);
+
+        const result = await sessionManager.getSession(mockToken);
+
+        expect(result).toEqual(mockSession);
+        expect(mockDB.prepare).toHaveBeenCalledTimes(1);
+        expect(mockSelectQuery.bind).toHaveBeenCalledWith(mockToken);
     });
 
     it('should calculate correct expiration time when extending session', async () => {

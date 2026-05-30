@@ -8,9 +8,12 @@ import {
     VocabRequestBody,
     DeleteVocabRequestBody,
     UpdateUserRequestBody,
+    OpenRouterImageResponse,
     NoteRequestBody,
     DeleteNoteRequestBody,
     QueryHistoryRequestBody,
+    WordImageRequestBody,
+    WordImageRow,
 } from './types.js';
 
 import { SessionManager } from './sessionManager.js';
@@ -25,6 +28,7 @@ function randomId(): string {
 
 const DEFAULT_OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 const DEFAULT_OPENROUTER_MODEL = 'openai/gpt-4.1-nano';
+const DEFAULT_OPENROUTER_IMAGE_MODEL = 'google/gemini-2.5-flash-image';
 const DEFAULT_OPENROUTER_TTS_MODEL = 'openai/gpt-4o-mini-tts-2025-12-15';
 const OPENROUTER_COMPLETION_TOKEN_LIMIT = 700;
 
@@ -57,6 +61,71 @@ function getDictionaryResponseFormat() {
             strict: cachedSchema.strict,
             schema: cachedSchema.schema,
         },
+    };
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    const chunkSize = 0x8000;
+    let binary = '';
+
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        const chunk = bytes.subarray(offset, offset + chunkSize);
+        binary += String.fromCharCode(...chunk);
+    }
+
+    return btoa(binary);
+}
+
+async function initializeWordImagesTable(env: Env): Promise<void> {
+    await env.DB.prepare(
+        `
+        CREATE TABLE IF NOT EXISTS word_images (
+            word TEXT PRIMARY KEY,
+            image_query TEXT NOT NULL,
+            image_data TEXT NOT NULL,
+            mime_type TEXT NOT NULL DEFAULT 'image/png',
+            model TEXT NOT NULL,
+            prompt TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+    `,
+    ).run();
+
+    await env.DB.prepare(
+        'CREATE INDEX IF NOT EXISTS idx_word_images_updated_at ON word_images(updated_at)',
+    ).run();
+}
+
+function normalizeWord(word: string): string {
+    return word.trim().toLowerCase();
+}
+
+function createWordImagePrompt(word: string, imageQuery: string): string {
+    return [
+        `Create one clear, recognizable educational image of: ${imageQuery}.`,
+        `The vocabulary word is "${word}".`,
+        'Show the physical object itself as the main subject.',
+        'Use a clean simple background, bright natural colors, and good lighting.',
+        'Do not include text, labels, logos, watermarks, people, or extra unrelated objects.',
+    ].join(' ');
+}
+
+function getGeneratedImageUrl(data: OpenRouterImageResponse): string | null {
+    const image = data.choices?.[0]?.message?.images?.[0];
+    return image?.image_url?.url ?? image?.imageUrl?.url ?? null;
+}
+
+function serializeWordImage(row: WordImageRow) {
+    return {
+        word: row.word,
+        image_query: row.image_query,
+        image_data: row.image_data,
+        mime_type: row.mime_type,
+        model: row.model,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
     };
 }
 
@@ -533,6 +602,180 @@ export default {
             });
         }
 
+        if (url.pathname === '/word-image') {
+            const userId = await getUserIdFromRequest(request, env);
+            if (!userId) return new Response('Unauthorized', { status: 401 });
+
+            await initializeWordImagesTable(env);
+
+            if (request.method === 'GET') {
+                const word = normalizeWord(url.searchParams.get('word') ?? '');
+                if (!word) {
+                    return new Response('Missing word', { status: 400 });
+                }
+
+                const cachedImage = (await env.DB.prepare(
+                    'SELECT word, image_query, image_data, mime_type, model, prompt, created_at, updated_at FROM word_images WHERE word = ?',
+                )
+                    .bind(word)
+                    .first()) as WordImageRow | null;
+
+                return new Response(
+                    JSON.stringify({
+                        image: cachedImage
+                            ? serializeWordImage(cachedImage)
+                            : null,
+                    }),
+                    { headers: { 'Content-Type': 'application/json' } },
+                );
+            }
+
+            if (request.method === 'POST') {
+                let body: WordImageRequestBody;
+                try {
+                    body = (await request.json()) as WordImageRequestBody;
+                } catch {
+                    return new Response('Invalid JSON', { status: 400 });
+                }
+
+                const word = normalizeWord(body.word ?? '');
+                const imageQuery = body.image_query?.trim();
+                if (!word || !imageQuery) {
+                    return new Response('Missing word or image_query', {
+                        status: 400,
+                    });
+                }
+
+                if (!body.regenerate) {
+                    const cachedImage = (await env.DB.prepare(
+                        'SELECT word, image_query, image_data, mime_type, model, prompt, created_at, updated_at FROM word_images WHERE word = ?',
+                    )
+                        .bind(word)
+                        .first()) as WordImageRow | null;
+
+                    if (cachedImage) {
+                        return new Response(
+                            JSON.stringify({
+                                image: serializeWordImage(cachedImage),
+                                cached: true,
+                            }),
+                            {
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                            },
+                        );
+                    }
+                }
+
+                if (!env.OPENROUTER_API_KEY) {
+                    return new Response(
+                        'OpenRouter API key is not configured',
+                        {
+                            status: 500,
+                        },
+                    );
+                }
+
+                const model =
+                    env.OPENROUTER_IMAGE_MODEL ??
+                    DEFAULT_OPENROUTER_IMAGE_MODEL;
+                const prompt = createWordImagePrompt(word, imageQuery);
+                const imageStartTime = Date.now();
+                const imageRes = await fetch(
+                    `${getOpenRouterBaseUrl(env)}/chat/completions`,
+                    {
+                        method: 'POST',
+                        headers: getOpenRouterHeaders(env),
+                        body: JSON.stringify({
+                            model,
+                            messages: [{ role: 'user', content: prompt }],
+                            modalities: ['image', 'text'],
+                            stream: false,
+                            image_config: {
+                                aspect_ratio: '16:9',
+                            },
+                        }),
+                    },
+                );
+                const imageDurationMs = Date.now() - imageStartTime;
+
+                if (!imageRes.ok) {
+                    console.error(
+                        'OpenRouter image API error:',
+                        await imageRes.text(),
+                    );
+                    return new Response('OpenRouter image API error', {
+                        status: 500,
+                    });
+                }
+
+                const imageData = getGeneratedImageUrl(
+                    (await imageRes.json()) as OpenRouterImageResponse,
+                );
+
+                if (!imageData) {
+                    return new Response(
+                        'OpenRouter image response missing image',
+                        {
+                            status: 500,
+                        },
+                    );
+                }
+
+                const mimeType =
+                    imageData.match(/^data:([^;]+);base64,/)?.[1] ??
+                    'image/png';
+                const now = new Date().toISOString();
+
+                await env.DB.prepare(
+                    `
+                    INSERT INTO word_images (word, image_query, image_data, mime_type, model, prompt, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(word) DO UPDATE SET
+                        image_query = excluded.image_query,
+                        image_data = excluded.image_data,
+                        mime_type = excluded.mime_type,
+                        model = excluded.model,
+                        prompt = excluded.prompt,
+                        updated_at = excluded.updated_at
+                `,
+                )
+                    .bind(
+                        word,
+                        imageQuery,
+                        imageData,
+                        mimeType,
+                        model,
+                        prompt,
+                        now,
+                        now,
+                    )
+                    .run();
+
+                const savedImage = (await env.DB.prepare(
+                    'SELECT word, image_query, image_data, mime_type, model, prompt, created_at, updated_at FROM word_images WHERE word = ?',
+                )
+                    .bind(word)
+                    .first()) as WordImageRow;
+
+                return new Response(
+                    JSON.stringify({
+                        image: serializeWordImage(savedImage),
+                        cached: false,
+                    }),
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Server-Timing': `openrouter-image;dur=${imageDurationMs}`,
+                            'X-OpenRouter-Image-Duration-Ms':
+                                String(imageDurationMs),
+                        },
+                    },
+                );
+            }
+        }
+
         if (url.pathname === '/tts') {
             const text = url.searchParams.get('text') ?? '';
             if (!text) {
@@ -571,12 +814,7 @@ export default {
                 );
             }
 
-            const audioBuffer = await ttsRes.arrayBuffer();
-            const uint8Array = new Uint8Array(audioBuffer);
-            const binary = Array.from(uint8Array)
-                .map((byte) => String.fromCharCode(byte))
-                .join('');
-            const audioBase64 = btoa(binary);
+            const audioBase64 = arrayBufferToBase64(await ttsRes.arrayBuffer());
 
             return new Response(JSON.stringify({ audio: audioBase64 }), {
                 headers: { 'Content-Type': 'application/json' },

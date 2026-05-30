@@ -4,6 +4,7 @@ import { sessionMonitor } from './utils/sessionMonitor';
 
 const SESSION_TOKEN_KEY = 'sessionToken';
 const USERNAME_KEY = 'username';
+const OPENAI_CACHE_VERSION = 'v2-word-images';
 
 // Cache for OpenAI responses with 5-minute timeout
 interface CacheEntry {
@@ -16,7 +17,7 @@ class OpenAICache {
     private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
     private getCacheKey(word: string, action: string): string {
-        return `${word.toLowerCase()}-${action}`;
+        return `${OPENAI_CACHE_VERSION}-${word.toLowerCase()}-${action}`;
     }
 
     private getTTSCacheKey(text: string): string {
@@ -114,6 +115,8 @@ class OpenAICache {
 }
 
 const openaiCache = new OpenAICache();
+const pendingOpenAIRequests = new Map<string, Promise<string>>();
+const wordImageCache = new Map<string, WordImage | null>();
 
 // Set up periodic cleanup of expired cache entries (every 10 minutes)
 setInterval(
@@ -211,6 +214,8 @@ export async function removeWords(words: string[]) {
 }
 
 export async function openaiCall(word: string, action: string) {
+    const requestKey = `${word.toLowerCase()}-${action}`;
+
     // Check cache first
     const cachedResponse = openaiCache.get(word, action);
     if (cachedResponse) {
@@ -224,21 +229,44 @@ export async function openaiCall(word: string, action: string) {
         return cachedResponse;
     }
 
+    const pendingRequest = pendingOpenAIRequests.get(requestKey);
+    if (pendingRequest) {
+        const responseData = await pendingRequest;
+        if (action === 'define' && process.env.NODE_ENV !== 'test') {
+            recordQueryHistory(word, 'definition');
+        }
+        return responseData;
+    }
+
     if (process.env.NODE_ENV === 'development') {
         console.log(
             `🌐 Cache miss for "${word}" (${action}) - fetching from API`,
         );
     }
-    const res = await authFetch(
-        `/openai?word=${encodeURIComponent(word)}&action=${action}`,
-    );
-    if (!res.ok) throw new Error(await res.text());
-    const responseData = await res.text();
 
-    // Store in cache
-    openaiCache.set(word, action, responseData);
-    if (process.env.NODE_ENV === 'development') {
-        console.log(`💾 Cached response for "${word}" (${action})`);
+    const request = (async () => {
+        const res = await authFetch(
+            `/openai?word=${encodeURIComponent(word)}&action=${action}`,
+        );
+        if (!res.ok) throw new Error(await res.text());
+        const responseData = await res.text();
+
+        // Store in cache
+        openaiCache.set(word, action, responseData);
+        if (process.env.NODE_ENV === 'development') {
+            console.log(`💾 Cached response for "${word}" (${action})`);
+        }
+
+        return responseData;
+    })();
+
+    pendingOpenAIRequests.set(requestKey, request);
+
+    let responseData: string;
+    try {
+        responseData = await request;
+    } finally {
+        pendingOpenAIRequests.delete(requestKey);
     }
 
     // Record history for definition queries (skip in test environment)
@@ -280,6 +308,49 @@ export async function ttsCall(text: string) {
     }
 
     return audioData;
+}
+
+export interface WordImage {
+    word: string;
+    image_query: string;
+    image_data: string;
+    mime_type: string;
+    model: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export async function getWordImage(word: string): Promise<WordImage | null> {
+    const cacheKey = word.toLowerCase();
+    if (wordImageCache.has(cacheKey)) {
+        return wordImageCache.get(cacheKey) ?? null;
+    }
+
+    const res = await authFetch(`/word-image?word=${encodeURIComponent(word)}`);
+    if (!res.ok) throw new Error(await res.text());
+    const data = (await res.json()) as { image: WordImage | null };
+    wordImageCache.set(cacheKey, data.image);
+    return data.image;
+}
+
+export async function generateWordImage(
+    word: string,
+    imageQuery: string,
+    regenerate = false,
+): Promise<WordImage> {
+    const res = await authFetch('/word-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            word,
+            image_query: imageQuery,
+            regenerate,
+        }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = (await res.json()) as { image: WordImage };
+    wordImageCache.set(data.image.word.toLowerCase(), data.image);
+    return data.image;
 }
 
 export async function fetchUsers() {
@@ -377,12 +448,16 @@ export async function logout() {
     clearToken();
     localStorage.removeItem('isAdmin');
     openaiCache.clear(); // Clear OpenAI cache on logout
+    pendingOpenAIRequests.clear();
+    wordImageCache.clear();
     window.location.reload();
 }
 
 // Export for testing purposes only
 export function _clearCacheForTesting() {
     openaiCache.clear();
+    pendingOpenAIRequests.clear();
+    wordImageCache.clear();
 }
 
 // Export for debugging purposes

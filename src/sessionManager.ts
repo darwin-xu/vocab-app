@@ -13,6 +13,7 @@ export interface SessionData {
 export class SessionManager {
     private env: Env;
     private readonly SESSION_TIMEOUT_MS = 365 * 24 * 60 * 60 * 1000;
+    private readonly SESSION_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
     private readonly CLEANUP_INTERVAL_HOURS = 1; // Cleanup expired sessions every hour
 
     constructor(env: Env) {
@@ -21,6 +22,13 @@ export class SessionManager {
 
     private getSessionExpirationTimestamp(): string {
         return new Date(Date.now() + this.SESSION_TIMEOUT_MS).toISOString();
+    }
+
+    private shouldRefreshSession(session: SessionData): boolean {
+        const lastActivity = Date.parse(session.last_activity);
+        if (!Number.isFinite(lastActivity)) return true;
+
+        return Date.now() - lastActivity > this.SESSION_REFRESH_INTERVAL_MS;
     }
 
     /**
@@ -69,9 +77,8 @@ export class SessionManager {
             .bind(token)
             .first()) as SessionData | null;
 
-        if (session) {
-            // Update last activity AND extend session expiration (sliding window)
-            await this.updateSessionActivity(token);
+        if (session && this.shouldRefreshSession(session)) {
+            // Extend the sliding window and update activity in a single D1 write.
             await this.extendSession(token);
         }
 

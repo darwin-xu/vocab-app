@@ -39,6 +39,7 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
     const loadingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
         null,
     );
+    const definitionRequestIdRef = useRef(0);
 
     // Load vocabulary
     const loadVocab = useCallback(async () => {
@@ -166,6 +167,14 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
         async (e: React.MouseEvent, word: string) => {
             e.stopPropagation();
 
+            definitionRequestIdRef.current += 1;
+            const requestId = definitionRequestIdRef.current;
+
+            if (loadingIntervalRef.current) {
+                clearInterval(loadingIntervalRef.current);
+                loadingIntervalRef.current = null;
+            }
+
             const { x, y } = calculateHoverPosition(e);
 
             setHover({
@@ -188,6 +197,9 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
 
             try {
                 const text = await openaiCall(word, 'define');
+                if (requestId !== definitionRequestIdRef.current) {
+                    return;
+                }
                 if (loadingIntervalRef.current) {
                     clearInterval(loadingIntervalRef.current);
                     loadingIntervalRef.current = null;
@@ -202,6 +214,9 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
                     isLoading: false,
                 });
             } catch {
+                if (requestId !== definitionRequestIdRef.current) {
+                    return;
+                }
                 if (loadingIntervalRef.current) {
                     clearInterval(loadingIntervalRef.current);
                     loadingIntervalRef.current = null;
@@ -222,6 +237,7 @@ export function useVocabulary(pageSize: number, shouldLoad: boolean = false) {
 
     // Close hover window
     const closeHover = useCallback(() => {
+        definitionRequestIdRef.current += 1;
         if (loadingIntervalRef.current) {
             clearInterval(loadingIntervalRef.current);
             loadingIntervalRef.current = null;

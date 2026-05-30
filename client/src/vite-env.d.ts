@@ -21,5 +21,6 @@ declare const process: {
 
 declare const global: typeof globalThis;
 
-declare const __APP_VERSION__: string;
-declare const __APP_BUILD_TIME__: string;
+declare const __APP_VERSION_DATE__: string;
+declare const __APP_BUILD_NUMBER__: string;
+declare const __APP_DEPLOY_DATE__: string;

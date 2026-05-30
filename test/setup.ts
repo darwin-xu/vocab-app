@@ -55,6 +55,25 @@ export async function setupDatabase(env: Env): Promise<void> {
             )
         `,
         ).run();
+
+        await env.DB.prepare(
+            `
+            CREATE TABLE IF NOT EXISTS word_images (
+                word TEXT PRIMARY KEY,
+                image_query TEXT NOT NULL,
+                image_data TEXT NOT NULL,
+                mime_type TEXT NOT NULL DEFAULT 'image/png',
+                model TEXT NOT NULL,
+                prompt TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )
+        `,
+        ).run();
+
+        await env.DB.prepare(
+            'CREATE INDEX IF NOT EXISTS idx_word_images_updated_at ON word_images(updated_at)',
+        ).run();
     } catch (error) {
         console.warn(
             'Error setting up database:',

@@ -134,6 +134,17 @@ export default tseslint.config(
         // No typescript-eslint specific parserOptions needed here if these are plain JS.
     },
 
+    {
+        files: ['scripts/**/*.mjs'],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+                fetch: 'readonly',
+                performance: 'readonly',
+            },
+        },
+    },
+
     // Prettier config - must be last to override conflicting rules
     prettier,
 );
