@@ -100,6 +100,24 @@ const TTSControls: React.FC<TTSControlsProps> = ({
                 continue;
             }
 
+            const visualMatch = line.match(/^!\[Visual: (.*)\]\((.*)\)$/);
+            if (visualMatch) {
+                const [, altText, imageUrl] = visualMatch;
+                renderedLines.push(
+                    <img
+                        key={`visual-${i}`}
+                        src={imageUrl}
+                        alt={altText}
+                        className="my-2 aspect-video w-full max-w-sm rounded-md border border-white/20 object-contain shadow-sm"
+                        loading="eager"
+                        onError={(event) => {
+                            event.currentTarget.style.display = 'none';
+                        }}
+                    />,
+                );
+                continue;
+            }
+
             // Word title - skip rendering since the hover window appears when clicking the word
             if (line.startsWith('# ')) {
                 // Add the full definition TTS button to the first actual content line instead

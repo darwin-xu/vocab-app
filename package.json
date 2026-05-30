@@ -18,6 +18,8 @@
         "test:coverage:backend": "vitest run --coverage",
         "test:coverage:frontend": "cd client && npm run test:coverage",
         "test:coverage": "npm run test:coverage:backend && npm run test:coverage:frontend",
+        "benchmark:openrouter": "node scripts/benchmark-openrouter.mjs",
+        "benchmark:worker": "node scripts/benchmark-worker-openai.mjs",
         "cf-typegen": "wrangler types",
         "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
         "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",

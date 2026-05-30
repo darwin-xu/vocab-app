@@ -25,6 +25,10 @@ describe('JSON to Markdown conversion', () => {
                 },
             ],
             synonyms: ['instance', 'illustration', 'case'],
+            visual_reference: {
+                is_object_noun: true,
+                image_query: 'example object',
+            },
         };
 
         const result = convertDictionaryToMarkdown(sampleData);
@@ -41,6 +45,11 @@ describe('JSON to Markdown conversion', () => {
         expect(result).toContain('- instance');
         expect(result).toContain('- illustration');
         expect(result).toContain('- case');
+        expect(result).toContain(
+            '![Visual: example](data:image/svg+xml;charset=utf-8,',
+        );
+        expect(decodeURIComponent(result)).toContain('example object');
+        expect(result).not.toContain('loremflickr.com');
     });
 
     it('should handle empty arrays gracefully', () => {

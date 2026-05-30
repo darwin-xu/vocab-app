@@ -95,16 +95,26 @@ describe('OpenRouter gateway', () => {
         const body = JSON.parse(requestInit.body as string) as {
             model: string;
             messages: Array<{ role: string; content: string }>;
+            max_tokens: number;
+            temperature: number;
+            provider: { sort: string };
             response_format: {
                 type: string;
                 json_schema: { name: string; strict: boolean };
             };
         };
 
-        expect(body.model).toBe('openai/gpt-5-nano');
+        expect(body.model).toBe('openai/gpt-4.1-nano');
         expect(body.messages).toEqual([
             { role: 'user', content: "Define the word 'lucid'" },
         ]);
+        expect(body).toMatchObject({
+            max_tokens: 700,
+            temperature: 0.2,
+            provider: {
+                sort: 'latency',
+            },
+        });
         expect(body.response_format).toMatchObject({
             type: 'json_schema',
             json_schema: {

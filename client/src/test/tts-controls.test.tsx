@@ -87,4 +87,23 @@ describe('TTSControls Component', () => {
         // Should render without errors even with empty content
         expect(container.querySelector('.space-y-1')).toBeInTheDocument();
     });
+
+    it('should render object noun images', async () => {
+        const ImageTestWrapper = () => {
+            const audioRef = useRef<HTMLAudioElement | null>(null);
+            return (
+                <TTSControls
+                    content="![Visual: apple](https://loremflickr.com/640/360/apple)"
+                    audioRef={audioRef}
+                />
+            );
+        };
+
+        const { getByAltText } = render(<ImageTestWrapper />);
+
+        expect(getByAltText('apple')).toHaveAttribute(
+            'src',
+            'https://loremflickr.com/640/360/apple',
+        );
+    });
 });

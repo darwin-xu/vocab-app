@@ -43,13 +43,15 @@
                             "items": {
                                 "type": "string"
                             },
-                            "minItems": 1
+                            "minItems": 1,
+                            "maxItems": 2
                         }
                     },
                     "required": ["part_of_speech", "definition", "examples"],
                     "additionalProperties": false
                 },
-                "minItems": 1
+                "minItems": 1,
+                "maxItems": 2
             },
             "synonyms": {
                 "type": "array",
@@ -57,10 +59,33 @@
                 "items": {
                     "type": "string"
                 },
-                "minItems": 1
+                "minItems": 1,
+                "maxItems": 3
+            },
+            "visual_reference": {
+                "type": "object",
+                "description": "Image display metadata for concrete object nouns. Set is_object_noun to true only when the word is used as a noun and refers to a physical object that can be pictured.",
+                "properties": {
+                    "is_object_noun": {
+                        "type": "boolean",
+                        "description": "Whether the word is a noun that refers to a physical object."
+                    },
+                    "image_query": {
+                        "type": "string",
+                        "description": "A short concrete image search phrase for the object noun, or an empty string when is_object_noun is false."
+                    }
+                },
+                "required": ["is_object_noun", "image_query"],
+                "additionalProperties": false
             }
         },
-        "required": ["word", "phonetic_symbol", "meanings", "synonyms"],
+        "required": [
+            "word",
+            "phonetic_symbol",
+            "meanings",
+            "synonyms",
+            "visual_reference"
+        ],
         "additionalProperties": false
     }
 }
